@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "236446670878",
+    "project_id": "gsports-32f7f",
+    "storage_bucket": "gsports-32f7f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:236446670878:android:7c536a75e0527e29418e0f",
+        "android_client_info": {
+          "package_name": "com.example.gsports"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "236446670878-1dhvf0n72br9qpkquc1k0aue2tskj6d2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvnGnptsUiz6SnxeZ4nXyuUCxXc7JmohA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "236446670878-1dhvf0n72br9qpkquc1k0aue2tskj6d2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

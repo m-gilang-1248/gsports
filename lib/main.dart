@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 import 'core/config/router.dart';
 import 'core/config/theme.dart';
-import 'injection_container.dart';
-// import 'firebase_options.dart'; // Uncomment after generating options
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await dotenv.load(fileName: ".env"); // Uncomment when .env is present
+  await dotenv.load(fileName: ".env");
 
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // ); // Uncomment after generating options and importing
-
-  // Temporary Firebase init for development without options (or use CLI to generate)
-  // await Firebase.initializeApp();
-
-  configureDependencies();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const GsportsApp());
 }
