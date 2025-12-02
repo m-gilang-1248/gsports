@@ -18,6 +18,11 @@ import 'core/injection_modules/firebase_module.dart' as _i896;
 import 'features/auth/data/datasources/auth_remote_data_source.dart' as _i767;
 import 'features/auth/data/repositories/auth_repository_impl.dart' as _i111;
 import 'features/auth/domain/repositories/auth_repository.dart' as _i1015;
+import 'features/auth/domain/usecases/check_auth_status.dart' as _i818;
+import 'features/auth/domain/usecases/login_user.dart' as _i1073;
+import 'features/auth/domain/usecases/logout_user.dart' as _i657;
+import 'features/auth/domain/usecases/register_user.dart' as _i14;
+import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -40,6 +45,26 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1015.AuthRepository>(
       () => _i111.AuthRepositoryImpl(
         remoteDataSource: gh<_i767.AuthRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i818.CheckAuthStatus>(
+      () => _i818.CheckAuthStatus(gh<_i1015.AuthRepository>()),
+    );
+    gh.lazySingleton<_i1073.LoginUser>(
+      () => _i1073.LoginUser(gh<_i1015.AuthRepository>()),
+    );
+    gh.lazySingleton<_i657.LogoutUser>(
+      () => _i657.LogoutUser(gh<_i1015.AuthRepository>()),
+    );
+    gh.lazySingleton<_i14.RegisterUser>(
+      () => _i14.RegisterUser(gh<_i1015.AuthRepository>()),
+    );
+    gh.factory<_i363.AuthBloc>(
+      () => _i363.AuthBloc(
+        gh<_i818.CheckAuthStatus>(),
+        gh<_i1073.LoginUser>(),
+        gh<_i14.RegisterUser>(),
+        gh<_i657.LogoutUser>(),
       ),
     );
     return this;

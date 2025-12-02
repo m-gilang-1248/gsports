@@ -6,31 +6,34 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _onLogin() {
+  void _onRegister() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-        LoginSubmitted(
+        RegisterSubmitted(
           email: _emailController.text.trim(),
           password: _passwordController.text,
+          displayName: _nameController.text.trim(),
         ),
       );
     }
@@ -63,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Welcome Back',
+                      'Create Account',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -71,6 +74,22 @@ class _LoginPageState extends State<LoginPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _emailController,
                       decoration: const InputDecoration(
@@ -103,13 +122,16 @@ class _LoginPageState extends State<LoginPage> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
                         }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
                         return null;
                       },
                       enabled: !isLoading,
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
-                      onPressed: isLoading ? null : _onLogin,
+                      onPressed: isLoading ? null : _onRegister,
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
@@ -122,14 +144,12 @@ class _LoginPageState extends State<LoginPage> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Login'),
+                          : const Text('Sign Up'),
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: isLoading
-                          ? null
-                          : () => context.go('/register'),
-                      child: const Text('Don\'t have an account? Sign Up'),
+                      onPressed: isLoading ? null : () => context.go('/login'),
+                      child: const Text('Already have an account? Login'),
                     ),
                   ],
                 ),

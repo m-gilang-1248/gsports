@@ -4,6 +4,9 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/user_entity.dart';
 import '../repositories/auth_repository.dart';
 
+import 'package:injectable/injectable.dart';
+
+@lazySingleton
 class LoginUser extends UseCase<UserEntity, LoginUserParams> {
   final AuthRepository repository;
 
