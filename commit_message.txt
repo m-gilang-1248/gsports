@@ -1,8 +1,7 @@
-feat: Finalize Core Config (Theme, Router, Placeholder Pages)
+docs: Update README.md and GEMINI.md for Sprint 1 completion
 
-- Created placeholder pages: SplashPage, LoginPage, HomePage, BookingPage.
-- Implemented `CardThemeData`, `ElevatedButtonTheme`, `OutlinedButtonTheme`, and `InputDecorationTheme` in `lib/core/config/theme.dart` matching UI/UX spec.
-- Corrected `CardTheme` to `CardThemeData` type.
-- Configured `GoRouter` with initial routes (`/`, `/login`, `/home`, `/booking`) using the new placeholder pages.
-- Updated `MODIFICATION_IMPLEMENTATION.md` journal and checked off completed tasks.
-- Ran `dart fix`, `analyze_files`, and `dart format` with no errors.
+- Updated `gsports/README.md` with project description, tech stack, and marked "Phase 1: Foundation" as Completed.
+- Created and populated `GEMINI.md` with current project context and status.
+- Updated `MODIFICATION_IMPLEMENTATION.md` to reflect the completion of final steps.
+
+Sprint 1: Foundation setup is now officially closed.
