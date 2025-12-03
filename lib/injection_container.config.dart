@@ -23,6 +23,14 @@ import 'features/auth/domain/usecases/login_user.dart' as _i1073;
 import 'features/auth/domain/usecases/logout_user.dart' as _i657;
 import 'features/auth/domain/usecases/register_user.dart' as _i14;
 import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
+import 'features/venue/data/datasources/venue_remote_data_source.dart'
+    as _i1039;
+import 'features/venue/data/repositories/venue_repository_impl.dart' as _i346;
+import 'features/venue/domain/repositories/venue_repository.dart' as _i997;
+import 'features/venue/domain/usecases/get_venue_courts.dart' as _i606;
+import 'features/venue/domain/usecases/get_venue_detail.dart' as _i15;
+import 'features/venue/domain/usecases/get_venues.dart' as _i578;
+import 'features/venue/presentation/bloc/venue_bloc.dart' as _i730;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -36,16 +44,31 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i974.FirebaseFirestore>(
       () => firebaseModule.firebaseFirestore,
     );
+    gh.lazySingleton<_i1039.VenueRemoteDataSource>(
+      () => _i1039.VenueRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
     gh.factory<_i767.AuthRemoteDataSource>(
       () => _i767.AuthRemoteDataSourceImpl(
         firebaseAuth: gh<_i59.FirebaseAuth>(),
         firebaseFirestore: gh<_i974.FirebaseFirestore>(),
       ),
     );
+    gh.factory<_i997.VenueRepository>(
+      () => _i346.VenueRepositoryImpl(gh<_i1039.VenueRemoteDataSource>()),
+    );
     gh.factory<_i1015.AuthRepository>(
       () => _i111.AuthRepositoryImpl(
         remoteDataSource: gh<_i767.AuthRemoteDataSource>(),
       ),
+    );
+    gh.lazySingleton<_i606.GetVenueCourts>(
+      () => _i606.GetVenueCourts(gh<_i997.VenueRepository>()),
+    );
+    gh.lazySingleton<_i15.GetVenueDetail>(
+      () => _i15.GetVenueDetail(gh<_i997.VenueRepository>()),
+    );
+    gh.lazySingleton<_i578.GetVenues>(
+      () => _i578.GetVenues(gh<_i997.VenueRepository>()),
     );
     gh.lazySingleton<_i818.CheckAuthStatus>(
       () => _i818.CheckAuthStatus(gh<_i1015.AuthRepository>()),
@@ -58,6 +81,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i14.RegisterUser>(
       () => _i14.RegisterUser(gh<_i1015.AuthRepository>()),
+    );
+    gh.factory<_i730.VenueBloc>(
+      () => _i730.VenueBloc(
+        getVenues: gh<_i578.GetVenues>(),
+        getVenueDetail: gh<_i15.GetVenueDetail>(),
+        getVenueCourts: gh<_i606.GetVenueCourts>(),
+      ),
     );
     gh.factory<_i363.AuthBloc>(
       () => _i363.AuthBloc(

@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/venue/presentation/bloc/venue_bloc.dart';
 import 'injection_container.dart'; // Import the DI setup
 
 void main() async {
@@ -26,8 +27,11 @@ class GsportsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>(
-      create: (context) => GetIt.I<AuthBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(create: (context) => GetIt.I<AuthBloc>()),
+        BlocProvider<VenueBloc>(create: (context) => GetIt.I<VenueBloc>()),
+      ],
       child: MaterialApp.router(
         title: 'Gsports',
         theme: AppTheme.lightTheme,

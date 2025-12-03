@@ -1,6 +1,7 @@
 # Implementation Plan - Gsports
 
 ## Journal
+*   **Sprint 2 Completed:** Authentication and User Profile (Domain, Data, Presentation, and DI) have been fully implemented.
 *   **Phase 1 (Foundation):** Project created, dependencies added. Folder structure set up. Core config (Theme, Router, DI) implemented. Encountered `CardTheme` analysis error (type mismatch with `CardThemeData?`), temporarily commented out `cardTheme` in `AppTheme`. `build_runner` run but no injectables yet. Firebase setup for Android successfully completed, including `firebase_options.dart` generation and `main.dart` update.
 
 ## Phase 1: Foundation & Setup
@@ -28,21 +29,21 @@
     - Call `Firebase.initializeApp()` in `main.dart`.
 
 ## Phase 2: Authentication & User Profile
-- [ ] **Domain Layer (Auth):**
+- [x] **Domain Layer (Auth):**
     - Entities: `UserEntity`.
     - UseCases: `LoginUser`, `RegisterUser`, `LogoutUser`, `CheckAuthStatus`.
     - Repository Interface: `AuthRepository`.
-- [ ] **Data Layer (Auth):**
+- [x] **Data Layer (Auth):**
     - Models: `UserModel` (fromJson/toJson).
     - Datasource: `AuthRemoteDataSource` (Firebase Auth wrapper).
     - Repository Impl: `AuthRepositoryImpl`.
-- [ ] **Presentation Layer (Auth):**
+- [x] **Presentation Layer (Auth):**
     - BLoC: `AuthBloc` (Events: Started, LoginRequested, LogoutRequested).
     - UI: `LoginPage` & `RegisterPage` (Material 3 Outlined Inputs).
-- [ ] **Profile Management:**
+- [x] **Profile Management:**
     - Create `users` collection in Firestore upon registration.
     - `ProfilePage` to view/edit data.
-- [ ] **Dependency Injection:** Register Auth feature dependencies.
+- [x] **Dependency Injection:** Register Auth feature dependencies.
 
 ## Phase 3: Venue Discovery (Supply Side)
 - [ ] **Domain Layer (Venue):**
