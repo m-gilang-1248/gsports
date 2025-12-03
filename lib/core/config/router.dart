@@ -38,8 +38,9 @@ class AppRouter {
       // - And on the splash screen (after initial check), go to login.
       // - And trying to access protected pages (not login/register), go to login.
       if (!loggedIn) {
-        if (splashing)
+        if (splashing) {
           return '/login'; // After splash, if still unauthenticated
+        }
         if (!loggingIn && !registering) return '/login'; // On protected page
       }
 
