@@ -23,6 +23,14 @@ import 'features/auth/domain/usecases/login_user.dart' as _i1073;
 import 'features/auth/domain/usecases/logout_user.dart' as _i657;
 import 'features/auth/domain/usecases/register_user.dart' as _i14;
 import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
+import 'features/booking/data/datasources/booking_remote_data_source.dart'
+    as _i97;
+import 'features/booking/data/repositories/booking_repository_impl.dart'
+    as _i703;
+import 'features/booking/domain/repositories/booking_repository.dart' as _i829;
+import 'features/booking/domain/usecases/check_availability.dart' as _i549;
+import 'features/booking/domain/usecases/create_booking.dart' as _i46;
+import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
 import 'features/venue/data/datasources/venue_remote_data_source.dart'
     as _i1039;
 import 'features/venue/data/repositories/venue_repository_impl.dart' as _i346;
@@ -53,12 +61,30 @@ extension GetItInjectableX on _i174.GetIt {
         firebaseFirestore: gh<_i974.FirebaseFirestore>(),
       ),
     );
+    gh.lazySingleton<_i97.BookingRemoteDataSource>(
+      () => _i97.BookingRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
     gh.factory<_i997.VenueRepository>(
       () => _i346.VenueRepositoryImpl(gh<_i1039.VenueRemoteDataSource>()),
+    );
+    gh.factory<_i829.BookingRepository>(
+      () => _i703.BookingRepositoryImpl(gh<_i97.BookingRemoteDataSource>()),
     );
     gh.factory<_i1015.AuthRepository>(
       () => _i111.AuthRepositoryImpl(
         remoteDataSource: gh<_i767.AuthRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i549.CheckAvailability>(
+      () => _i549.CheckAvailability(gh<_i829.BookingRepository>()),
+    );
+    gh.lazySingleton<_i46.CreateBooking>(
+      () => _i46.CreateBooking(gh<_i829.BookingRepository>()),
+    );
+    gh.factory<_i393.BookingBloc>(
+      () => _i393.BookingBloc(
+        checkAvailability: gh<_i549.CheckAvailability>(),
+        createBooking: gh<_i46.CreateBooking>(),
       ),
     );
     gh.lazySingleton<_i606.GetVenueCourts>(

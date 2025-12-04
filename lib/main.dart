@@ -9,6 +9,7 @@ import 'firebase_options.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/venue/presentation/bloc/venue_bloc.dart';
 import 'injection_container.dart'; // Import the DI setup
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +19,8 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   configureDependencies(); // Call the DI setup
+
+  await initializeDateFormatting('id_ID', null);
 
   runApp(const GsportsApp());
 }

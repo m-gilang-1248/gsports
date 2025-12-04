@@ -1,6 +1,7 @@
 # Implementation Plan - Gsports
 
 ## Journal
+*   **Sprint 3 Completed:** Venue Discovery (Supply Side) has been implemented. Domain, Data, and Presentation layers are complete. `VenueSeeder` added for dummy data.
 *   **Sprint 2 Completed:** Authentication and User Profile (Domain, Data, Presentation, and DI) have been fully implemented.
 *   **Phase 1 (Foundation):** Project created, dependencies added. Folder structure set up. Core config (Theme, Router, DI) implemented. Encountered `CardTheme` analysis error (type mismatch with `CardThemeData?`), temporarily commented out `cardTheme` in `AppTheme`. `build_runner` run but no injectables yet. Firebase setup for Android successfully completed, including `firebase_options.dart` generation and `main.dart` update.
 
@@ -46,19 +47,19 @@
 - [x] **Dependency Injection:** Register Auth feature dependencies.
 
 ## Phase 3: Venue Discovery (Supply Side)
-- [ ] **Domain Layer (Venue):**
+- [x] **Domain Layer (Venue):**
     - Entities: `Venue`, `Court`.
     - UseCases: `GetVenues`, `GetVenueDetail`.
     - Repository Interface: `VenueRepository`.
-- [ ] **Data Layer (Venue):**
+- [x] **Data Layer (Venue):**
     - Models: `VenueModel`, `CourtModel`.
     - Datasource: `VenueRemoteDataSource` (Firestore).
     - Repository Impl: `VenueRepositoryImpl`.
-- [ ] **Presentation Layer (Venue):**
+- [x] **Presentation Layer (Venue):**
     - BLoC: `VenueBloc`.
     - UI: `HomePage` (Venue List with `VenueCard` & `FilterChips`).
     - UI: `VenueDetailPage` (SliverAppBar, Facilities, Court List).
-- [ ] **Seeding:** Create a temporary script or manual entry to add 1-2 dummy venues in Firestore for testing.
+- [x] **Seeding:** Create a temporary script or manual entry to add 1-2 dummy venues in Firestore for testing.
 
 ## Phase 4: Core Booking & Payment
 - [ ] **Domain Layer (Booking):**
