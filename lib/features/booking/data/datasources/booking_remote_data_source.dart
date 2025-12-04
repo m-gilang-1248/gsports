@@ -70,8 +70,10 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       return conflictingBookings
           .isEmpty; // True if no conflicts, false otherwise
     } on FirebaseException catch (e) {
+      print('FIREBASE ERROR: ${e.message} - Code: ${e.code}');
       throw ServerException(e.message ?? 'Failed to check availability');
     } catch (e) {
+      print('GENERAL ERROR: $e');
       throw ServerException(e.toString());
     }
   }

@@ -52,9 +52,18 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         );
 
         result.fold(
-          (failure) =>
-              availabilityMap[hour] = false, // Treat error as unavailable
-          (isAvailable) => availabilityMap[hour] = isAvailable,
+          (failure) {
+            print(
+              'Check Hour $hour for Court $courtId on $date: FAILED - ${failure.message}',
+            );
+            availabilityMap[hour] = false; // Treat error as unavailable
+          },
+          (isAvailable) {
+            print(
+              'Check Hour $hour for Court $courtId on $date: Available: $isAvailable',
+            );
+            availabilityMap[hour] = isAvailable;
+          },
         );
       }());
     }
