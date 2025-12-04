@@ -120,21 +120,28 @@ class _TimeSlotCard extends StatelessWidget {
       borderColor = Colors.grey[300]!;
     }
 
-    return InkWell(
-      onTap: onTap,
+    return Material(
+      color: Colors
+          .transparent, // Ensure Material is transparent to show Ink beneath
       borderRadius: BorderRadius.circular(8),
-      child: Container(
-        alignment: Alignment.center,
+      child: Ink(
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: borderColor),
         ),
-        child: Text(
-          time,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: textColor,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            alignment: Alignment.center,
+            child: Text(
+              time,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: textColor,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
           ),
         ),
       ),
