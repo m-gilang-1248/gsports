@@ -62,13 +62,13 @@
 - [x] **Seeding:** Create a temporary script or manual entry to add 1-2 dummy venues in Firestore for testing.
 
 ## Phase 4: Core Booking & Payment
-- [ ] **Domain Layer (Booking):**
+- [x] **Domain Layer (Booking):**
     - Entities: `Booking`.
     - UseCases: `CreateBooking`.
-- [ ] **Data Layer (Booking):**
+- [x] **Data Layer (Booking):**
     - Datasource: `BookingRemoteDataSource` (Firestore write + Cloud Function Trigger stub).
     - Repository Impl: `BookingRepositoryImpl`.
-- [ ] **Presentation Layer (Booking):**
+- [x] **Presentation Layer (Booking):**
     - UI: `BookingBottomSheet` or Page.
     - Logic: Date/Time Picker -> Check Availability.
 - [ ] **Midtrans Integration:**
