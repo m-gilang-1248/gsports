@@ -56,27 +56,19 @@ class BookingTimeSlotGrid extends StatelessWidget {
                 time: timeString,
                 isAvailable: isAvailable,
                 isSelected: isSelected,
-                onTap: () {
-                  if (!isAvailable) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Slot tidak tersedia (Debug Mode)'),
-                        backgroundColor: AppColors.error,
-                      ),
-                    );
-                    print('Debug: Tapped unavailable slot for hour $hour');
-                    return;
-                  }
-                  final slotTime = DateTime(
-                    selectedDate.year,
-                    selectedDate.month,
-                    selectedDate.day,
-                    hour,
-                  );
-                  context.read<BookingBloc>().add(
-                    BookingSlotSelected(slotTime),
-                  );
-                },
+                onTap: isAvailable
+                    ? () {
+                        final slotTime = DateTime(
+                          selectedDate.year,
+                          selectedDate.month,
+                          selectedDate.day,
+                          hour,
+                        );
+                        context.read<BookingBloc>().add(
+                          BookingSlotSelected(slotTime),
+                        );
+                      }
+                    : null,
               );
             },
           );
