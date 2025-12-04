@@ -74,7 +74,17 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   void _onSlotSelected(BookingSlotSelected event, Emitter<BookingState> emit) {
     if (state is BookingAvailabilityLoaded) {
       final currentState = state as BookingAvailabilityLoaded;
-      emit(currentState.copyWith(selectedStartTime: event.startTime));
+      if (currentState.selectedStartTime != null &&
+          currentState.selectedStartTime!.year == event.startTime.year &&
+          currentState.selectedStartTime!.month == event.startTime.month &&
+          currentState.selectedStartTime!.day == event.startTime.day &&
+          currentState.selectedStartTime!.hour == event.startTime.hour) {
+        // Deselect if the same slot is tapped again
+        emit(currentState.copyWith(clearSelectedStartTime: true));
+      } else {
+        // Select new slot
+        emit(currentState.copyWith(selectedStartTime: event.startTime));
+      }
     }
   }
 

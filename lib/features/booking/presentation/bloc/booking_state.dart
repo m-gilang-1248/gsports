@@ -37,12 +37,15 @@ class BookingAvailabilityLoaded extends BookingState {
     String? selectedCourtId,
     DateTime? selectedDate,
     DateTime? selectedStartTime,
+    bool clearSelectedStartTime = false,
   }) {
     return BookingAvailabilityLoaded(
       availabilityMap: availabilityMap ?? this.availabilityMap,
       selectedCourtId: selectedCourtId ?? this.selectedCourtId,
       selectedDate: selectedDate ?? this.selectedDate,
-      selectedStartTime: selectedStartTime ?? this.selectedStartTime,
+      selectedStartTime: clearSelectedStartTime
+          ? null
+          : (selectedStartTime ?? this.selectedStartTime),
     );
   }
 }
