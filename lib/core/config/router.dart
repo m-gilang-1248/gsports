@@ -7,6 +7,7 @@ import 'package:gsports/features/auth/presentation/pages/splash_page.dart';
 import 'package:gsports/features/home/presentation/pages/home_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_page.dart';
 import 'package:gsports/features/venue/presentation/pages/venue_detail_page.dart';
+import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 

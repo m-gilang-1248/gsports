@@ -44,6 +44,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             );
             // Optionally navigate to home or booking history
             context.go('/home');
+          } else if (state is BookingPaymentPageReady) {
+            context.push('/payment', extra: state.paymentUrl);
           } else if (state is BookingFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
