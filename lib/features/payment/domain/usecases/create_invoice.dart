@@ -26,10 +26,7 @@ class CreateInvoiceParams extends Equatable {
   final String orderId;
   final int amount;
 
-  const CreateInvoiceParams({
-    required this.orderId,
-    required this.amount,
-  });
+  const CreateInvoiceParams({required this.orderId, required this.amount});
 
   @override
   List<Object?> get props => [orderId, amount];

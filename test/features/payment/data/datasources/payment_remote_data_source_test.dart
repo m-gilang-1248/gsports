@@ -27,54 +27,70 @@ void main() {
     const tAmount = 100000;
     const tPaymentInfoModel = PaymentInfoModel(
       token: 'snap_token_123',
-      redirectUrl: 'https://app.sandbox.midtrans.com/snap/v2/vtweb/snap_token_123',
+      redirectUrl:
+          'https://app.sandbox.midtrans.com/snap/v2/vtweb/snap_token_123',
     );
 
-    test('should return PaymentInfoModel when the response code is 201 (Created)',
-        () async {
-      // arrange
-      when(() => mockHttpClient.post(
+    test(
+      'should return PaymentInfoModel when the response code is 201 (Created)',
+      () async {
+        // arrange
+        when(
+          () => mockHttpClient.post(
             any(),
             headers: any(named: 'headers'),
             body: any(named: 'body'),
-          )).thenAnswer((_) async => http.Response(
+          ),
+        ).thenAnswer(
+          (_) async => http.Response(
             jsonEncode({
               'token': 'snap_token_123',
-              'redirect_url': 'https://app.sandbox.midtrans.com/snap/v2/vtweb/snap_token_123'
+              'redirect_url':
+                  'https://app.sandbox.midtrans.com/snap/v2/vtweb/snap_token_123',
             }),
             201,
-          ));
+          ),
+        );
 
-      // act
-      final result = await dataSource.createTransaction(
-        orderId: tOrderId,
-        amount: tAmount,
-      );
+        // act
+        final result = await dataSource.createTransaction(
+          orderId: tOrderId,
+          amount: tAmount,
+        );
 
-      // assert
-      expect(result, equals(tPaymentInfoModel));
-      verify(() => mockHttpClient.post(
+        // assert
+        expect(result, equals(tPaymentInfoModel));
+        verify(
+          () => mockHttpClient.post(
             Uri.parse('https://app.sandbox.midtrans.com/snap/v1/transactions'),
             headers: any(named: 'headers'),
             body: any(named: 'body'),
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
 
-    test('should throw ServerException when the response code is not 201', () async {
-      // arrange
-      when(() => mockHttpClient.post(
+    test(
+      'should throw ServerException when the response code is not 201',
+      () async {
+        // arrange
+        when(
+          () => mockHttpClient.post(
             any(),
             headers: any(named: 'headers'),
             body: any(named: 'body'),
-          )).thenAnswer((_) async => http.Response('Something went wrong', 400));
+          ),
+        ).thenAnswer((_) async => http.Response('Something went wrong', 400));
 
-      // act
-      final call = dataSource.createTransaction;
+        // act
+        final call = dataSource.createTransaction;
 
-      // assert
-      expect(
+        // assert
+        expect(
           () => call(orderId: tOrderId, amount: tAmount),
-          throwsA(isA<ServerException>()));
-    });
+          throwsA(isA<ServerException>()),
+        );
+      },
+    );
   });
 }

@@ -29,40 +29,54 @@ void main() {
     );
     const PaymentInfo tPaymentInfo = tPaymentInfoModel;
 
-    test('should return PaymentInfo when the call to remote data source is successful',
-        () async {
-      // arrange
-      when(() => mockRemoteDataSource.createTransaction(
-              orderId: tOrderId, amount: tAmount))
-          .thenAnswer((_) async => tPaymentInfoModel);
+    test(
+      'should return PaymentInfo when the call to remote data source is successful',
+      () async {
+        // arrange
+        when(
+          () => mockRemoteDataSource.createTransaction(
+            orderId: tOrderId,
+            amount: tAmount,
+          ),
+        ).thenAnswer((_) async => tPaymentInfoModel);
 
-      // act
-      final result = await repository.createInvoice(
-        orderId: tOrderId,
-        amount: tAmount,
-      );
+        // act
+        final result = await repository.createInvoice(
+          orderId: tOrderId,
+          amount: tAmount,
+        );
 
-      // assert
-      expect(result, equals(const Right(tPaymentInfo)));
-      verify(() => mockRemoteDataSource.createTransaction(
-          orderId: tOrderId, amount: tAmount)).called(1);
-    });
+        // assert
+        expect(result, equals(const Right(tPaymentInfo)));
+        verify(
+          () => mockRemoteDataSource.createTransaction(
+            orderId: tOrderId,
+            amount: tAmount,
+          ),
+        ).called(1);
+      },
+    );
 
-    test('should return ServerFailure when the call to remote data source throws ServerException',
-        () async {
-      // arrange
-      when(() => mockRemoteDataSource.createTransaction(
-              orderId: tOrderId, amount: tAmount))
-          .thenThrow(ServerException('Server Error'));
+    test(
+      'should return ServerFailure when the call to remote data source throws ServerException',
+      () async {
+        // arrange
+        when(
+          () => mockRemoteDataSource.createTransaction(
+            orderId: tOrderId,
+            amount: tAmount,
+          ),
+        ).thenThrow(ServerException('Server Error'));
 
-      // act
-      final result = await repository.createInvoice(
-        orderId: tOrderId,
-        amount: tAmount,
-      );
+        // act
+        final result = await repository.createInvoice(
+          orderId: tOrderId,
+          amount: tAmount,
+        );
 
-      // assert
-      expect(result, equals(const Left(ServerFailure('Server Error'))));
-    });
+        // assert
+        expect(result, equals(const Left(ServerFailure('Server Error'))));
+      },
+    );
   });
 }

@@ -31,7 +31,9 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     // Basic Auth: base64("Key:")
     final basicAuth = base64Encode(utf8.encode('$serverKey:'));
 
-    final url = Uri.parse('https://app.sandbox.midtrans.com/snap/v1/transactions');
+    final url = Uri.parse(
+      'https://app.sandbox.midtrans.com/snap/v1/transactions',
+    );
 
     final response = await client.post(
       url,
@@ -41,20 +43,17 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
         'Authorization': 'Basic $basicAuth',
       },
       body: jsonEncode({
-        'transaction_details': {
-          'order_id': orderId,
-          'gross_amount': amount,
-        },
-        'credit_card': {
-          'secure': true,
-        },
+        'transaction_details': {'order_id': orderId, 'gross_amount': amount},
+        'credit_card': {'secure': true},
       }),
     );
 
     if (response.statusCode == 201) {
       return PaymentInfoModel.fromJson(jsonDecode(response.body));
     } else {
-      throw ServerException('Failed to create Midtrans transaction: ${response.statusCode} ${response.body}');
+      throw ServerException(
+        'Failed to create Midtrans transaction: ${response.statusCode} ${response.body}',
+      );
     }
   }
 }

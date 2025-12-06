@@ -34,6 +34,13 @@ class AppRouter {
         path: '/booking',
         builder: (context, state) => const BookingPage(),
       ),
+      GoRoute(
+        path: '/payment',
+        builder: (context, state) {
+          final paymentUrl = state.extra as String;
+          return PaymentPage(paymentUrl: paymentUrl);
+        },
+      ),
     ],
   );
 }
