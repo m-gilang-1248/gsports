@@ -4,6 +4,7 @@
 *   **Sprint 3 Completed:** Venue Discovery (Supply Side) has been implemented. Domain, Data, and Presentation layers are complete. `VenueSeeder` added for dummy data.
 *   **Sprint 2 Completed:** Authentication and User Profile (Domain, Data, Presentation, and DI) have been fully implemented.
 *   **Phase 1 (Foundation):** Project created, dependencies added. Folder structure set up. Core config (Theme, Router, DI) implemented. Encountered `CardTheme` analysis error (type mismatch with `CardThemeData?`), temporarily commented out `cardTheme` in `AppTheme`. `build_runner` run but no injectables yet. Firebase setup for Android successfully completed, including `firebase_options.dart` generation and `main.dart` update.
+*   **Sprint 4 Completed:** Midtrans integration with Re-query logic & Zombie Booking prevention is implemented.
 
 ## Phase 1: Foundation & Setup
 - [x] Create Flutter project `gsports` using `create_project`.
@@ -71,10 +72,10 @@
 - [x] **Presentation Layer (Booking):**
     - UI: `BookingBottomSheet` or Page.
     - Logic: Date/Time Picker -> Check Availability.
-- [ ] **Midtrans Integration:**
+- [x] **Midtrans Integration:**
     - [x] Create `PaymentService` (Backend Logic: Domain & Data layers for Snap Token).
-    - [ ] UI: `WebView` wrapper to display Midtrans Snap.
-    - [ ] Handle Callback/Return URL.
+    - [x] UI: `WebView` wrapper to display Midtrans Snap.
+    - [x] Handle Callback/Return URL.
 
 ## Phase 5: Unique Features
 - [ ] **Split Bill:**
