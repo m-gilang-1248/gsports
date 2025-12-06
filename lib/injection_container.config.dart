@@ -32,6 +32,8 @@ import 'features/booking/data/repositories/booking_repository_impl.dart'
 import 'features/booking/domain/repositories/booking_repository.dart' as _i829;
 import 'features/booking/domain/usecases/check_availability.dart' as _i549;
 import 'features/booking/domain/usecases/create_booking.dart' as _i46;
+import 'features/booking/domain/usecases/cancel_booking.dart' as _i99;
+import 'features/booking/domain/usecases/update_booking_status.dart' as _i100;
 import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
 import 'features/payment/data/datasources/payment_remote_data_source.dart'
     as _i692;
@@ -93,6 +95,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i46.CreateBooking>(
       () => _i46.CreateBooking(gh<_i829.BookingRepository>()),
+    );
+    gh.lazySingleton<_i99.CancelBooking>(
+      () => _i99.CancelBooking(gh<_i829.BookingRepository>()),
+    );
+    gh.lazySingleton<_i100.UpdateBookingStatus>(
+      () => _i100.UpdateBookingStatus(gh<_i829.BookingRepository>()),
     );
     gh.factory<_i393.BookingBloc>(
       () => _i393.BookingBloc(

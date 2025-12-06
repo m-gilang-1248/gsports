@@ -11,6 +11,8 @@ abstract class BookingRemoteDataSource {
     required DateTime startTime,
     required DateTime endTime,
   });
+  Future<void> cancelBooking(String bookingId);
+  Future<void> updateBookingStatus(String bookingId, String status);
 }
 
 @LazySingleton(as: BookingRemoteDataSource)
@@ -28,6 +30,32 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       return docRef.id;
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Failed to create booking');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> cancelBooking(String bookingId) async {
+    try {
+      await firestore.collection('bookings').doc(bookingId).update({
+        'status': 'cancelled',
+      });
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Failed to cancel booking');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> updateBookingStatus(String bookingId, String status) async {
+    try {
+      await firestore.collection('bookings').doc(bookingId).update({
+        'status': status,
+      });
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Failed to update booking status');
     } catch (e) {
       throw ServerException(e.toString());
     }

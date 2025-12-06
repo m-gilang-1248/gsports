@@ -12,4 +12,9 @@ abstract class BookingRepository {
     required DateTime startTime,
     required DateTime endTime,
   });
+  Future<Either<Failure, void>> cancelBooking(String bookingId);
+  Future<Either<Failure, void>> updateBookingStatus(
+    String bookingId,
+    String status,
+  );
 }
