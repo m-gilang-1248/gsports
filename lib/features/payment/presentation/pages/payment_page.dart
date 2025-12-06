@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -26,11 +27,32 @@ class _PaymentPageState extends State<PaymentPage> {
           },
           onPageStarted: (String url) {},
           onPageFinished: (String url) {},
-          onWebResourceError: (WebResourceError error) {},
+          onWebResourceError: (WebResourceError error) {
+            // Handle web resource errors.
+            // Example: Navigator.pop(context, 'failed');
+          },
           onNavigationRequest: (NavigationRequest request) {
-            // You might want to handle specific URLs here,
-            // e.g., if Midtrans redirects to a success/failure page.
-            // For now, allow all.
+            final uri = Uri.parse(request.url);
+
+            // Intercept specific URLs to determine payment status
+            if (uri.queryParameters.containsKey('transaction_status') &&
+                uri.queryParameters['transaction_status'] == 'settlement') {
+              context.pop('success');
+              return NavigationDecision.prevent;
+            } else if (uri.path.contains('/finish')) {
+              context.pop('success');
+              return NavigationDecision.prevent;
+            } else if (uri.queryParameters.containsKey('transaction_status') &&
+                (uri.queryParameters['transaction_status'] == 'cancel' ||
+                    uri.queryParameters['transaction_status'] == 'deny' ||
+                    uri.queryParameters['transaction_status'] == 'expire')) {
+              context.pop('failed');
+              return NavigationDecision.prevent;
+            } else if (uri.path.contains('/error') ||
+                uri.path.contains('/unfinish')) {
+              context.pop('failed');
+              return NavigationDecision.prevent;
+            }
             return NavigationDecision.navigate;
           },
         ),
@@ -40,9 +62,23 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Payment')),
-      body: WebViewWidget(controller: controller),
+    return PopScope(
+      canPop: false, // Prevent default back behavior
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        context.pop('cancelled'); // Return 'cancelled' on back button press
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Payment'),
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () =>
+                context.pop('cancelled'), // Return 'cancelled' on close
+          ),
+        ),
+        body: WebViewWidget(controller: controller),
+      ),
     );
   }
 }
