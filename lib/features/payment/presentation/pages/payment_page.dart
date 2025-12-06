@@ -25,31 +25,50 @@ class _PaymentPageState extends State<PaymentPage> {
           onProgress: (int progress) {
             // Update loading bar.
           },
-          onPageStarted: (String url) {},
+          onPageStarted: (String url) {
+            print('DEBUG WEBVIEW STARTED: $url');
+          },
           onPageFinished: (String url) {},
           onWebResourceError: (WebResourceError error) {
             // Handle web resource errors.
             // Example: Navigator.pop(context, 'failed');
           },
           onNavigationRequest: (NavigationRequest request) {
+            print('DEBUG WEBVIEW REQUEST: ${request.url}');
             final uri = Uri.parse(request.url);
 
-            // Intercept specific URLs to determine payment status
-            if (uri.queryParameters.containsKey('transaction_status') &&
-                uri.queryParameters['transaction_status'] == 'settlement') {
+            // Midtrans success indicators
+            final isSettlement =
+                uri.queryParameters['transaction_status'] == 'settlement';
+            final isCapture =
+                uri.queryParameters['transaction_status'] == 'capture';
+            final isStatusCode200 = uri.queryParameters['status_code'] == '200';
+            final isStatusCode201 = uri.queryParameters['status_code'] == '201';
+            final isFinishPath = uri.path.contains('/finish');
+
+            if (isSettlement ||
+                isCapture ||
+                isStatusCode200 ||
+                isStatusCode201 ||
+                isFinishPath) {
               context.pop('success');
               return NavigationDecision.prevent;
-            } else if (uri.path.contains('/finish')) {
-              context.pop('success');
-              return NavigationDecision.prevent;
-            } else if (uri.queryParameters.containsKey('transaction_status') &&
-                (uri.queryParameters['transaction_status'] == 'cancel' ||
-                    uri.queryParameters['transaction_status'] == 'deny' ||
-                    uri.queryParameters['transaction_status'] == 'expire')) {
-              context.pop('failed');
-              return NavigationDecision.prevent;
-            } else if (uri.path.contains('/error') ||
-                uri.path.contains('/unfinish')) {
+            }
+
+            // Midtrans failure/cancellation indicators
+            final isCancel =
+                uri.queryParameters['transaction_status'] == 'cancel';
+            final isDeny = uri.queryParameters['transaction_status'] == 'deny';
+            final isExpire =
+                uri.queryParameters['transaction_status'] == 'expire';
+            final isErrorPath = uri.path.contains('/error');
+            final isUnfinishPath = uri.path.contains('/unfinish');
+
+            if (isCancel ||
+                isDeny ||
+                isExpire ||
+                isErrorPath ||
+                isUnfinishPath) {
               context.pop('failed');
               return NavigationDecision.prevent;
             }
