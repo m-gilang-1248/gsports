@@ -65,6 +65,18 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 backgroundColor: AppColors.warning,
               ),
             );
+          } else if (state is BookingWaitingForPayment) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Booking ${state.bookingId} menunggu pembayaran. Silakan selesaikan transaksi Anda.',
+                ),
+                backgroundColor:
+                    AppColors.info, // You might need to define AppColors.info
+              ),
+            );
+            // Optionally navigate to a "My Bookings" page or keep on current page
+            // context.go('/my-bookings');
           } else if (state is BookingFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

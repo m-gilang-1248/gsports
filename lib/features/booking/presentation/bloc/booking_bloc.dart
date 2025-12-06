@@ -7,6 +7,7 @@ import 'package:gsports/features/booking/domain/usecases/create_booking.dart';
 import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
 import 'package:gsports/features/booking/domain/usecases/update_booking_status.dart';
 import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
+import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
 
 part 'booking_event.dart';
 part 'booking_state.dart';
@@ -18,6 +19,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   final CreateInvoice createInvoice;
   final CancelBooking cancelBooking;
   final UpdateBookingStatus updateBookingStatus;
+  final GetTransactionStatus getTransactionStatus;
 
   BookingBloc({
     required this.checkAvailability,
@@ -25,6 +27,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     required this.createInvoice,
     required this.cancelBooking,
     required this.updateBookingStatus,
+    required this.getTransactionStatus,
   }) : super(BookingInitial()) {
     on<BookingAvailabilityChecked>(_onAvailabilityChecked);
     on<BookingSlotSelected>(_onSlotSelected);
@@ -157,11 +160,42 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         (_) => emit(BookingPaidSuccess(event.bookingId)),
       );
     } else {
-      // Payment failed or cancelled, cancel the booking
-      final result = await cancelBooking(event.bookingId);
-      result.fold(
-        (failure) => emit(BookingFailure(failure.message)),
-        (_) => emit(BookingCancelledState(event.bookingId)),
+      // Payment failed or cancelled from WebView, re-query Midtrans API
+      final statusResult = await getTransactionStatus(event.bookingId);
+      await statusResult.fold(
+        (failure) async => emit(BookingFailure(failure.message)),
+        (midtransStatus) async {
+          if (midtransStatus == 'settlement' || midtransStatus == 'capture') {
+            final updateResult = await updateBookingStatus(
+              UpdateBookingStatusParams(
+                bookingId: event.bookingId,
+                status: 'paid',
+              ),
+            );
+            updateResult.fold(
+              (failure) => emit(BookingFailure(failure.message)),
+              (_) => emit(BookingPaidSuccess(event.bookingId)),
+            );
+          } else if (midtransStatus == 'pending') {
+            // Keep booking in its current state (likely 'pending') but notify user
+            emit(BookingWaitingForPayment(event.bookingId));
+          } else if (midtransStatus == 'expire' ||
+              midtransStatus == 'cancel' ||
+              midtransStatus == 'deny') {
+            final cancelResult = await cancelBooking(event.bookingId);
+            cancelResult.fold(
+              (failure) => emit(BookingFailure(failure.message)),
+              (_) => emit(BookingCancelledState(event.bookingId)),
+            );
+          } else {
+            // Unknown status, treat as cancelled for now
+            final cancelResult = await cancelBooking(event.bookingId);
+            cancelResult.fold(
+              (failure) => emit(BookingFailure(failure.message)),
+              (_) => emit(BookingCancelledState(event.bookingId)),
+            );
+          }
+        },
       );
     }
   }

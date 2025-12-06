@@ -95,3 +95,12 @@ class BookingCancelledState extends BookingState {
   @override
   List<Object> get props => [bookingId];
 }
+
+class BookingWaitingForPayment extends BookingState {
+  final String bookingId;
+
+  const BookingWaitingForPayment(this.bookingId);
+
+  @override
+  List<Object> get props => [bookingId];
+}
