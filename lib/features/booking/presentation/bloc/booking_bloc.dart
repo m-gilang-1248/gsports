@@ -177,8 +177,12 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
               (_) => emit(BookingPaidSuccess(event.bookingId)),
             );
           } else if (midtransStatus == 'pending') {
-            // Keep booking in its current state (likely 'pending') but notify user
-            emit(BookingWaitingForPayment(event.bookingId));
+            // MVP Choice: Treat pending as cancelled to free up the slot immediately.
+            final cancelResult = await cancelBooking(event.bookingId);
+            cancelResult.fold(
+              (failure) => emit(BookingFailure(failure.message)),
+              (_) => emit(BookingCancelledState(event.bookingId)),
+            );
           } else if (midtransStatus == 'expire' ||
               midtransStatus == 'cancel' ||
               midtransStatus == 'deny') {
