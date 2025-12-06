@@ -72,9 +72,9 @@
     - UI: `BookingBottomSheet` or Page.
     - Logic: Date/Time Picker -> Check Availability.
 - [ ] **Midtrans Integration:**
-    - Create `PaymentService` (HTTP call to get Snap Token - Mock/Sandbox).
-    - UI: `WebView` wrapper to display Midtrans Snap.
-    - Handle Callback/Return URL.
+    - [x] Create `PaymentService` (Backend Logic: Domain & Data layers for Snap Token).
+    - [ ] UI: `WebView` wrapper to display Midtrans Snap.
+    - [ ] Handle Callback/Return URL.
 
 ## Phase 5: Unique Features
 - [ ] **Split Bill:**

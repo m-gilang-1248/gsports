@@ -12,9 +12,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
 import 'package:firebase_auth/firebase_auth.dart' as _i59;
 import 'package:get_it/get_it.dart' as _i174;
+import 'package:http/http.dart' as _i519;
 import 'package:injectable/injectable.dart' as _i526;
 
 import 'core/injection_modules/firebase_module.dart' as _i896;
+import 'core/injection_modules/network_module.dart' as _i559;
 import 'features/auth/data/datasources/auth_remote_data_source.dart' as _i767;
 import 'features/auth/data/repositories/auth_repository_impl.dart' as _i111;
 import 'features/auth/domain/repositories/auth_repository.dart' as _i1015;
@@ -31,6 +33,12 @@ import 'features/booking/domain/repositories/booking_repository.dart' as _i829;
 import 'features/booking/domain/usecases/check_availability.dart' as _i549;
 import 'features/booking/domain/usecases/create_booking.dart' as _i46;
 import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
+import 'features/payment/data/datasources/payment_remote_data_source.dart'
+    as _i692;
+import 'features/payment/data/repositories/payment_repository_impl.dart'
+    as _i210;
+import 'features/payment/domain/repositories/payment_repository.dart' as _i376;
+import 'features/payment/domain/usecases/create_invoice.dart' as _i206;
 import 'features/venue/data/datasources/venue_remote_data_source.dart'
     as _i1039;
 import 'features/venue/data/repositories/venue_repository_impl.dart' as _i346;
@@ -48,10 +56,12 @@ extension GetItInjectableX on _i174.GetIt {
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final firebaseModule = _$FirebaseModule();
+    final networkModule = _$NetworkModule();
     gh.lazySingleton<_i59.FirebaseAuth>(() => firebaseModule.firebaseAuth);
     gh.lazySingleton<_i974.FirebaseFirestore>(
       () => firebaseModule.firebaseFirestore,
     );
+    gh.lazySingleton<_i519.Client>(() => networkModule.httpClient);
     gh.lazySingleton<_i1039.VenueRemoteDataSource>(
       () => _i1039.VenueRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
     );
@@ -69,6 +79,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i829.BookingRepository>(
       () => _i703.BookingRepositoryImpl(gh<_i97.BookingRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i692.PaymentRemoteDataSource>(
+      () => _i692.PaymentRemoteDataSourceImpl(gh<_i519.Client>()),
     );
     gh.factory<_i1015.AuthRepository>(
       () => _i111.AuthRepositoryImpl(
@@ -115,6 +128,9 @@ extension GetItInjectableX on _i174.GetIt {
         getVenueCourts: gh<_i606.GetVenueCourts>(),
       ),
     );
+    gh.lazySingleton<_i376.PaymentRepository>(
+      () => _i210.PaymentRepositoryImpl(gh<_i692.PaymentRemoteDataSource>()),
+    );
     gh.factory<_i363.AuthBloc>(
       () => _i363.AuthBloc(
         gh<_i818.CheckAuthStatus>(),
@@ -123,8 +139,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i657.LogoutUser>(),
       ),
     );
+    gh.lazySingleton<_i206.CreateInvoice>(
+      () => _i206.CreateInvoice(gh<_i376.PaymentRepository>()),
+    );
     return this;
   }
 }
 
 class _$FirebaseModule extends _i896.FirebaseModule {}
+
+class _$NetworkModule extends _i559.NetworkModule {}
