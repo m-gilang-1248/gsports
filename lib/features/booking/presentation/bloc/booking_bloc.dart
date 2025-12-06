@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/check_availability.dart';
 import 'package:gsports/features/booking/domain/usecases/create_booking.dart';
+import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
 
 part 'booking_event.dart';
 part 'booking_state.dart';
@@ -12,9 +13,13 @@ part 'booking_state.dart';
 class BookingBloc extends Bloc<BookingEvent, BookingState> {
   final CheckAvailability checkAvailability;
   final CreateBooking createBooking;
+  final CreateInvoice createInvoice;
 
-  BookingBloc({required this.checkAvailability, required this.createBooking})
-    : super(BookingInitial()) {
+  BookingBloc({
+    required this.checkAvailability,
+    required this.createBooking,
+    required this.createInvoice,
+  }) : super(BookingInitial()) {
     on<BookingAvailabilityChecked>(_onAvailabilityChecked);
     on<BookingSlotSelected>(_onSlotSelected);
     on<BookingCreated>(_onCreated);
@@ -102,12 +107,28 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     Emitter<BookingState> emit,
   ) async {
     emit(BookingLoading());
-    final result = await createBooking(
+    final bookingResult = await createBooking(
       CreateBookingParams(booking: event.booking),
     );
-    result.fold(
-      (failure) => emit(BookingFailure(failure.message)),
-      (bookingId) => emit(BookingSuccess(bookingId)),
+    await bookingResult.fold(
+      (failure) async => emit(BookingFailure(failure.message)),
+      (bookingId) async {
+        // Assuming bookingId is also the orderId for Midtrans
+        // And event.booking.totalPrice is the amount
+        final invoiceResult = await createInvoice(
+          CreateInvoiceParams(
+            orderId: bookingId,
+            amount:
+                event.booking.totalPrice, // Assuming totalPrice is in booking
+          ),
+        );
+
+        invoiceResult.fold(
+          (failure) => emit(BookingFailure(failure.message)),
+          (paymentInfo) =>
+              emit(BookingPaymentPageReady(paymentInfo.redirectUrl)),
+        );
+      },
     );
   }
 }

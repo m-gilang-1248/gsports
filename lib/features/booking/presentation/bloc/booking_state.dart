@@ -67,3 +67,12 @@ class BookingFailure extends BookingState {
   @override
   List<Object> get props => [message];
 }
+
+class BookingPaymentPageReady extends BookingState {
+  final String paymentUrl;
+
+  const BookingPaymentPageReady(this.paymentUrl);
+
+  @override
+  List<Object> get props => [paymentUrl];
+}

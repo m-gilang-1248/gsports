@@ -98,6 +98,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i393.BookingBloc(
         checkAvailability: gh<_i549.CheckAvailability>(),
         createBooking: gh<_i46.CreateBooking>(),
+        createInvoice: gh<_i206.CreateInvoice>(),
       ),
     );
     gh.lazySingleton<_i606.GetVenueCourts>(
