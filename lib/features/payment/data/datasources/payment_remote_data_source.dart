@@ -10,6 +10,8 @@ abstract class PaymentRemoteDataSource {
     required String orderId,
     required int amount,
   });
+
+  Future<String> getTransactionStatus(String orderId);
 }
 
 @LazySingleton(as: PaymentRemoteDataSource)
@@ -53,6 +55,40 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     } else {
       throw ServerException(
         'Failed to create Midtrans transaction: ${response.statusCode} ${response.body}',
+      );
+    }
+  }
+
+  @override
+  Future<String> getTransactionStatus(String orderId) async {
+    final serverKey = dotenv.env['MIDTRANS_SERVER_KEY'];
+    if (serverKey == null) {
+      throw ServerException('MIDTRANS_SERVER_KEY not found');
+    }
+
+    final basicAuth = base64Encode(utf8.encode('$serverKey:'));
+
+    final url = Uri.parse(
+      'https://api.sandbox.midtrans.com/v2/$orderId/status',
+    );
+
+    final response = await client.get(
+      url,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic $basicAuth',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      return jsonResponse['transaction_status'] as String;
+    } else if (response.statusCode == 404) {
+      throw ServerException('Transaction not found for orderId: $orderId');
+    } else {
+      throw ServerException(
+        'Failed to get transaction status: ${response.statusCode} ${response.body}',
       );
     }
   }

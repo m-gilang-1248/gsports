@@ -7,4 +7,6 @@ abstract class PaymentRepository {
     required String orderId,
     required int amount,
   });
+
+  Future<Either<Failure, String>> getTransactionStatus(String orderId);
 }

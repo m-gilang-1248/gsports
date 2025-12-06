@@ -30,4 +30,16 @@ class PaymentRepositoryImpl implements PaymentRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, String>> getTransactionStatus(String orderId) async {
+    try {
+      final result = await remoteDataSource.getTransactionStatus(orderId);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

@@ -41,6 +41,7 @@ import 'features/payment/data/repositories/payment_repository_impl.dart'
     as _i210;
 import 'features/payment/domain/repositories/payment_repository.dart' as _i376;
 import 'features/payment/domain/usecases/create_invoice.dart' as _i206;
+import 'features/payment/domain/usecases/get_transaction_status.dart' as _i207;
 import 'features/venue/data/datasources/venue_remote_data_source.dart'
     as _i1039;
 import 'features/venue/data/repositories/venue_repository_impl.dart' as _i346;
@@ -152,6 +153,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i206.CreateInvoice>(
       () => _i206.CreateInvoice(gh<_i376.PaymentRepository>()),
+    );
+    gh.lazySingleton<_i207.GetTransactionStatus>(
+      () => _i207.GetTransactionStatus(gh<_i376.PaymentRepository>()),
     );
     return this;
   }
