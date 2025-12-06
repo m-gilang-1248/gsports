@@ -45,7 +45,26 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             // Optionally navigate to home or booking history
             context.go('/home');
           } else if (state is BookingPaymentPageReady) {
-            context.push('/payment', extra: state.paymentUrl);
+            _handlePaymentNavigation(context, state);
+          } else if (state is BookingPaidSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Pembayaran untuk booking ${state.bookingId} berhasil!',
+                ),
+                backgroundColor: AppColors.success,
+              ),
+            );
+            context.go('/home'); // Navigate to home or booking history
+          } else if (state is BookingCancelledState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Booking ${state.bookingId} dibatalkan karena pembayaran tidak selesai.',
+                ),
+                backgroundColor: AppColors.warning,
+              ),
+            );
           } else if (state is BookingFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -399,6 +418,24 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _handlePaymentNavigation(
+    BuildContext context,
+    BookingPaymentPageReady state,
+  ) async {
+    final result = await context.push<String>(
+      '/payment',
+      extra: state.paymentUrl,
+    );
+
+    // Dispatch a new event to handle the payment result
+    context.read<BookingBloc>().add(
+      BookingPaymentCompleted(
+        bookingId: state.bookingId,
+        status: result ?? 'cancelled', // Default to cancelled if result is null
+      ),
     );
   }
 }

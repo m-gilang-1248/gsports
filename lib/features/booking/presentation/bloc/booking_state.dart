@@ -70,9 +70,28 @@ class BookingFailure extends BookingState {
 
 class BookingPaymentPageReady extends BookingState {
   final String paymentUrl;
+  final String bookingId;
 
-  const BookingPaymentPageReady(this.paymentUrl);
+  const BookingPaymentPageReady(this.paymentUrl, this.bookingId);
 
   @override
-  List<Object> get props => [paymentUrl];
+  List<Object> get props => [paymentUrl, bookingId];
+}
+
+class BookingPaidSuccess extends BookingState {
+  final String bookingId;
+
+  const BookingPaidSuccess(this.bookingId);
+
+  @override
+  List<Object> get props => [bookingId];
+}
+
+class BookingCancelledState extends BookingState {
+  final String bookingId;
+
+  const BookingCancelledState(this.bookingId);
+
+  @override
+  List<Object> get props => [bookingId];
 }

@@ -107,6 +107,8 @@ extension GetItInjectableX on _i174.GetIt {
         checkAvailability: gh<_i549.CheckAvailability>(),
         createBooking: gh<_i46.CreateBooking>(),
         createInvoice: gh<_i206.CreateInvoice>(),
+        cancelBooking: gh<_i99.CancelBooking>(),
+        updateBookingStatus: gh<_i100.UpdateBookingStatus>(),
       ),
     );
     gh.lazySingleton<_i606.GetVenueCourts>(

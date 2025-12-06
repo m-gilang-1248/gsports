@@ -4,6 +4,8 @@ import 'package:injectable/injectable.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/check_availability.dart';
 import 'package:gsports/features/booking/domain/usecases/create_booking.dart';
+import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
+import 'package:gsports/features/booking/domain/usecases/update_booking_status.dart';
 import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
 
 part 'booking_event.dart';
@@ -14,15 +16,20 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   final CheckAvailability checkAvailability;
   final CreateBooking createBooking;
   final CreateInvoice createInvoice;
+  final CancelBooking cancelBooking;
+  final UpdateBookingStatus updateBookingStatus;
 
   BookingBloc({
     required this.checkAvailability,
     required this.createBooking,
     required this.createInvoice,
+    required this.cancelBooking,
+    required this.updateBookingStatus,
   }) : super(BookingInitial()) {
     on<BookingAvailabilityChecked>(_onAvailabilityChecked);
     on<BookingSlotSelected>(_onSlotSelected);
     on<BookingCreated>(_onCreated);
+    on<BookingPaymentCompleted>(_onPaymentCompleted);
   }
 
   Future<void> _onAvailabilityChecked(
@@ -125,10 +132,37 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
 
         invoiceResult.fold(
           (failure) => emit(BookingFailure(failure.message)),
-          (paymentInfo) =>
-              emit(BookingPaymentPageReady(paymentInfo.redirectUrl)),
+          (paymentInfo) => emit(
+            BookingPaymentPageReady(
+              paymentInfo.redirectUrl,
+              bookingId, // Pass bookingId here
+            ),
+          ),
         );
       },
     );
+  }
+
+  Future<void> _onPaymentCompleted(
+    BookingPaymentCompleted event,
+    Emitter<BookingState> emit,
+  ) async {
+    emit(BookingLoading());
+    if (event.status == 'success') {
+      final result = await updateBookingStatus(
+        UpdateBookingStatusParams(bookingId: event.bookingId, status: 'paid'),
+      );
+      result.fold(
+        (failure) => emit(BookingFailure(failure.message)),
+        (_) => emit(BookingPaidSuccess(event.bookingId)),
+      );
+    } else {
+      // Payment failed or cancelled, cancel the booking
+      final result = await cancelBooking(event.bookingId);
+      result.fold(
+        (failure) => emit(BookingFailure(failure.message)),
+        (_) => emit(BookingCancelledState(event.bookingId)),
+      );
+    }
   }
 }

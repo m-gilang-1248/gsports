@@ -34,3 +34,16 @@ class BookingCreated extends BookingEvent {
   @override
   List<Object> get props => [booking];
 }
+
+class BookingPaymentCompleted extends BookingEvent {
+  final String bookingId;
+  final String status; // 'success', 'failed', 'cancelled'
+
+  const BookingPaymentCompleted({
+    required this.bookingId,
+    required this.status,
+  });
+
+  @override
+  List<Object> get props => [bookingId, status];
+}
