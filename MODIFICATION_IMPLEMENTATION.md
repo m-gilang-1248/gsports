@@ -3,6 +3,7 @@
 ## Journal
 - **Phase 1 Start:** Planning to implement `MainPage`, refactor routing, and move `VenueBloc`. User approved design with notes: Use `VenueFetchListRequested` and place `ProfilePage` in `auth` feature.
 - **Phase 1 Completed:** Implemented `MainPage` with `BottomNavigationBar` and `IndexedStack`. Moved `VenueBloc` provider to `MainPage` and removed it from `main.dart`. Removed redundant fetch event from `HomePage`. Created placeholder pages for Bookings and Profile. Added widget tests for `MainPage`.
+- **Phase 2 Completed:** Updated `README.md` and `GEMINI.md` to reflect the new navigation structure and project status.
 
 ## Phase 1: Setup & Main Page Implementation
 - [x] Run all tests to ensure the project is in a good state.
@@ -25,10 +26,10 @@
 - [x] Run tests.
 - [x] Run `dart_format`.
 - [x] Verify changes with `git diff`.
-- [ ] Commit changes: `feat: implement main page navigation shell and move venue bloc`.
-- [ ] Hot Reload.
+- [x] Commit changes: `feat: implement main page navigation shell and move venue bloc`.
+- [x] Hot Reload.
 
 ## Phase 2: Finalization
-- [ ] Update `README.md` (if navigation instructions change).
-- [ ] Update `GEMINI.md` context.
-- [ ] User Review.
+- [x] Update `README.md` (if navigation instructions change).
+- [x] Update `GEMINI.md` context.
+- [x] User Review.
