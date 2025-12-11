@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/venue/presentation/bloc/venue_bloc.dart';
 import 'injection_container.dart'; // Import the DI setup
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -32,6 +33,9 @@ class GsportsApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(create: (context) => GetIt.I<AuthBloc>()),
+        BlocProvider<VenueBloc>(
+          create: (context) => GetIt.I<VenueBloc>()..add(VenueFetchListRequested()),
+        ),
       ],
       child: MaterialApp.router(
         title: 'Gsports',

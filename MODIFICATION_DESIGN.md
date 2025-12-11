@@ -1,102 +1,65 @@
-# Modification Design: Profile & Logout (Iteration 4)
+# Modification Design: Fix Venue Provider Scope & History Interactions
 
 ## 1. Overview
-This iteration focuses on implementing the functionality of the User Profile page and the Logout mechanism. We will leverage the existing `AuthBloc` to display user information and handle the logout process, adhering to the Clean Architecture principles.
+This modification addresses a critical bug where `VenueDetailPage` throws a `ProviderNotFoundException` because `VenueBloc` was provided at the `MainPage` level, which is not in the ancestor chain of `VenueDetailPage` (pushed via `GoRouter` outside the shell). We will hoist the `VenueBloc` provider to `main.dart`. Additionally, we will add interaction feedback to the `BookingHistoryCard`.
 
 ## 2. Problem Analysis
-*   **Goal:** Make the `ProfilePage` functional by displaying user details and enabling logout.
-*   **Current State:** `ProfilePage` is a placeholder. `AuthBloc` exists and manages authentication state.
-*   **Data Source:** User data should be sourced from `AuthBloc` state (`AuthAuthenticated`), not directly from `FirebaseAuth` SDK, to decouple the UI from the data source.
-*   **Navigation:** `GoRouter` redirect is disabled. Navigation upon logout must be handled explicitly via `BlocListener`.
+*   **Bug:** `VenueDetailPage` cannot find `VenueBloc`.
+*   **Cause:** `VenueBloc` is provided in `MainPage`. `VenueDetailPage` is a sibling route to `MainPage` (or pushed on top of root navigator), not a child of `MainPage`.
+*   **Solution:** Provide `VenueBloc` at the top level (`main.dart`), similar to `AuthBloc`.
 
 ## 3. Solution Design
 
-### A. Presentation Layer (UI)
-*   **Page:** `ProfilePage` (`lib/features/auth/presentation/pages/profile_page.dart`).
-*   **State Management:**
-    *   `BlocBuilder<AuthBloc, AuthState>`: To rebuild the UI when user data is available (`AuthAuthenticated`).
-    *   `BlocListener<AuthBloc, AuthState>`: To listen for `AuthUnauthenticated` state and navigate to `/login`.
-*   **Components:**
-    *   **Header:**
-        *   `CircleAvatar`: Displays user initial (e.g., "J" for John Doe) if photo URL is missing.
-        *   `Text`: User Name (`displayName`) and Email (`email`).
-        *   `Chip`: "Free Member" (Hardcoded for MVP).
-    *   **Menu (Optional for this specific task but good for structure):**
-        *   ListTiles for future features (e.g., "Edit Profile").
-    *   **Logout Button:**
-        *   Red text/icon.
-        *   Triggers `LogoutRequested` event.
+### A. Provider Refactoring
+*   **`lib/main.dart`:**
+    *   Add `BlocProvider<VenueBloc>` to the `MultiBlocProvider`.
+    *   Ensure it initializes with `VenueFetchListRequested`.
+*   **`lib/core/presentation/pages/main_page.dart`:**
+    *   Remove `BlocProvider<VenueBloc>`.
+    *   `MainPage` will now consume `VenueBloc` provided by `main.dart`.
 
-### B. Logic Flow
-1.  **Load:** `ProfilePage` is displayed. `AuthBloc` should already be in `AuthAuthenticated` state (since we are in the shell).
-2.  **Display:** UI extracts `UserEntity` from `AuthAuthenticated` state.
-3.  **Logout:**
-    *   User taps "Logout".
-    *   UI dispatches `LogoutRequested`.
-    *   `AuthBloc` calls `LogoutUser` use case.
-    *   `AuthBloc` emits `AuthUnauthenticated`.
-    *   `BlocListener` detects state change -> `context.go('/login')`.
+### B. Booking History UI Updates
+*   **`BookingHistoryCard` (`lib/features/booking/presentation/pages/booking_history_page.dart`):**
+    *   Wrap `Card` with `InkWell` or add `onTap`.
+    *   Show `SnackBar` with message "Fitur Detail/Split Bill segera hadir".
 
-## 4. Detailed Component Design
+## 4. Implementation Details
 
-### ProfilePage Structure
+### `main.dart`
 ```dart
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+MultiBlocProvider(
+  providers: [
+    BlocProvider<AuthBloc>(create: (context) => GetIt.I<AuthBloc>()),
+    BlocProvider<VenueBloc>(create: (context) => GetIt.I<VenueBloc>()..add(VenueFetchListRequested())),
+  ],
+  // ...
+)
+```
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          context.go('/login');
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Profile')),
-        body: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is AuthAuthenticated) {
-              final user = state.user;
-              return Column(
-                children: [
-                  // Avatar & Info
-                  CircleAvatar(
-                    radius: 40,
-                    child: Text(user.displayName?[0].toUpperCase() ?? 'U'),
-                  ),
-                  Text(user.displayName ?? 'No Name'),
-                  Text(user.email ?? 'No Email'),
-                  const Chip(label: Text('Free Member')),
-                  
-                  const Spacer(),
-                  
-                  // Logout Button
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.red),
-                    title: const Text('Logout', style: TextStyle(color: Colors.red)),
-                    onTap: () {
-                      context.read<AuthBloc>().add(LogoutRequested());
-                    },
-                  ),
-                ],
-              );
-            }
-            return const Center(child: CircularProgressIndicator()); // Should rarely happen in shell
-          },
-        ),
-      ),
-    );
-  }
+### `MainPage`
+```dart
+@override
+Widget build(BuildContext context) {
+  // Removed BlocProvider wrapper
+  return Scaffold(...)
 }
 ```
 
-## 5. Alternatives Considered
-*   **Redirect in Router:** Setting `redirect` in `GoRouter` to check `AuthBloc` state.
-    *   *Decision:* Rejected. Previous iteration experience suggests direct navigation is more reliable for this specific setup and avoids circular dependency issues or router complexity for now.
-*   **Direct FirebaseAuth Access:** Using `FirebaseAuth.instance.currentUser`.
-    *   *Decision:* Rejected. Violates Clean Architecture (Presentation layer talking to Data layer/SDK directly). Using `AuthBloc` is the correct architectural choice.
+### `BookingHistoryPage`
+```dart
+GestureDetector(
+  onTap: () {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Fitur Detail/Split Bill segera hadir')),
+    );
+  },
+  child: Card(...),
+)
+```
 
-## 6. References
-*   [Flutter BlocListener](https://pub.dev/documentation/flutter_bloc/latest/flutter_bloc/BlocListener-class.html)
-*   [GoRouter Navigation](https://pub.dev/packages/go_router)
+## 5. Alternatives Considered
+*   **ShellRoute:** Using `ShellRoute` in `GoRouter` would keep `MainPage` as a wrapper for all routes, potentially solving this if `VenueDetailPage` was a child route. However, `VenueDetailPage` usually sits *on top* of the bottom bar, so it shouldn't be inside the shell. Hoisting the provider is the standard Flutter solution for global state.
+
+## 6. Verification
+*   Manual test: Click a venue card -> No crash.
+*   Manual test: Click a booking history card -> SnackBar appears.
