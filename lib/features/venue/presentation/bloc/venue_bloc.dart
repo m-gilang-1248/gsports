@@ -30,7 +30,7 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
     VenueFetchListRequested event,
     Emitter<VenueState> emit,
   ) async {
-    emit(VenueLoading());
+    emit(VenueListLoading());
     final result = await getVenues(NoParams());
     result.fold(
       (failure) => emit(VenueError(failure.message)),
@@ -42,7 +42,7 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
     VenueFetchDetailRequested event,
     Emitter<VenueState> emit,
   ) async {
-    emit(VenueLoading());
+    emit(VenueDetailLoading());
     // Fetch venue detail and courts in parallel
     final results = await Future.wait([
       getVenueDetail(GetVenueDetailParams(venueId: event.venueId)),

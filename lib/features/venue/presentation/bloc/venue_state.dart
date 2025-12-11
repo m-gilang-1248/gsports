@@ -9,7 +9,12 @@ abstract class VenueState extends Equatable {
 
 class VenueInitial extends VenueState {}
 
-class VenueLoading extends VenueState {}
+class VenueListLoading extends VenueState {}
+
+class VenueDetailLoading extends VenueState {}
+
+// Deprecated: Kept for backward compatibility if needed, but we should migrate.
+// class VenueLoading extends VenueState {}
 
 class VenueListLoaded extends VenueState {
   final List<Venue> venues;

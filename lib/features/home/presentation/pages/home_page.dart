@@ -12,9 +12,23 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    final bloc = context.read<VenueBloc>();
+    if (bloc.state is! VenueListLoaded) {
+      bloc.add(VenueFetchListRequested());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gsports'),
@@ -48,10 +62,10 @@ class _HomePageState extends State<HomePage> {
       body: BlocBuilder<VenueBloc, VenueState>(
         buildWhen: (previous, current) =>
             current is VenueListLoaded ||
-            current is VenueLoading ||
+            current is VenueListLoading ||
             current is VenueError,
         builder: (context, state) {
-          if (state is VenueLoading) {
+          if (state is VenueListLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is VenueError) {
             return Center(

@@ -89,7 +89,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         child: Scaffold(
           body: BlocBuilder<VenueBloc, VenueState>(
             builder: (context, venueState) {
-              if (venueState is VenueLoading) {
+              if (venueState is VenueDetailLoading) {
                 return const Center(child: CircularProgressIndicator());
               } else if (venueState is VenueError) {
                 return Center(child: Text(venueState.message));

@@ -5,7 +5,6 @@ import '../../../features/home/presentation/pages/home_page.dart';
 // import '../../../features/venue/presentation/bloc/venue_bloc.dart'; // Removed
 // import '../../../injection_container.dart'; // Removed if not used
 
-
 class MainPage extends StatefulWidget {
   final List<Widget>? pages; // For testing
   const MainPage({super.key, this.pages});

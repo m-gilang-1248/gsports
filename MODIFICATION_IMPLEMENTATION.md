@@ -1,27 +1,36 @@
-# Implementation Plan: Fix Venue Provider Scope & History Interactions
+# Implementation Plan: Fix Venue List Loading Logic
 
 ## Journal
-- **Phase 1 Start:** Fixing `ProviderNotFoundException` by hoisting `VenueBloc`. Adding interactions to `BookingHistoryPage`.
-- **Phase 1 Completed:** `VenueBloc` provider moved to `main.dart`. `MainPage` updated to remove provider wrapper and allow page injection for testing. `BookingHistoryCard` updated with `onTap` SnackBar. `main_page_test.dart` passes.
+- **Phase 1 Start:** Fixing VenueList stuck loading bug.
+- **Analysis:** Detected that shared `VenueLoading` state causes `HomePage` to get stuck when `VenueDetailLoaded` is ignored. Decided to split loading states.
 
-## Phase 1: Refactoring & UI Updates
-- [x] Run all tests to ensure the project is in a good state.
-- [x] **Refactor Providers:**
-    - [x] Update `lib/main.dart`: Add `BlocProvider<VenueBloc>` to `MultiBlocProvider`.
-    - [x] Update `lib/core/presentation/pages/main_page.dart`: Remove `BlocProvider<VenueBloc>` wrapper.
-- [x] **Update Booking UI:**
-    - [x] Update `lib/features/booking/presentation/pages/booking_history_page.dart`: Add `onTap` logic to `BookingHistoryCard` showing SnackBar.
-- [x] **Verification:**
-    - [x] Update/Run `test/core/presentation/pages/main_page_test.dart` (ensure it still passes, might need mock updates if `MainPage` structure changes, but since `VenueBloc` is now global, `MainPage` widget test might need to wrap `MainPage` in `BlocProvider` *inside the test* which it already does via mocks/pumpWidget setup).
-        - *Correction:* `main_page_test.dart` currently mocks `VenueBloc` and provides it locally in `setUp`? No, it uses `pumpWidget` with `MaterialApp`. It might need `BlocProvider` in the test setup if `MainPage` no longer provides it itself but *consumes* it (if it consumes it). `MainPage` doesn't strictly consume `VenueBloc`, but `HomePage` (which is a child) does.
-        - The test currently injects *dummy pages* so `VenueBloc` dependency inside `HomePage` is bypassed. So the test should pass without changes.
-- [x] Run `dart_fix`.
-- [x] Run `analyze_files`.
-- [x] Run tests.
-- [x] Run `dart_format`.
-- [x] Verify changes with `git diff`.
-- [x] Commit changes: `fix: move venue bloc provider to main and add history interactions`.
-- [x] Hot Reload.
+## Phase 1: Bloc & State Refactoring
+- [ ] Run all tests to ensure the project is in a good state.
+- [ ] **Refactor Venue State (`lib/features/venue/presentation/bloc/venue_state.dart`):**
+    - [ ] Rename `VenueLoading` to `VenueListLoading` (or add `VenueDetailLoading`).
+    - [ ] Ensure `VenueState` can distinguish context.
+- [ ] **Refactor Venue Bloc (`lib/features/venue/presentation/bloc/venue_bloc.dart`):**
+    - [ ] `_onFetchList`: Emit `VenueListLoading`.
+    - [ ] `_onFetchDetail`: Emit `VenueDetailLoading`.
+- [ ] **Update Pages:**
+    - [ ] `HomePage`: Update `buildWhen` and `builder` to handle `VenueListLoading` (ignore `VenueDetailLoading`).
+    - [ ] `VenueDetailPage`: Update `builder` to handle `VenueDetailLoading`.
+- [ ] **Refactor HomePage (`lib/features/home/presentation/pages/home_page.dart`):**
+    - [ ] Implement `AutomaticKeepAliveClientMixin`.
+    - [ ] `initState`: Fetch only if state is not `VenueListLoaded` (and not loading list).
+- [ ] **Clean Main (`lib/main.dart`):**
+    - [ ] Remove cascade `..add(VenueFetchListRequested())`.
+- [ ] **Verification:**
+    - [ ] Manual Test: Home -> Detail -> Back.
+    - [ ] Run tests (Update unit tests for Bloc if states changed).
+- [ ] Run `dart_fix`.
+- [ ] Run `analyze_files`.
+- [ ] Run tests.
+- [ ] Run `dart_format`.
+- [ ] Update `MODIFICATION_IMPLEMENTATION.md` (Journal & Checkboxes).
+- [ ] Verify changes with `git diff`.
+- [ ] Commit changes: `fix: resolve venue list stuck loading by separating loading states`.
+- [ ] Hot Reload.
 
 ## Phase 2: Finalization
 - [ ] Update `GEMINI.md` context.

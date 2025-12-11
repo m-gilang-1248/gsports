@@ -33,9 +33,7 @@ class GsportsApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(create: (context) => GetIt.I<AuthBloc>()),
-        BlocProvider<VenueBloc>(
-          create: (context) => GetIt.I<VenueBloc>()..add(VenueFetchListRequested()),
-        ),
+        BlocProvider<VenueBloc>(create: (context) => GetIt.I<VenueBloc>()),
       ],
       child: MaterialApp.router(
         title: 'Gsports',
