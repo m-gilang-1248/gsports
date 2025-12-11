@@ -7,7 +7,8 @@ import '../../../features/venue/presentation/bloc/venue_bloc.dart';
 import '../../../injection_container.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final List<Widget>? pages; // For testing
+  const MainPage({super.key, this.pages});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -15,12 +16,18 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
+  late final List<Widget> _pages;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const BookingHistoryPage(),
-    const ProfilePage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _pages = widget.pages ??
+        [
+          const HomePage(),
+          const BookingHistoryPage(),
+          const ProfilePage(),
+        ];
+  }
 
   @override
   Widget build(BuildContext context) {

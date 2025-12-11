@@ -6,13 +6,9 @@ import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockVenueBloc extends Mock implements VenueBloc {}
-
 class MockVenueEvent extends Mock implements VenueEvent {}
-
 class MockVenueState extends Mock implements VenueState {}
-
 class FakeVenueEvent extends Fake implements VenueEvent {}
-
 class FakeVenueState extends Fake implements VenueState {}
 
 void main() {
@@ -26,11 +22,12 @@ void main() {
   setUp(() {
     mockVenueBloc = MockVenueBloc();
     final getIt = GetIt.instance;
-    if (getIt.isRegistered<VenueBloc>()) {
-      getIt.unregister<VenueBloc>();
-    }
+    getIt.reset(); // Clear all
+
+    // Register mocks
     getIt.registerFactory<VenueBloc>(() => mockVenueBloc);
 
+    // Stub VenueBloc
     when(() => mockVenueBloc.state).thenReturn(VenueInitial());
     when(() => mockVenueBloc.stream).thenAnswer((_) => Stream.value(VenueInitial()));
     when(() => mockVenueBloc.close()).thenAnswer((_) async {});
@@ -38,33 +35,40 @@ void main() {
   });
 
   tearDown(() {
-     final getIt = GetIt.instance;
-     getIt.reset();
+    GetIt.instance.reset();
   });
 
   testWidgets('MainPage renders and navigates tabs', (tester) async {
+    // Inject dummy pages to avoid Firebase/Bloc dependencies of real pages
+    final dummyPages = [
+      const Center(child: Text('Home Page Dummy')),
+      const Center(child: Text('Bookings Page Dummy')),
+      const Center(child: Text('Profile Page Dummy')),
+    ];
+
     await tester.pumpWidget(
-      const MaterialApp(
-        home: MainPage(),
+      MaterialApp(
+        home: MainPage(pages: dummyPages),
       ),
     );
 
     // Verify initial state (Home tab)
     expect(find.byType(BottomNavigationBar), findsOneWidget);
     expect(find.byIcon(Icons.home), findsOneWidget);
+    expect(find.text('Home Page Dummy'), findsOneWidget);
 
     // Tap on Bookings tab
     await tester.tap(find.byIcon(Icons.calendar_today));
     await tester.pumpAndSettle();
 
     // Verify Bookings page content
-    expect(find.text('My Bookings - Coming Soon'), findsOneWidget);
+    expect(find.text('Bookings Page Dummy'), findsOneWidget);
 
     // Tap on Profile tab
     await tester.tap(find.byIcon(Icons.person));
     await tester.pumpAndSettle();
 
     // Verify Profile page content
-    expect(find.text('Profile - Coming Soon'), findsOneWidget);
+    expect(find.text('Profile Page Dummy'), findsOneWidget);
   });
 }
