@@ -3,6 +3,7 @@
 ## Journal
 - **Iteration 2 Start:** Starting implementation of backend logic for fetching user booking history.
 - **Phase 1 Completed:** Implemented `GetMyBookings` use case, updated `BookingRepository` and `BookingRemoteDataSource` with Firestore query logic (filtering by `userId` and sorting by `startTime`). Registered dependencies with `injectable`. Added unit test for the use case.
+- **Phase 2 Completed:** Updated `GEMINI.md` to reflect the new backend capabilities.
 
 ## Phase 1: Backend Implementation (Domain & Data)
 - [x] Run all tests to ensure the project is in a good state.
@@ -29,6 +30,6 @@
 - [x] Commit changes: `feat: implement backend logic for fetching user bookings`.
 
 ## Phase 2: Finalization
-- [ ] Update `README.md` (if backend API docs were tracked there).
-- [ ] Update `GEMINI.md` context.
-- [ ] User Review.
+- [x] Update `README.md` (if backend API docs were tracked there).
+- [x] Update `GEMINI.md` context.
+- [x] User Review.
