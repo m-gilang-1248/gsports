@@ -28,8 +28,8 @@ class BookingHistoryPage extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: () {
-                // We need a context that has the provider. 
-                // However, this IconButton is outside the BlocProvider's child scope 
+                // We need a context that has the provider.
+                // However, this IconButton is outside the BlocProvider's child scope
                 // relative to where we'd want to call .read().
                 // But since we just created the provider in this build method,
                 // we can't easily access it from this AppBar action without a Builder or moving Provider up.
@@ -51,9 +51,9 @@ class BookingHistoryPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        context
-                            .read<HistoryBloc>()
-                            .add(FetchBookingHistory(userId));
+                        context.read<HistoryBloc>().add(
+                          FetchBookingHistory(userId),
+                        );
                       },
                       child: const Text('Retry'),
                     ),
@@ -91,8 +91,11 @@ class BookingHistoryPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.calendar_today_outlined,
-              size: 64, color: Colors.grey[400]),
+          Icon(
+            Icons.calendar_today_outlined,
+            size: 64,
+            color: Colors.grey[400],
+          ),
           const SizedBox(height: 16),
           Text(
             'No bookings found',
@@ -115,7 +118,8 @@ class BookingHistoryCard extends StatelessWidget {
     final timeFormat = DateFormat('HH:mm');
 
     // Capitalize Sport Type
-    final title = booking.sportType[0].toUpperCase() +
+    final title =
+        booking.sportType[0].toUpperCase() +
         booking.sportType.substring(1).toLowerCase();
 
     return Card(
@@ -135,7 +139,9 @@ class BookingHistoryCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 _buildStatusChip(booking.paymentStatus, booking.status),
               ],

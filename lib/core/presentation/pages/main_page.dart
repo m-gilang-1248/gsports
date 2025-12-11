@@ -21,12 +21,9 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    _pages = widget.pages ??
-        [
-          const HomePage(),
-          const BookingHistoryPage(),
-          const ProfilePage(),
-        ];
+    _pages =
+        widget.pages ??
+        [const HomePage(), const BookingHistoryPage(), const ProfilePage()];
   }
 
   @override
