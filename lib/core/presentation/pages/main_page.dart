@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../features/auth/presentation/pages/profile_page.dart';
-import '../../../features/booking/presentation/pages/my_bookings_page.dart';
+import '../../../features/booking/presentation/pages/booking_history_page.dart';
 import '../../../features/home/presentation/pages/home_page.dart';
 import '../../../features/venue/presentation/bloc/venue_bloc.dart';
 import '../../../injection_container.dart';
@@ -18,7 +18,7 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const MyBookingsPage(),
+    const BookingHistoryPage(),
     const ProfilePage(),
   ];
 

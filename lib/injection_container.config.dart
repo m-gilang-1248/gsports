@@ -36,6 +36,7 @@ import 'features/booking/domain/usecases/create_booking.dart' as _i46;
 import 'features/booking/domain/usecases/get_my_bookings.dart' as _i776;
 import 'features/booking/domain/usecases/update_booking_status.dart' as _i781;
 import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
+import 'features/booking/presentation/bloc/history/history_bloc.dart' as _i1064;
 import 'features/payment/data/datasources/payment_remote_data_source.dart'
     as _i692;
 import 'features/payment/data/repositories/payment_repository_impl.dart'
@@ -106,6 +107,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i781.UpdateBookingStatus>(
       () => _i781.UpdateBookingStatus(gh<_i829.BookingRepository>()),
+    );
+    gh.factory<_i1064.HistoryBloc>(
+      () => _i1064.HistoryBloc(getMyBookings: gh<_i776.GetMyBookings>()),
     );
     gh.lazySingleton<_i606.GetVenueCourts>(
       () => _i606.GetVenueCourts(gh<_i997.VenueRepository>()),
