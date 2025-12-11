@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gsports/features/auth/presentation/pages/login_page.dart';
 import 'package:gsports/features/auth/presentation/pages/register_page.dart';
 import 'package:gsports/features/auth/presentation/pages/splash_page.dart';
-import 'package:gsports/features/home/presentation/pages/home_page.dart';
+import 'package:gsports/core/presentation/pages/main_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_page.dart';
 import 'package:gsports/features/venue/presentation/pages/venue_detail_page.dart';
 import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
@@ -25,7 +25,7 @@ class AppRouter {
         path: '/register',
         builder: (context, state) => const RegisterPage(),
       ),
-      GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+      GoRoute(path: '/home', builder: (context, state) => const MainPage()),
       GoRoute(
         path: '/venue/:id',
         builder: (context, state) =>
