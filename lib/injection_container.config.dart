@@ -30,10 +30,11 @@ import 'features/booking/data/datasources/booking_remote_data_source.dart'
 import 'features/booking/data/repositories/booking_repository_impl.dart'
     as _i703;
 import 'features/booking/domain/repositories/booking_repository.dart' as _i829;
+import 'features/booking/domain/usecases/cancel_booking.dart' as _i488;
 import 'features/booking/domain/usecases/check_availability.dart' as _i549;
 import 'features/booking/domain/usecases/create_booking.dart' as _i46;
-import 'features/booking/domain/usecases/cancel_booking.dart' as _i99;
-import 'features/booking/domain/usecases/update_booking_status.dart' as _i100;
+import 'features/booking/domain/usecases/get_my_bookings.dart' as _i776;
+import 'features/booking/domain/usecases/update_booking_status.dart' as _i781;
 import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
 import 'features/payment/data/datasources/payment_remote_data_source.dart'
     as _i692;
@@ -41,7 +42,7 @@ import 'features/payment/data/repositories/payment_repository_impl.dart'
     as _i210;
 import 'features/payment/domain/repositories/payment_repository.dart' as _i376;
 import 'features/payment/domain/usecases/create_invoice.dart' as _i206;
-import 'features/payment/domain/usecases/get_transaction_status.dart' as _i207;
+import 'features/payment/domain/usecases/get_transaction_status.dart' as _i326;
 import 'features/venue/data/datasources/venue_remote_data_source.dart'
     as _i1039;
 import 'features/venue/data/repositories/venue_repository_impl.dart' as _i346;
@@ -91,27 +92,20 @@ extension GetItInjectableX on _i174.GetIt {
         remoteDataSource: gh<_i767.AuthRemoteDataSource>(),
       ),
     );
+    gh.lazySingleton<_i488.CancelBooking>(
+      () => _i488.CancelBooking(gh<_i829.BookingRepository>()),
+    );
     gh.lazySingleton<_i549.CheckAvailability>(
       () => _i549.CheckAvailability(gh<_i829.BookingRepository>()),
     );
     gh.lazySingleton<_i46.CreateBooking>(
       () => _i46.CreateBooking(gh<_i829.BookingRepository>()),
     );
-    gh.lazySingleton<_i99.CancelBooking>(
-      () => _i99.CancelBooking(gh<_i829.BookingRepository>()),
+    gh.lazySingleton<_i776.GetMyBookings>(
+      () => _i776.GetMyBookings(gh<_i829.BookingRepository>()),
     );
-    gh.lazySingleton<_i100.UpdateBookingStatus>(
-      () => _i100.UpdateBookingStatus(gh<_i829.BookingRepository>()),
-    );
-    gh.factory<_i393.BookingBloc>(
-      () => _i393.BookingBloc(
-        checkAvailability: gh<_i549.CheckAvailability>(),
-        createBooking: gh<_i46.CreateBooking>(),
-        createInvoice: gh<_i206.CreateInvoice>(),
-        cancelBooking: gh<_i99.CancelBooking>(),
-        updateBookingStatus: gh<_i100.UpdateBookingStatus>(),
-        getTransactionStatus: gh<_i207.GetTransactionStatus>(),
-      ),
+    gh.lazySingleton<_i781.UpdateBookingStatus>(
+      () => _i781.UpdateBookingStatus(gh<_i829.BookingRepository>()),
     );
     gh.lazySingleton<_i606.GetVenueCourts>(
       () => _i606.GetVenueCourts(gh<_i997.VenueRepository>()),
@@ -155,8 +149,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i206.CreateInvoice>(
       () => _i206.CreateInvoice(gh<_i376.PaymentRepository>()),
     );
-    gh.lazySingleton<_i207.GetTransactionStatus>(
-      () => _i207.GetTransactionStatus(gh<_i376.PaymentRepository>()),
+    gh.lazySingleton<_i326.GetTransactionStatus>(
+      () => _i326.GetTransactionStatus(gh<_i376.PaymentRepository>()),
+    );
+    gh.factory<_i393.BookingBloc>(
+      () => _i393.BookingBloc(
+        checkAvailability: gh<_i549.CheckAvailability>(),
+        createBooking: gh<_i46.CreateBooking>(),
+        createInvoice: gh<_i206.CreateInvoice>(),
+        cancelBooking: gh<_i488.CancelBooking>(),
+        updateBookingStatus: gh<_i781.UpdateBookingStatus>(),
+        getTransactionStatus: gh<_i326.GetTransactionStatus>(),
+      ),
     );
     return this;
   }

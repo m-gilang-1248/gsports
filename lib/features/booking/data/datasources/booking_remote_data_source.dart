@@ -13,6 +13,7 @@ abstract class BookingRemoteDataSource {
   });
   Future<void> cancelBooking(String bookingId);
   Future<void> updateBookingStatus(String bookingId, String status);
+  Future<List<BookingModel>> getMyBookings(String userId);
 }
 
 @LazySingleton(as: BookingRemoteDataSource)
@@ -20,6 +21,25 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   final FirebaseFirestore firestore;
 
   BookingRemoteDataSourceImpl(this.firestore);
+
+  @override
+  Future<List<BookingModel>> getMyBookings(String userId) async {
+    try {
+      final querySnapshot = await firestore
+          .collection('bookings')
+          .where('userId', isEqualTo: userId)
+          .orderBy('startTime', descending: true)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => BookingModel.fromJson(doc.data()..['id'] = doc.id))
+          .toList();
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Failed to fetch user bookings');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
 
   @override
   Future<String> createBooking(BookingModel booking) async {

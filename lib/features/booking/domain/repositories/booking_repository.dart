@@ -17,4 +17,5 @@ abstract class BookingRepository {
     String bookingId,
     String status,
   );
+  Future<Either<Failure, List<Booking>>> getMyBookings(String userId);
 }
