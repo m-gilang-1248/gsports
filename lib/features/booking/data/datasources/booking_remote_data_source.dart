@@ -151,9 +151,12 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     PaymentParticipant participant,
   ) async {
     try {
+      final cleanCode = splitCode.trim().toUpperCase();
+      print('DEBUG JOIN: Searching for code [$cleanCode] in collection bookings');
+
       final querySnapshot = await firestore
           .collection('bookings')
-          .where('splitCode', isEqualTo: splitCode)
+          .where('splitCode', isEqualTo: cleanCode)
           .limit(1)
           .get();
 
@@ -177,9 +180,10 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   String _generateRandomCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final rnd = Random();
-    return String.fromCharCodes(
+    final code = String.fromCharCodes(
       Iterable.generate(6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))),
     );
+    return code.toUpperCase();
   }
 
   @override
