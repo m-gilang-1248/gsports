@@ -1,11 +1,10 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:gsports/core/error/failures.dart';
+import '../../../../core/error/failures.dart';
 import '../entities/booking.dart';
+import '../entities/payment_participant.dart';
 
 abstract class BookingRepository {
-  Future<Either<Failure, String>> createBooking(
-    Booking booking,
-  ); // Returns new Booking ID
+  Future<Either<Failure, String>> createBooking(Booking booking);
   Future<Either<Failure, bool>> checkAvailability({
     required String courtId,
     required DateTime date,
@@ -18,4 +17,10 @@ abstract class BookingRepository {
     String status,
   );
   Future<Either<Failure, List<Booking>>> getMyBookings(String userId);
+  Future<Either<Failure, void>> generateSplitCode(String bookingId);
+  Future<Either<Failure, String>> joinBooking(
+    String splitCode,
+    PaymentParticipant participant,
+  );
+  Future<Either<Failure, Booking>> getBookingDetail(String bookingId);
 }

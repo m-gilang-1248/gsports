@@ -5,7 +5,9 @@ import 'package:gsports/core/error/exceptions.dart';
 import 'package:gsports/core/error/failures.dart';
 import 'package:gsports/features/booking/data/datasources/booking_remote_data_source.dart';
 import 'package:gsports/features/booking/data/models/booking_model.dart';
+import 'package:gsports/features/booking/data/models/payment_participant_model.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
+import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/domain/repositories/booking_repository.dart';
 
 @Injectable(as: BookingRepository)
@@ -34,7 +36,9 @@ class BookingRepositoryImpl implements BookingRepository {
         midtransPaymentUrl: booking.midtransPaymentUrl,
         isSplitBill: booking.isSplitBill,
         splitCode: booking.splitCode,
-        participants: booking.participants,
+        participants: booking.participants
+            .map((e) => PaymentParticipantModel.fromEntity(e))
+            .toList(),
       );
       final bookingId = await remoteDataSource.createBooking(bookingModel);
       return Right(bookingId);
@@ -107,6 +111,54 @@ class BookingRepositoryImpl implements BookingRepository {
     try {
       final bookingModels = await remoteDataSource.getMyBookings(userId);
       return Right(bookingModels);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown Firebase error'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> generateSplitCode(String bookingId) async {
+    try {
+      await remoteDataSource.generateSplitCode(bookingId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown Firebase error'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> joinBooking(
+    String splitCode,
+    PaymentParticipant participant,
+  ) async {
+    try {
+      final bookingId = await remoteDataSource.joinBooking(
+        splitCode,
+        participant,
+      );
+      return Right(bookingId);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown Firebase error'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Booking>> getBookingDetail(String bookingId) async {
+    try {
+      final bookingModel = await remoteDataSource.getBookingDetail(bookingId);
+      return Right(bookingModel);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on FirebaseException catch (e) {

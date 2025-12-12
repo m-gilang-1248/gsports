@@ -1,7 +1,10 @@
+import 'dart:math';
+import 'package:gsports/features/booking/data/models/payment_participant_model.dart';
+import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
+import '../../../../core/error/exceptions.dart';
+import '../models/booking_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
-import '../models/booking_model.dart';
-import 'package:gsports/core/error/exceptions.dart';
 
 abstract class BookingRemoteDataSource {
   Future<String> createBooking(BookingModel booking);
@@ -14,6 +17,9 @@ abstract class BookingRemoteDataSource {
   Future<void> cancelBooking(String bookingId);
   Future<void> updateBookingStatus(String bookingId, String status);
   Future<List<BookingModel>> getMyBookings(String userId);
+  Future<void> generateSplitCode(String bookingId);
+  Future<String> joinBooking(String splitCode, PaymentParticipant participant);
+  Future<BookingModel> getBookingDetail(String bookingId);
 }
 
 @LazySingleton(as: BookingRemoteDataSource)
@@ -118,10 +124,87 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       return conflictingBookings
           .isEmpty; // True if no conflicts, false otherwise
     } on FirebaseException catch (e) {
-      print('FIREBASE ERROR: ${e.message} - Code: ${e.code}');
-      throw ServerException(e.message ?? 'Failed to check availability');
+      throw ServerException(e.message ?? 'Firebase Error');
     } catch (e) {
-      print('GENERAL ERROR: $e');
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> generateSplitCode(String bookingId) async {
+    try {
+      final String splitCode = _generateRandomCode();
+      await firestore.collection('bookings').doc(bookingId).update({
+        'splitCode': splitCode,
+        'isSplitBill': true,
+      });
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Firebase Error');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<String> joinBooking(
+    String splitCode,
+    PaymentParticipant participant,
+  ) async {
+    try {
+      final cleanCode = splitCode.trim().toUpperCase();
+      print(
+        'DEBUG JOIN: Searching for code [$cleanCode] in collection bookings',
+      );
+
+      final querySnapshot = await firestore
+          .collection('bookings')
+          .where('splitCode', isEqualTo: cleanCode)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        throw ServerException('Booking with this code not found.');
+      }
+
+      final bookingDocRef = querySnapshot.docs.first.reference;
+      await bookingDocRef.update({
+        'participants': FieldValue.arrayUnion([
+          PaymentParticipantModel.fromEntity(participant).toJson(),
+        ]),
+      });
+      return bookingDocRef.id;
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Firebase Error');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  String _generateRandomCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final rnd = Random();
+    final code = String.fromCharCodes(
+      Iterable.generate(6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))),
+    );
+    return code.toUpperCase();
+  }
+
+  @override
+  Future<BookingModel> getBookingDetail(String bookingId) async {
+    try {
+      final docSnapshot = await firestore
+          .collection('bookings')
+          .doc(bookingId)
+          .get();
+
+      if (!docSnapshot.exists) {
+        throw ServerException('Booking not found.');
+      }
+
+      return BookingModel.fromFirestore(docSnapshot);
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Firebase Error');
+    } catch (e) {
       throw ServerException(e.toString());
     }
   }

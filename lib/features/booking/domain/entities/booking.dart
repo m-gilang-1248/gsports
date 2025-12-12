@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'payment_participant.dart';
 
 class Booking extends Equatable {
   final String id;
@@ -19,7 +20,7 @@ class Booking extends Equatable {
   final String? midtransPaymentUrl;
   final bool isSplitBill;
   final String? splitCode;
-  final List<Map<String, dynamic>> participants; // Simplified for now
+  final List<PaymentParticipant> participants;
 
   const Booking({
     required this.id,

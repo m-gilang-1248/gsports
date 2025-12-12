@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/booking.dart';
+import 'payment_participant_model.dart';
 
 part 'booking_model.g.dart';
 
@@ -52,7 +53,7 @@ class BookingModel extends Booking {
   @override
   final String? splitCode;
   @override
-  final List<Map<String, dynamic>> participants;
+  final List<PaymentParticipantModel> participants;
 
   const BookingModel({
     required this.id,
@@ -116,11 +117,18 @@ class BookingModel extends Booking {
       splitCode: data['splitCode'] as String?,
       participants:
           (data['participants'] as List?)
-              ?.map((e) => e as Map<String, dynamic>)
+              ?.map(
+                (e) =>
+                    PaymentParticipantModel.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
     );
   }
 
-  Map<String, dynamic> toJson() => _$BookingModelToJson(this);
+  Map<String, dynamic> toJson() {
+    final json = _$BookingModelToJson(this);
+    json['participants'] = participants.map((p) => p.toJson()).toList();
+    return json;
+  }
 }

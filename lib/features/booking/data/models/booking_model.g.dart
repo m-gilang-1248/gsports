@@ -27,7 +27,9 @@ BookingModel _$BookingModelFromJson(Map<String, dynamic> json) => BookingModel(
   splitCode: json['splitCode'] as String?,
   participants:
       (json['participants'] as List<dynamic>?)
-          ?.map((e) => e as Map<String, dynamic>)
+          ?.map(
+            (e) => PaymentParticipantModel.fromJson(e as Map<String, dynamic>),
+          )
           .toList() ??
       const [],
 );

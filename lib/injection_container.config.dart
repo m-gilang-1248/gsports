@@ -33,9 +33,14 @@ import 'features/booking/domain/repositories/booking_repository.dart' as _i829;
 import 'features/booking/domain/usecases/cancel_booking.dart' as _i488;
 import 'features/booking/domain/usecases/check_availability.dart' as _i549;
 import 'features/booking/domain/usecases/create_booking.dart' as _i46;
+import 'features/booking/domain/usecases/generate_split_code.dart' as _i698;
+import 'features/booking/domain/usecases/get_booking_detail.dart' as _i548;
 import 'features/booking/domain/usecases/get_my_bookings.dart' as _i776;
+import 'features/booking/domain/usecases/join_booking.dart' as _i1015;
 import 'features/booking/domain/usecases/update_booking_status.dart' as _i781;
 import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
+import 'features/booking/presentation/bloc/detail/booking_detail_bloc.dart'
+    as _i176;
 import 'features/booking/presentation/bloc/history/history_bloc.dart' as _i1064;
 import 'features/payment/data/datasources/payment_remote_data_source.dart'
     as _i692;
@@ -108,8 +113,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i781.UpdateBookingStatus>(
       () => _i781.UpdateBookingStatus(gh<_i829.BookingRepository>()),
     );
-    gh.factory<_i1064.HistoryBloc>(
-      () => _i1064.HistoryBloc(getMyBookings: gh<_i776.GetMyBookings>()),
+    gh.factory<_i698.GenerateSplitCode>(
+      () => _i698.GenerateSplitCode(gh<_i829.BookingRepository>()),
+    );
+    gh.factory<_i548.GetBookingDetail>(
+      () => _i548.GetBookingDetail(gh<_i829.BookingRepository>()),
+    );
+    gh.factory<_i1015.JoinBooking>(
+      () => _i1015.JoinBooking(gh<_i829.BookingRepository>()),
     );
     gh.lazySingleton<_i606.GetVenueCourts>(
       () => _i606.GetVenueCourts(gh<_i997.VenueRepository>()),
@@ -119,6 +130,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i578.GetVenues>(
       () => _i578.GetVenues(gh<_i997.VenueRepository>()),
+    );
+    gh.factory<_i176.BookingDetailBloc>(
+      () => _i176.BookingDetailBloc(
+        gh<_i548.GetBookingDetail>(),
+        gh<_i698.GenerateSplitCode>(),
+      ),
     );
     gh.lazySingleton<_i818.CheckAuthStatus>(
       () => _i818.CheckAuthStatus(gh<_i1015.AuthRepository>()),
@@ -137,6 +154,13 @@ extension GetItInjectableX on _i174.GetIt {
         getVenues: gh<_i578.GetVenues>(),
         getVenueDetail: gh<_i15.GetVenueDetail>(),
         getVenueCourts: gh<_i606.GetVenueCourts>(),
+      ),
+    );
+    gh.factory<_i1064.HistoryBloc>(
+      () => _i1064.HistoryBloc(
+        getMyBookings: gh<_i776.GetMyBookings>(),
+        joinBooking: gh<_i1015.JoinBooking>(),
+        firebaseAuth: gh<_i59.FirebaseAuth>(),
       ),
     );
     gh.lazySingleton<_i376.PaymentRepository>(

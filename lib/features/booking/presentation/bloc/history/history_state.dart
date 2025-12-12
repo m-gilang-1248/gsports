@@ -28,3 +28,12 @@ class HistoryError extends HistoryState {
   @override
   List<Object> get props => [message];
 }
+
+class HistoryJoinSuccess extends HistoryState {
+  final String bookingId;
+
+  const HistoryJoinSuccess(this.bookingId);
+
+  @override
+  List<Object> get props => [bookingId];
+}

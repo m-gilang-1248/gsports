@@ -15,3 +15,13 @@ class FetchBookingHistory extends HistoryEvent {
   @override
   List<Object> get props => [userId];
 }
+
+class JoinBookingRequested extends HistoryEvent {
+  final String splitCode;
+  final String userId; // Need userId to create PaymentParticipant
+
+  const JoinBookingRequested(this.splitCode, this.userId);
+
+  @override
+  List<Object> get props => [splitCode, userId];
+}
