@@ -1,4 +1,4 @@
-# MODIFICATION IMPLEMENTATION PLAN: Split Bill Feature (Phase 1 & 2)
+# MODIFICATION IMPLEMENTATION PLAN: Split Bill Feature (Phase 1, 2 & 3)
 
 This plan covers the Domain and Data layer updates required for the Split Bill feature.
 
@@ -38,9 +38,9 @@ This plan covers the Domain and Data layer updates required for the Split Bill f
 - [x] Run `analyze_files`.
 - [x] Run `dart_format`.
 - [x] Run all tests to make sure everything passes.
-- [ ] Update `MODIFICATION_IMPLEMENTATION.md` Journal.
-- [ ] Use `git diff` to verify changes and commit with message "feat: add split code generation and join logic".
-- [ ] Wait for approval.
+- [x] Update `MODIFICATION_IMPLEMENTATION.md` Journal.
+- [x] Use `git diff` to verify changes and commit with message "feat: add split code generation and join logic".
+- [x] Wait for approval.
 
 ## Phase 3: Finalize & Documentation
 **Goal:** Ensure clean code and up-to-date documentation.
@@ -51,4 +51,4 @@ This plan covers the Domain and Data layer updates required for the Split Bill f
 
 ## Journal
 *   Phase 1: Successfully refactored Booking entity to use PaymentParticipant. Updated BookingModel and BookingBottomSheet to handle the new structure. All tests passed. Commited changes.
-*   Phase 2: Implemented GenerateSplitCode and JoinBooking UseCases, updated BookingRepository and BookingRemoteDataSource with the new logic, including random code generation and arrayUnion for participants. Added unit tests for the new use cases, and resolved a mocktail fallback issue. All tests passed.
+*   Phase 2: Implemented GenerateSplitCode and JoinBooking UseCases, updated BookingRepository and BookingRemoteDataSource with the new logic, including random code generation and arrayUnion for participants. Added unit tests for the new use cases, and resolved a mocktail fallback issue. All tests passed. Commited changes.
