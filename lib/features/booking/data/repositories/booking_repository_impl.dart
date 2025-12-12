@@ -150,4 +150,18 @@ class BookingRepositoryImpl implements BookingRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, Booking>> getBookingDetail(String bookingId) async {
+    try {
+      final bookingModel = await remoteDataSource.getBookingDetail(bookingId);
+      return Right(bookingModel);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown Firebase error'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

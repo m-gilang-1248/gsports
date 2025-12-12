@@ -27,17 +27,19 @@ dependencies:
   webview_flutter: ^4.13.0
   fpdart: ^1.1.0
   http: ^1.6.0
+  bloc: ^9.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  build_runner: ^2.10.4
-  json_serializable: ^6.11.3
+  build_runner: ^2.0.0
+  json_serializable: ^6.0.0
   mocktail: ^1.0.4
   very_good_analysis: ^10.0.0
   injectable_generator: ^2.6.1
   firebase_auth_mocks: ^0.15.1
+  bloc_test: ^10.0.0
 
 flutter:
   uses-material-design: true

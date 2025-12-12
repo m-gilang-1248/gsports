@@ -22,4 +22,5 @@ abstract class BookingRepository {
     String splitCode,
     PaymentParticipant participant,
   );
+  Future<Either<Failure, Booking>> getBookingDetail(String bookingId);
 }

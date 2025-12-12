@@ -17,20 +17,20 @@ This plan covers the implementation of the Booking Detail page, including the ne
 - [x] Create unit tests for `GetBookingDetail` use case.
 - [x] Run `dart_fix` and `dart_format`.
 - [x] Run tests.
-- [ ] Commit changes.
+- [x] Commit changes.
 
 ## Phase 2: State Management (BookingDetailBloc)
 **Goal:** Manage the state of the Booking Detail page.
 
-- [ ] Create `lib/features/booking/presentation/bloc/detail/booking_detail_event.dart`.
-- [ ] Create `lib/features/booking/presentation/bloc/detail/booking_detail_state.dart`.
-- [ ] Create `lib/features/booking/presentation/bloc/detail/booking_detail_bloc.dart`.
+- [x] Create `lib/features/booking/presentation/bloc/detail/booking_detail_event.dart`.
+- [x] Create `lib/features/booking/presentation/bloc/detail/booking_detail_state.dart`.
+- [x] Create `lib/features/booking/presentation/bloc/detail/booking_detail_bloc.dart`.
     - Handle `FetchBookingDetail`.
     - Handle `GenerateCodeRequested` (call `GenerateSplitCode` use case, then refresh).
-- [ ] Register `BookingDetailBloc` in dependency injection (`injection_container.dart`).
-- [ ] Create unit tests for `BookingDetailBloc`.
-- [ ] Run `dart_fix` and `dart_format`.
-- [ ] Run tests.
+- [x] Register `BookingDetailBloc` in dependency injection (`injection_container.dart`).
+- [x] Create unit tests for `BookingDetailBloc`.
+- [x] Run `dart_fix` and `dart_format`.
+- [x] Run tests.
 - [ ] Commit changes.
 
 ## Phase 3: UI Implementation (BookingDetailPage)
@@ -50,4 +50,5 @@ This plan covers the implementation of the Booking Detail page, including the ne
 - [ ] Ask user for final review.
 
 ## Journal
-*   Phase 1: Implemented GetBookingDetail use case, updated BookingRepository and BookingRemoteDataSource. Created unit tests for GetBookingDetail and resolved issues with mocktail fallback values. All tests passed.
+*   Phase 1: Implemented GetBookingDetail use case, updated BookingRepository and BookingRemoteDataSource. Created unit tests for GetBookingDetail and resolved issues with mocktail fallback values. All tests passed. Committed changes with message "feat: add GetBookingDetail use case, repo, datasource".
+*   Phase 2: Created BookingDetail Bloc, Events, and States. Registered Bloc via injectable. Added bloc_test dependency. Fixed import issues in Bloc and test files. Wrote comprehensive unit tests for BookingDetailBloc covering fetching and code generation. All tests passed.

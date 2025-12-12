@@ -19,6 +19,7 @@ abstract class BookingRemoteDataSource {
   Future<List<BookingModel>> getMyBookings(String userId);
   Future<void> generateSplitCode(String bookingId);
   Future<void> joinBooking(String splitCode, PaymentParticipant participant);
+  Future<BookingModel> getBookingDetail(String bookingId);
 }
 
 @LazySingleton(as: BookingRemoteDataSource)
@@ -179,5 +180,25 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     return String.fromCharCodes(
       Iterable.generate(6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))),
     );
+  }
+
+  @override
+  Future<BookingModel> getBookingDetail(String bookingId) async {
+    try {
+      final docSnapshot = await firestore
+          .collection('bookings')
+          .doc(bookingId)
+          .get();
+
+      if (!docSnapshot.exists) {
+        throw ServerException('Booking not found.');
+      }
+
+      return BookingModel.fromFirestore(docSnapshot);
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Firebase Error');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 }
