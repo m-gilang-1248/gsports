@@ -7,6 +7,7 @@ import 'package:gsports/features/booking/data/datasources/booking_remote_data_so
 import 'package:gsports/features/booking/data/models/booking_model.dart';
 import 'package:gsports/features/booking/data/models/payment_participant_model.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
+import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/domain/repositories/booking_repository.dart';
 
 @Injectable(as: BookingRepository)
@@ -110,6 +111,37 @@ class BookingRepositoryImpl implements BookingRepository {
     try {
       final bookingModels = await remoteDataSource.getMyBookings(userId);
       return Right(bookingModels);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown Firebase error'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> generateSplitCode(String bookingId) async {
+    try {
+      await remoteDataSource.generateSplitCode(bookingId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown Firebase error'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> joinBooking(
+    String splitCode,
+    PaymentParticipant participant,
+  ) async {
+    try {
+      await remoteDataSource.joinBooking(splitCode, participant);
+      return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on FirebaseException catch (e) {
