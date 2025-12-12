@@ -1,54 +1,53 @@
-# MODIFICATION IMPLEMENTATION PLAN: Split Bill Feature (Phase 1, 2 & 3)
+# MODIFICATION IMPLEMENTATION PLAN: Split Bill Feature (UI & Detail Logic)
 
-This plan covers the Domain and Data layer updates required for the Split Bill feature.
+This plan covers the implementation of the Booking Detail page, including the necessary backend logic for fetching a single booking and the state management.
 
-## Phase 1: Entity & Model Refactoring
-**Goal:** Replace the loose `List<Map>` participants with a strongly typed `PaymentParticipant` entity.
+## Phase 1: Backend & Repository Updates
+**Goal:** Enable fetching a single booking by ID.
 
-- [x] Run all tests to ensure the project is in a good state before starting modifications.
-- [x] Create `lib/features/booking/domain/entities/payment_participant.dart`.
-- [x] Create `lib/features/booking/data/models/payment_participant_model.dart` with `fromJson`/`toJson`.
-- [x] Update `lib/features/booking/domain/entities/booking.dart`:
-    - Change `participants` type to `List<PaymentParticipant>`.
-- [x] Update `lib/features/booking/data/models/booking_model.dart`:
-    - Update constructor and `fromJson`/`toJson` to handle `PaymentParticipantModel`.
-- [x] Run `dart run build_runner build --delete-conflicting-outputs` to regenerate JSON serialization code.
-- [x] Fix any compilation errors in the project resulting from these breaking changes.
-- [x] Run `dart_fix` to clean up the code.
-- [x] Run `analyze_files` to ensure no new issues.
-- [x] Run `dart_format` to ensure consistent formatting.
-- [x] Use `git diff` to verify changes and commit with message "refactor: introduce PaymentParticipant entity".
-- [x] Wait for approval.
-
-## Phase 2: Logic Implementation (UseCases & Repository)
-**Goal:** Implement the logic for generating split codes and joining bookings.
-
-- [x] Create `lib/features/booking/domain/usecases/generate_split_code.dart`.
-- [x] Create `lib/features/booking/domain/usecases/join_booking.dart`.
+- [x] Run all tests to ensure the project is in a good state.
+- [x] Create `lib/features/booking/domain/usecases/get_booking_detail.dart`.
 - [x] Update `lib/features/booking/domain/repositories/booking_repository.dart`:
-    - Add `Future<Either<Failure, void>> generateSplitCode(String bookingId);`
-    - Add `Future<Either<Failure, void>> joinBooking(String splitCode, PaymentParticipant participant);`
+    - Add `Future<Either<Failure, Booking>> getBookingDetail(String bookingId);`.
 - [x] Update `lib/features/booking/data/datasources/booking_remote_data_source.dart`:
-    - Implement `generateSplitCode` (generate random 6-char alphanumeric code & update Firestore).
-    - Implement `joinBooking` (query by code, arrayUnion participant).
+    - Add `Future<BookingModel> getBookingDetail(String bookingId);`.
 - [x] Update `lib/features/booking/data/repositories/booking_repository_impl.dart`:
-    - Implement the new repository methods.
-- [x] Create unit tests for the new UseCases.
-- [x] Run `dart_fix`.
-- [x] Run `analyze_files`.
-- [x] Run `dart_format`.
-- [x] Run all tests to make sure everything passes.
-- [x] Update `MODIFICATION_IMPLEMENTATION.md` Journal.
-- [x] Use `git diff` to verify changes and commit with message "feat: add split code generation and join logic".
-- [x] Wait for approval.
+    - Implement `getBookingDetail`.
+- [x] Implement `getBookingDetail` in `BookingRemoteDataSourceImpl`.
+- [x] Create unit tests for `GetBookingDetail` use case.
+- [x] Run `dart_fix` and `dart_format`.
+- [x] Run tests.
+- [ ] Commit changes.
 
-## Phase 3: Finalize & Documentation
-**Goal:** Ensure clean code and up-to-date documentation.
+## Phase 2: State Management (BookingDetailBloc)
+**Goal:** Manage the state of the Booking Detail page.
 
-- [ ] Run full test suite.
-- [ ] Update `GEMINI.md` context.
-- [ ] Ask user to review the changes.
+- [ ] Create `lib/features/booking/presentation/bloc/detail/booking_detail_event.dart`.
+- [ ] Create `lib/features/booking/presentation/bloc/detail/booking_detail_state.dart`.
+- [ ] Create `lib/features/booking/presentation/bloc/detail/booking_detail_bloc.dart`.
+    - Handle `FetchBookingDetail`.
+    - Handle `GenerateCodeRequested` (call `GenerateSplitCode` use case, then refresh).
+- [ ] Register `BookingDetailBloc` in dependency injection (`injection_container.dart`).
+- [ ] Create unit tests for `BookingDetailBloc`.
+- [ ] Run `dart_fix` and `dart_format`.
+- [ ] Run tests.
+- [ ] Commit changes.
+
+## Phase 3: UI Implementation (BookingDetailPage)
+**Goal:** Build the UI for displaying booking details and managing split bill.
+
+- [ ] Create `lib/features/booking/presentation/pages/booking_detail_page.dart`.
+    - Implement the layout defined in the design doc (Header, Split Bill Section, Participants).
+    - Integrate `BookingDetailBloc`.
+- [ ] Update `lib/core/routes/app_router.dart` (or `main.dart` if simple routing) to add the `/booking-detail/:id` route.
+- [ ] Update `lib/features/booking/presentation/pages/booking_history_page.dart` to navigate to Detail Page on tap.
+- [ ] Run `dart_fix` and `dart_format`.
+- [ ] Verify UI with a manual run (hot reload/restart).
+- [ ] Commit changes.
+
+## Phase 4: Finalize
+- [ ] Update `GEMINI.md`.
+- [ ] Ask user for final review.
 
 ## Journal
-*   Phase 1: Successfully refactored Booking entity to use PaymentParticipant. Updated BookingModel and BookingBottomSheet to handle the new structure. All tests passed. Commited changes.
-*   Phase 2: Implemented GenerateSplitCode and JoinBooking UseCases, updated BookingRepository and BookingRemoteDataSource with the new logic, including random code generation and arrayUnion for participants. Added unit tests for the new use cases, and resolved a mocktail fallback issue. All tests passed. Commited changes.
+*   Phase 1: Implemented GetBookingDetail use case, updated BookingRepository and BookingRemoteDataSource. Created unit tests for GetBookingDetail and resolved issues with mocktail fallback values. All tests passed.

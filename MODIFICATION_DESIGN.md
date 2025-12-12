@@ -1,73 +1,84 @@
-# MODIFICATION DESIGN: Split Bill Feature (Phase 1)
+# MODIFICATION DESIGN: Split Bill Feature (UI & Detail Logic)
 
 ## Overview
-This design document outlines the implementation of the "Split Bill" feature for the Gsports application. Phase 1 focuses on the Domain and Data layer updates to support booking participants and split codes, laying the foundation for the UI/UX implementation.
+This document outlines the design for the UI and additional backend logic required for the "Split Bill" feature in Gsports.
+It covers the `BookingDetailPage`, the `BookingDetailBloc`, and the necessary `GetBookingDetail` use case.
 
 ## Goal
-To enable users to split the cost of a booking by inviting others via a unique code.
-Specifically for Phase 1:
-- Refactor the `Booking` entity to properly type participants using a new `PaymentParticipant` entity.
-- Implement the logic for generating a unique 6-character alphanumeric split code.
-- Implement the logic for joining a booking using the split code.
+To provide users with a dedicated page to view booking details, manage split bill codes, and see the list of participants.
+This completes the user-facing part of the Split Bill feature.
 
 ## Analysis
-The current `Booking` entity uses `List<Map<String, dynamic>>` for participants. This is loose and prone to errors. We need a strongly typed `PaymentParticipant` entity.
-The `splitCode` logic needs to be robust (unique, easy to share). For MVP, client-side generation is acceptable as per requirements.
+- **Missing Backend Logic:** We need a way to fetch a *single* booking by ID to refresh the detail page. Current `GetMyBookings` returns a list.
+- **UI Requirements:**
+    - Minimalist design (Stitch-inspired).
+    - Clear display of the Split Code.
+    - List of participants.
+    - Ability to generate a code if one doesn't exist.
 
 ## Detailed Design
 
-### 1. New Entity: `PaymentParticipant`
-Location: `lib/features/booking/domain/entities/payment_participant.dart`
+### 1. Backend: `GetBookingDetail` UseCase
+Location: `lib/features/booking/domain/usecases/get_booking_detail.dart`
+- **Repository Method:** `Future<Either<Failure, Booking>> getBookingDetail(String bookingId);`
+- **DataSource Method:** `Future<BookingModel> getBookingDetail(String bookingId);`
 
-Fields:
-- `uid` (String?): Nullable for guests (if supported later), but for now linked to registered users.
-- `name` (String): Display name.
-- `status` (String): 'host' | 'joined'.
-- `paymentStatusToHost` (String): 'pending' | 'paid'.
-- `profileUrl` (String?): Optional, for UI display.
+### 2. State Management: `BookingDetailBloc`
+Location: `lib/features/booking/presentation/bloc/detail/booking_detail_bloc.dart`
 
-### 2. Update Entity: `Booking`
-Location: `lib/features/booking/domain/entities/booking.dart`
+**Events:**
+- `FetchBookingDetail(String bookingId)`
+- `GenerateCodeRequested(String bookingId)`
 
-Changes:
-- Change `participants` type from `List<Map<String, dynamic>>` to `List<PaymentParticipant>`.
+**States:**
+- `DetailInitial`
+- `DetailLoading`
+- `DetailLoaded(Booking booking)`
+- `DetailError(String message)`
 
-### 3. New Model: `PaymentParticipantModel`
-Location: `lib/features/booking/data/models/payment_participant_model.dart`
+### 3. UI: `BookingDetailPage`
+Location: `lib/features/booking/presentation/pages/booking_detail_page.dart`
 
-- Extends `PaymentParticipant`.
-- Implements `fromJson` and `toJson`.
+**Layout Structure:**
+- **Scaffold:** Standard AppBar ("Detail Booking").
+- **Body:** `SingleChildScrollView`.
+    - **Header Card (Venue Info):**
+        - Venue Name, Court Name, Date, Time.
+        - Status Chip (e.g., "Confirmed", "Waiting Payment").
+        - Style: `Card(elevation: 0, shape: RoundedRectangleBorder(side: BorderSide(color: Colors.grey[300])))`.
+    - **Split Bill Section:**
+        - Title: "Split Bill".
+        - Content (If `splitCode` is null):
+            - Text: "Bagikan tagihan dengan temanmu."
+            - Button: `OutlinedButton` -> "Aktifkan Patungan".
+        - Content (If `splitCode` exists):
+            - Container with grey border displaying the code (Typography: Heading/Bold).
+            - Icon Button for Copy to Clipboard.
+    - **Participants Section:**
+        - Title: "Peserta".
+        - `ListView.builder`:
+            - `ListTile`:
+                - Leading: CircleAvatar (Profile Pic or Initials).
+                - Title: Name.
+                - Trailing: Status Chip ("Host" - Paid, "Joined" - Pending).
 
-### 4. Update Model: `BookingModel`
-Location: `lib/features/booking/data/models/booking_model.dart`
+### 4. Navigation
+- Update `AppRouter` (`lib/core/routes/app_router.dart` or similar) to include `/booking-detail/:id`.
+- Update `BookingHistoryPage` to navigate to this route on tap.
 
-Changes:
-- Update `participants` serialization/deserialization to use `PaymentParticipantModel`.
-
-### 5. Data Source Updates
-Location: `lib/features/booking/data/datasources/booking_remote_data_source.dart`
-
-- **generateSplitCode**:
-  - Function to generate 6-char alphanumeric code (A-Z, 0-9).
-  - Update the booking document in Firestore with this code.
-- **joinBooking**:
-  - Accept `splitCode` and `User`.
-  - Query Firestore for booking with `splitCode`.
-  - Add user to `participants` array (using `FieldValue.arrayUnion`).
-
-### 6. Use Cases
-- `GenerateSplitCode` (lib/features/booking/domain/usecases/generate_split_code.dart)
-- `JoinBooking` (lib/features/booking/domain/usecases/join_booking.dart)
-
-## Logic: Split Code Generation (Client-Side MVP)
-```dart
-String _generateRandomCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  final rnd = Random();
-  return String.fromCharCodes(Iterable.generate(
-      6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))));
-}
+## Mermaid Diagram (Bloc Flow)
+```mermaid
+graph TD
+    UI[BookingDetailPage] -->|FetchBookingDetail| Bloc[BookingDetailBloc]
+    Bloc -->|GetBookingDetail| UseCase[GetBookingDetail]
+    UseCase -->|Result| Bloc
+    Bloc -->|DetailLoaded| UI
+    
+    UI -->|GenerateCodeRequested| Bloc
+    Bloc -->|GenerateSplitCode| UseCase2[GenerateSplitCode]
+    UseCase2 -->|Success| Bloc
+    Bloc -->|FetchBookingDetail| Bloc
 ```
 
 ## Summary
-This phase strictly refactors the data structure to be robust and ready for the UI implementation in the next phase.
+This phase bridges the backend logic with the user interface, providing the complete experience for managing a booking and inviting friends.
