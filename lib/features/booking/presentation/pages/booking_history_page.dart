@@ -125,7 +125,7 @@ class BookingHistoryCard extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        GoRouter.of(context).go('/booking-detail/${booking.id}');
+        GoRouter.of(context).push('/booking-detail/${booking.id}');
       },
       child: Card(
         elevation: 0,

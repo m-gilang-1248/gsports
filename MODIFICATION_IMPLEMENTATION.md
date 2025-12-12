@@ -5,16 +5,22 @@ This plan covers the critical fixes for booking serialization and navigation, an
 ## Phase 1: Fix BookingModel Serialization
 **Goal:** Ensure `BookingModel.toJson()` produces a `List<Map>` for `participants`, preventing Firestore errors.
 
-- [ ] Run tests to confirm current state (expecting serialization failure if tested).
-- [ ] Update `lib/features/booking/data/models/booking_model.dart` to override `toJson` and manually convert `participants`.
-- [ ] Run `dart run build_runner build --delete-conflicting-outputs` (just in case, though the manual override might bypass the need for regen if done in the class).
-- [ ] Verify with a manual test or unit test that serialization works correctly.
+- [x] Run tests to confirm current state (expecting serialization failure if tested).
+- [x] Update `lib/features/booking/data/models/booking_model.dart` to override `toJson` and manually convert `participants`.
+- [x] Run `dart run build_runner build --delete-conflicting-outputs` (just in case, though the manual override might bypass the need for regen if done in the class).
+- [x] Verify with a manual test or unit test that serialization works correctly.
+- [x] Run `dart_fix` and `dart_format`.
+- [x] Run tests.
+- [x] Commit changes.
 
 ## Phase 2: Fix Navigation
 **Goal:** Ensure back button works correctly from `BookingDetailPage`.
 
-- [ ] Update `lib/features/booking/presentation/pages/booking_history_page.dart`.
-- [ ] Change `context.go` to `context.push` in `BookingHistoryCard` onTap.
+- [x] Update `lib/features/booking/presentation/pages/booking_history_page.dart`.
+- [x] Change `context.go` to `context.push` in `BookingHistoryCard` onTap.
+- [x] Run `dart_fix` and `dart_format`.
+- [x] Run tests.
+- [x] Commit changes.
 
 ## Phase 3: Implement Join Feature (Bloc & UI)
 **Goal:** Allow users to join a booking via code.
@@ -47,4 +53,5 @@ This plan covers the critical fixes for booking serialization and navigation, an
 - [ ] Ask user for final review.
 
 ## Journal
-*   (To be updated)
+*   Phase 1: Fixed BookingModel `toJson` serialization for participants. Confirmed with `analyze_files` and `flutter test`. Committed changes.
+*   Phase 2: Changed navigation from `context.go` to `context.push` in `BookingHistoryCard`. Confirmed with `analyze_files` and `flutter test`. Committed changes.
