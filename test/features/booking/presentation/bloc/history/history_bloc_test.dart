@@ -115,7 +115,7 @@ void main() {
     build: () {
       when(
         () => mockJoinBooking(any(), any()),
-      ).thenAnswer((_) async => const Right(null));
+      ).thenAnswer((_) async => const Right('1')); // Return bookingId '1'
       when(
         () => mockGetMyBookings(any()),
       ).thenAnswer((_) async => Right(tBookings));

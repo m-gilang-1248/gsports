@@ -98,13 +98,13 @@ void main() {
       // arrange
       when(
         () => mockBookingRepository.joinBooking(any(), any()),
-      ).thenAnswer((_) async => const Right(null));
+      ).thenAnswer((_) async => const Right('bookingId'));
 
       // act
       final result = await joinBookingUsecase(tSplitCode, tParticipant);
 
       // assert
-      expect(result, const Right(null));
+      expect(result, const Right('bookingId'));
       verify(
         () => mockBookingRepository.joinBooking(tSplitCode, tParticipant),
       ).called(1);

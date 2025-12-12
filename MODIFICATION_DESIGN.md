@@ -1,60 +1,53 @@
-# MODIFICATION DESIGN: Fix Data Layer (Sorting & Join Query)
+# MODIFICATION DESIGN: Fix Copy Button & Join Navigation
 
 ## Overview
-This phase addresses critical issues in the data layer regarding the sorting of booking history and the robustness of the "Join Booking" query.
+This phase addresses UX gaps in the Split Bill feature: implementing the missing copy-to-clipboard functionality and improving the join flow to automatically navigate the user to the booking detail page.
 
 ## Problems & Solutions
 
-### 1. Booking History Sorting
-- **Problem:** Bookings are sorted ascending (oldest first) or by string date, which is imprecise.
-- **Solution:** Update `getMyBookings` in `BookingRemoteDataSource` to sort by `startTime` (Timestamp) in descending order.
+### 1. Copy Button Inactive
+- **Problem:** The copy button in `BookingDetailPage` does nothing when tapped.
+- **Solution:** Implement `Clipboard.setData` and show a confirmation SnackBar.
 
-### 2. Join Booking Query Failure
-- **Problem:** Users cannot join a booking even with the correct code. Likely due to input formatting issues (spaces, case sensitivity).
+### 2. Join Navigation Missing
+- **Problem:** After successfully joining a booking via code, the user stays on the list page and has to manually find the booking.
 - **Solution:**
-    - Sanitize `splitCode` input in `joinBooking` (trim, uppercase).
-    - Add debug logging to trace the query.
-    - Ensure `generateSplitCode` also enforces this consistency.
+    - Refactor `joinBooking` in backend to return the `bookingId`.
+    - Update `HistoryBloc` to emit a `JoinSuccess` state containing the `bookingId`.
+    - Update `BookingHistoryPage` to listen for this state and push to `/booking-detail/$bookingId`.
 
 ## Detailed Design
 
-### `BookingRemoteDataSourceImpl` Updates
-Location: `lib/features/booking/data/datasources/booking_remote_data_source.dart`
+### 1. Backend Refactor (`JoinBooking`)
+- **DataSource (`BookingRemoteDataSource`):**
+    - `Future<void> joinBooking(...)` -> `Future<String> joinBooking(...)`
+    - Return `bookingDocRef.id`.
+- **Repository (`BookingRepository`):**
+    - `Future<Either<Failure, void>> joinBooking(...)` -> `Future<Either<Failure, String>> joinBooking(...)`
+- **UseCase (`JoinBooking`):**
+    - Return `Future<Either<Failure, String>>`.
 
-**Method: `getMyBookings`**
-```dart
-@override
-Future<List<BookingModel>> getMyBookings(String userId) async {
-  // ...
-  .orderBy('startTime', descending: true) // Ensure this is strict
-  // ...
-}
-```
+### 2. State Management (`HistoryBloc`)
+Location: `lib/features/booking/presentation/bloc/history/history_bloc.dart`
 
-**Method: `joinBooking`**
-```dart
-@override
-Future<void> joinBooking(String splitCode, PaymentParticipant participant) async {
-  final cleanCode = splitCode.trim().toUpperCase();
-  print('DEBUG JOIN: Searching for code [$cleanCode]');
-  
-  final querySnapshot = await firestore
-      .collection('bookings')
-      .where('splitCode', isEqualTo: cleanCode) // Use cleanCode
-      .limit(1)
-      .get();
-  // ...
-}
-```
+- **State:** Add `JoinSuccess(String bookingId)` or add a property `joinedBookingId` to `HistoryLoaded`.
+    - *Decision:* Since `HistoryLoaded` manages the list view, adding a transient property `String? joinedBookingId` to `HistoryLoaded` (or a separate side-effect state) is cleaner.
+    - Let's use a specialized state `HistoryJoinSuccess(String bookingId)` that extends `HistoryState`, or modify `HistoryLoaded` to include it.
+    - *Better approach for BlocListener:* Emit `HistoryJoinSuccess(bookingId)` temporarily, then emit `HistoryLoaded` (with refreshed data). This ensures the listener catches the event one-time.
 
-**Method: `generateSplitCode`**
-```dart
-// Ensure generated code is consistent
-String _generateRandomCode() {
-  // ...
-  return code.toUpperCase(); // Explicitly uppercase
-}
-```
+### 3. UI Updates
+- **`BookingDetailPage`:**
+    - Use `flutter/services.dart` for `Clipboard`.
+    - `ScaffoldMessenger.of(context).showSnackBar(...)`.
+- **`BookingHistoryPage`:**
+    - Update `BlocListener`:
+        ```dart
+        if (state is HistoryJoinSuccess) {
+           context.push('/booking-detail/${state.bookingId}');
+           // Bloc should automatically trigger refresh or UI should request it?
+           // Bloc can trigger refresh after emitting Success.
+        }
+        ```
 
 ## Summary
-These changes will fix the immediate usability issues of the Booking History and Join features.
+These improvements significantly enhance the usability of the Split Bill feature by providing immediate feedback and seamless navigation.

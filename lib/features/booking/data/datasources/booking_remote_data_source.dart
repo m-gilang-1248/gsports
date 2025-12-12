@@ -18,7 +18,7 @@ abstract class BookingRemoteDataSource {
   Future<void> updateBookingStatus(String bookingId, String status);
   Future<List<BookingModel>> getMyBookings(String userId);
   Future<void> generateSplitCode(String bookingId);
-  Future<void> joinBooking(String splitCode, PaymentParticipant participant);
+  Future<String> joinBooking(String splitCode, PaymentParticipant participant);
   Future<BookingModel> getBookingDetail(String bookingId);
 }
 
@@ -146,7 +146,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   }
 
   @override
-  Future<void> joinBooking(
+  Future<String> joinBooking(
     String splitCode,
     PaymentParticipant participant,
   ) async {
@@ -170,6 +170,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
           PaymentParticipantModel.fromEntity(participant).toJson(),
         ]),
       });
+      return bookingDocRef.id;
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Firebase Error');
     } catch (e) {

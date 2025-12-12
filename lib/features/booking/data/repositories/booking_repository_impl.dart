@@ -135,13 +135,13 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<Either<Failure, void>> joinBooking(
+  Future<Either<Failure, String>> joinBooking(
     String splitCode,
     PaymentParticipant participant,
   ) async {
     try {
-      await remoteDataSource.joinBooking(splitCode, participant);
-      return const Right(null);
+      final bookingId = await remoteDataSource.joinBooking(splitCode, participant);
+      return Right(bookingId);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on FirebaseException catch (e) {

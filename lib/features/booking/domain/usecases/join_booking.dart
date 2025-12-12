@@ -10,10 +10,8 @@ class JoinBooking {
 
   JoinBooking(this.repository);
 
-  Future<Either<Failure, void>> call(
-    String splitCode,
-    PaymentParticipant participant,
-  ) async {
+  Future<Either<Failure, String>> call(
+      String splitCode, PaymentParticipant participant) async {
     return await repository.joinBooking(splitCode, participant);
   }
 }
