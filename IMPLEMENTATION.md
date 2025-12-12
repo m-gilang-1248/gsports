@@ -78,10 +78,25 @@
     - [x] Handle Callback/Return URL.
 
 ## Phase 5: Unique Features
-- [ ] **Split Bill:**
-    - Logic: Generate 6-char random code on Booking creation.
-    - UI: "Join Booking" Dialog input.
-    - Firestore Update: Add user `uid` to `booking.participants`.
+- [x] **Split Bill:**
+    - [x] Domain: Created `PaymentParticipant` entity.
+    - [x] Data: Created `PaymentParticipantModel`.
+    - [x] Data: Updated `Booking` entity to use `List<PaymentParticipant>`.
+    - [x] Data: Updated `BookingModel` to handle `PaymentParticipantModel` serialization.
+    - [x] Backend: Implemented `GenerateSplitCode` use case.
+    - [x] Backend: Implemented `JoinBooking` use case (returns `bookingId`).
+    - [x] Backend: Implemented `GetBookingDetail` use case.
+    - [x] Backend: Updated `BookingRepository` and `BookingRemoteDataSource` for new use cases.
+    - [x] Bloc: Created `BookingDetailBloc` (events, states, bloc) for `BookingDetailPage`.
+    - [x] UI: Created `BookingDetailPage` with split code display, participant list, and generate code button.
+    - [x] Navigation: Added `/booking-detail/:id` route.
+    - [x] Navigation: Updated `BookingHistoryCard` to push to `BookingDetailPage`.
+    - [x] Fix: Corrected `BookingModel.toJson` to serialize `participants` correctly.
+    - [x] Fix: Changed `context.go` to `context.push` in `BookingHistoryCard`.
+    - [x] UI: Added `FloatingActionButton` and `Join Booking` dialog to `BookingHistoryPage`.
+    - [x] Bloc: Updated `HistoryBloc` to handle `JoinBookingRequested` and emit `HistoryJoinSuccess(bookingId)`.
+    - [x] UI: Implemented Copy to Clipboard for `splitCode` in `BookingDetailPage`.
+    - [x] UI: Updated `BookingHistoryPage` listener to navigate to `BookingDetailPage` on `HistoryJoinSuccess`.
 - [ ] **Scoreboard:**
     - BLoC: `ScoreboardBloc` (In-memory logic for Badminton/Futsal).
     - UI: `ScoreboardPage` (Big numbers, increment/decrement).
