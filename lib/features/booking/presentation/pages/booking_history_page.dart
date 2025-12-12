@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gsports/features/booking/presentation/bloc/history/history_bloc.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 class BookingHistoryPage extends StatelessWidget {
   const BookingHistoryPage({super.key});
@@ -124,9 +125,7 @@ class BookingHistoryCard extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fitur Detail/Split Bill segera hadir')),
-        );
+        GoRouter.of(context).go('/booking-detail/${booking.id}');
       },
       child: Card(
         elevation: 0,

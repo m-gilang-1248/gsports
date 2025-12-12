@@ -8,6 +8,7 @@ import 'package:gsports/core/presentation/pages/main_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_page.dart';
 import 'package:gsports/features/venue/presentation/pages/venue_detail_page.dart';
 import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
+import 'package:gsports/features/booking/presentation/pages/booking_detail_page.dart'; // New Import
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -41,6 +42,11 @@ class AppRouter {
           final paymentUrl = state.extra as String;
           return PaymentPage(paymentUrl: paymentUrl);
         },
+      ),
+      GoRoute(
+        path: '/booking-detail/:id',
+        builder: (context, state) =>
+            BookingDetailPage(bookingId: state.pathParameters['id']!),
       ),
     ],
   );

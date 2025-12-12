@@ -1,0 +1,410 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
+import 'package:gsports/core/constants/app_colors.dart';
+import 'package:gsports/features/booking/domain/entities/booking.dart';
+import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
+import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // For checking current user UID
+
+class BookingDetailPage extends StatelessWidget {
+  final String bookingId;
+
+  const BookingDetailPage({super.key, required this.bookingId});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) =>
+          GetIt.I<BookingDetailBloc>()..add(FetchBookingDetail(bookingId)),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Detail Booking')),
+        body: BlocConsumer<BookingDetailBloc, BookingDetailState>(
+          listener: (context, state) {
+            if (state is BookingDetailError) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.message)));
+            }
+          },
+          builder: (context, state) {
+            if (state is BookingDetailLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is BookingDetailLoaded) {
+              final booking = state.booking;
+              final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildBookingInfoCard(context, booking),
+                    const SizedBox(height: 24),
+                    _buildSplitBillSection(context, booking, currentUserUid),
+                    const SizedBox(height: 24),
+                    _buildParticipantsSection(context, booking),
+                  ],
+                ),
+              );
+            } else if (state is BookingDetailError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(state.message),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<BookingDetailBloc>().add(
+                          FetchBookingDetail(bookingId),
+                        );
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookingInfoCard(BuildContext context, Booking booking) {
+    final dateFormat = DateFormat('EEE, d MMM yyyy');
+    final timeFormat = DateFormat('HH:mm');
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              booking.sportType, // Placeholder, ideally get venue/court name
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${dateFormat.format(booking.date)} • ${timeFormat.format(booking.startTime)} - ${timeFormat.format(booking.endTime)}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total Harga:',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Text(
+                  currencyFormat.format(booking.totalPrice),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.electricBlue,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _buildStatusChip(booking.paymentStatus, booking.status),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSplitBillSection(
+    BuildContext context,
+    Booking booking,
+    String? currentUserUid,
+  ) {
+    final bool isHost = booking.userId == currentUserUid;
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Patungan (Split Bill)',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            if (booking.splitCode == null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bagikan tagihan dengan temanmu.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  if (isHost)
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.share),
+                        label: const Text('Aktifkan & Bagikan Kode'),
+                        onPressed: () {
+                          context.read<BookingDetailBloc>().add(
+                            GenerateCodeRequested(booking.id),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.electricBlue,
+                          side: const BorderSide(color: AppColors.electricBlue),
+                        ),
+                      ),
+                    )
+                  else
+                    Text(
+                      'Hanya host yang dapat mengaktifkan patungan.',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                    ),
+                ],
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Kode Patungan:',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          booking.splitCode!,
+                          style: Theme.of(context).textTheme.headlineLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                                letterSpacing: 2,
+                              ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.copy),
+                          onPressed: () {
+                            // TODO: Implement copy to clipboard
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Kode disalin!')),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Bagikan kode ini ke temanmu agar bisa bergabung.',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildParticipantsSection(BuildContext context, Booking booking) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Daftar Peserta',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            if (booking.participants.isEmpty)
+              Text(
+                'Belum ada peserta yang bergabung.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: booking.participants.length,
+                itemBuilder: (context, index) {
+                  final participant = booking.participants[index];
+                  return _buildParticipantTile(context, participant);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildParticipantTile(
+    BuildContext context,
+    PaymentParticipant participant,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundImage: participant.profileUrl != null
+                ? NetworkImage(participant.profileUrl!)
+                : null,
+            child: participant.profileUrl == null
+                ? Text(participant.name[0].toUpperCase())
+                : null,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  participant.name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Text(
+                  participant.status == 'host' ? 'Host' : 'Peserta',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          _buildPaymentStatusChip(participant.paymentStatusToHost),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentStatusChip(String status) {
+    Color color;
+    String label;
+
+    switch (status) {
+      case 'paid':
+        color = Colors.green;
+        label = 'Paid';
+        break;
+      case 'pending':
+        color = Colors.orange;
+        label = 'Pending';
+        break;
+      default:
+        color = Colors.grey;
+        label = 'N/A';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(String paymentStatus, String bookingStatus) {
+    Color color;
+    String label;
+
+    // Logic for status display
+    if (bookingStatus == 'cancelled') {
+      color = Colors.red;
+      label = 'Cancelled';
+    } else if (paymentStatus == 'paid' ||
+        paymentStatus == 'settlement' ||
+        paymentStatus == 'capture') {
+      color = Colors.green;
+      label = 'Paid';
+    } else if (paymentStatus == 'pending' ||
+        bookingStatus == 'waiting_payment') {
+      color = Colors.orange;
+      label = 'Pending';
+    } else {
+      color = Colors.grey;
+      label = bookingStatus;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
