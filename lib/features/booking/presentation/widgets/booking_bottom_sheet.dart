@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:gsports/core/constants/app_colors.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
+import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
@@ -148,6 +149,15 @@ class BookingBottomSheet extends StatelessWidget {
                   totalPrice: totalPrice,
                   status: 'waiting_payment',
                   paymentStatus: 'unpaid',
+                  participants: [
+                    PaymentParticipant(
+                      uid: user.uid,
+                      name: user.displayName ?? 'User',
+                      status: 'host',
+                      paymentStatusToHost: 'paid', // Host pays directly
+                      profileUrl: user.photoURL,
+                    ),
+                  ],
                 );
 
                 context.read<BookingBloc>().add(BookingCreated(booking));

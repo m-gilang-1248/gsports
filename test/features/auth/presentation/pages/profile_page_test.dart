@@ -32,9 +32,7 @@ void main() {
   Widget createWidgetUnderTest() {
     return BlocProvider<AuthBloc>.value(
       value: mockAuthBloc,
-      child: const MaterialApp(
-        home: ProfilePage(),
-      ),
+      child: const MaterialApp(home: ProfilePage()),
     );
   }
 
@@ -57,7 +55,9 @@ void main() {
     expect(find.text('Logout'), findsOneWidget);
   });
 
-  testWidgets('triggers LogoutRequested when logout button is tapped', (tester) async {
+  testWidgets('triggers LogoutRequested when logout button is tapped', (
+    tester,
+  ) async {
     final user = UserEntity(
       uid: '123',
       email: 'test@example.com',

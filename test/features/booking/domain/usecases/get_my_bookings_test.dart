@@ -33,13 +33,14 @@ void main() {
       paymentStatus: 'paid',
       isSplitBill: false,
       participants: const [],
-    )
+    ),
   ];
 
   test('should get list of bookings from the repository', () async {
     // arrange
-    when(() => mockBookingRepository.getMyBookings(any()))
-        .thenAnswer((_) async => Right(tBookings));
+    when(
+      () => mockBookingRepository.getMyBookings(any()),
+    ).thenAnswer((_) async => Right(tBookings));
     // act
     final result = await usecase(tUserId);
     // assert

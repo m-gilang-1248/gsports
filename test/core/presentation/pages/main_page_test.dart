@@ -6,9 +6,13 @@ import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockVenueBloc extends Mock implements VenueBloc {}
+
 class MockVenueEvent extends Mock implements VenueEvent {}
+
 class MockVenueState extends Mock implements VenueState {}
+
 class FakeVenueEvent extends Fake implements VenueEvent {}
+
 class FakeVenueState extends Fake implements VenueState {}
 
 void main() {
@@ -29,7 +33,9 @@ void main() {
 
     // Stub VenueBloc
     when(() => mockVenueBloc.state).thenReturn(VenueInitial());
-    when(() => mockVenueBloc.stream).thenAnswer((_) => Stream.value(VenueInitial()));
+    when(
+      () => mockVenueBloc.stream,
+    ).thenAnswer((_) => Stream.value(VenueInitial()));
     when(() => mockVenueBloc.close()).thenAnswer((_) async {});
     when(() => mockVenueBloc.add(any())).thenReturn(null);
   });
@@ -46,11 +52,7 @@ void main() {
       const Center(child: Text('Profile Page Dummy')),
     ];
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: MainPage(pages: dummyPages),
-      ),
-    );
+    await tester.pumpWidget(MaterialApp(home: MainPage(pages: dummyPages)));
 
     // Verify initial state (Home tab)
     expect(find.byType(BottomNavigationBar), findsOneWidget);

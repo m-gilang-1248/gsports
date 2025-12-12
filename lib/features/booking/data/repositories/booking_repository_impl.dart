@@ -5,6 +5,7 @@ import 'package:gsports/core/error/exceptions.dart';
 import 'package:gsports/core/error/failures.dart';
 import 'package:gsports/features/booking/data/datasources/booking_remote_data_source.dart';
 import 'package:gsports/features/booking/data/models/booking_model.dart';
+import 'package:gsports/features/booking/data/models/payment_participant_model.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/repositories/booking_repository.dart';
 
@@ -34,7 +35,9 @@ class BookingRepositoryImpl implements BookingRepository {
         midtransPaymentUrl: booking.midtransPaymentUrl,
         isSplitBill: booking.isSplitBill,
         splitCode: booking.splitCode,
-        participants: booking.participants,
+        participants: booking.participants
+            .map((e) => PaymentParticipantModel.fromEntity(e))
+            .toList(),
       );
       final bookingId = await remoteDataSource.createBooking(bookingModel);
       return Right(bookingId);

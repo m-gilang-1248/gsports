@@ -38,42 +38,47 @@ void main() {
       paymentStatus: 'paid',
       isSplitBill: false,
       participants: const [],
-    )
+    ),
   ];
 
   test('initial state should be HistoryInitial', () {
     expect(historyBloc.state, HistoryInitial());
   });
 
-  test('emits [HistoryLoading, HistoryLoaded] when FetchBookingHistory is added and successful', () async {
-    // arrange
-    when(() => mockGetMyBookings(any()))
-        .thenAnswer((_) async => Right(tBookings));
-    
-    // assert later
-    final expectedStates = [
-      HistoryLoading(),
-      HistoryLoaded(tBookings),
-    ];
-    expectLater(historyBloc.stream, emitsInOrder(expectedStates));
+  test(
+    'emits [HistoryLoading, HistoryLoaded] when FetchBookingHistory is added and successful',
+    () async {
+      // arrange
+      when(
+        () => mockGetMyBookings(any()),
+      ).thenAnswer((_) async => Right(tBookings));
 
-    // act
-    historyBloc.add(const FetchBookingHistory(tUserId));
-  });
+      // assert later
+      final expectedStates = [HistoryLoading(), HistoryLoaded(tBookings)];
+      expectLater(historyBloc.stream, emitsInOrder(expectedStates));
 
-  test('emits [HistoryLoading, HistoryError] when FetchBookingHistory is added and fails', () async {
-    // arrange
-    when(() => mockGetMyBookings(any()))
-        .thenAnswer((_) async => const Left(ServerFailure('Server Error')));
+      // act
+      historyBloc.add(const FetchBookingHistory(tUserId));
+    },
+  );
 
-    // assert later
-    final expectedStates = [
-      HistoryLoading(),
-      const HistoryError('Server Error'),
-    ];
-    expectLater(historyBloc.stream, emitsInOrder(expectedStates));
+  test(
+    'emits [HistoryLoading, HistoryError] when FetchBookingHistory is added and fails',
+    () async {
+      // arrange
+      when(
+        () => mockGetMyBookings(any()),
+      ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
 
-    // act
-    historyBloc.add(const FetchBookingHistory(tUserId));
-  });
+      // assert later
+      final expectedStates = [
+        HistoryLoading(),
+        const HistoryError('Server Error'),
+      ];
+      expectLater(historyBloc.stream, emitsInOrder(expectedStates));
+
+      // act
+      historyBloc.add(const FetchBookingHistory(tUserId));
+    },
+  );
 }
