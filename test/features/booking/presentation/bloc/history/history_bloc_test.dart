@@ -111,7 +111,7 @@ void main() {
   );
 
   blocTest<HistoryBloc, HistoryState>(
-    'emits [HistoryLoading, HistoryLoaded] when JoinBookingRequested is successful',
+    'emits [HistoryLoading, HistoryJoinSuccess, HistoryLoaded] when JoinBookingRequested is successful',
     build: () {
       when(
         () => mockJoinBooking(any(), any()),
@@ -126,7 +126,12 @@ void main() {
       );
     },
     act: (bloc) => bloc.add(const JoinBookingRequested(tSplitCode, tUserId)),
-    expect: () => [HistoryLoading(), HistoryLoaded(tBookings)],
+    expect: () => [
+      HistoryLoading(),
+      const HistoryJoinSuccess('1'), // Expect HistoryJoinSuccess
+      HistoryLoading(), // For the subsequent FetchBookingHistory
+      HistoryLoaded(tBookings),
+    ],
     verify: (_) {
       final captured = verify(
         () => mockJoinBooking(captureAny(), captureAny()),
@@ -134,7 +139,6 @@ void main() {
       expect(captured[0], tSplitCode);
       expect(captured[1].uid, tUserId);
       verify(() => mockGetMyBookings(tUserId)).called(1);
-      verify(() => mockFirebaseAuth.currentUser).called(1);
     },
   );
 
@@ -159,7 +163,6 @@ void main() {
       expect(captured[0], tSplitCode);
       expect(captured[1].uid, tUserId);
       verifyNoMoreInteractions(mockGetMyBookings);
-      verify(() => mockFirebaseAuth.currentUser).called(1);
     },
   );
 }

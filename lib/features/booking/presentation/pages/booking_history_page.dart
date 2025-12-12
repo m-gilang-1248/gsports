@@ -28,11 +28,11 @@ class BookingHistoryPage extends StatelessWidget {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is HistoryLoaded) {
-            // Optional: Show a success message after joining and refresh
+          } else if (state is HistoryJoinSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Berhasil bergabung ke booking!')),
             );
+            GoRouter.of(context).push('/booking-detail/${state.bookingId}');
           }
         },
         builder: (context, state) {

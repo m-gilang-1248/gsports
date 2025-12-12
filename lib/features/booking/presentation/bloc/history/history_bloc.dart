@@ -62,10 +62,9 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
     );
 
     final result = await _joinBooking(event.splitCode, participant);
-    result.fold(
-      (failure) => emit(HistoryError(failure.message)),
-      (_) =>
-          add(FetchBookingHistory(event.userId)), // Refresh history on success
-    );
+    result.fold((failure) => emit(HistoryError(failure.message)), (bookingId) {
+      emit(HistoryJoinSuccess(bookingId));
+      add(FetchBookingHistory(event.userId)); // Refresh history on success
+    });
   }
 }

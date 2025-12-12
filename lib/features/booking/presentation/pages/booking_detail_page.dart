@@ -7,6 +7,7 @@ import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // For checking current user UID
+import 'package:flutter/services.dart'; // For Clipboard
 
 class BookingDetailPage extends StatelessWidget {
   final String bookingId;
@@ -226,10 +227,15 @@ class BookingDetailPage extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.copy),
                           onPressed: () {
-                            // TODO: Implement copy to clipboard
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Kode disalin!')),
-                            );
+                            Clipboard.setData(
+                              ClipboardData(text: booking.splitCode!),
+                            ).then((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Kode berhasil disalin!'),
+                                ),
+                              );
+                            });
                           },
                         ),
                       ],

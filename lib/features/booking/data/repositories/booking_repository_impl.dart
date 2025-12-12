@@ -140,7 +140,10 @@ class BookingRepositoryImpl implements BookingRepository {
     PaymentParticipant participant,
   ) async {
     try {
-      final bookingId = await remoteDataSource.joinBooking(splitCode, participant);
+      final bookingId = await remoteDataSource.joinBooking(
+        splitCode,
+        participant,
+      );
       return Right(bookingId);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

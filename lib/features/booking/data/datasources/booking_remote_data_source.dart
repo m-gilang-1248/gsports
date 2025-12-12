@@ -152,7 +152,9 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   ) async {
     try {
       final cleanCode = splitCode.trim().toUpperCase();
-      print('DEBUG JOIN: Searching for code [$cleanCode] in collection bookings');
+      print(
+        'DEBUG JOIN: Searching for code [$cleanCode] in collection bookings',
+      );
 
       final querySnapshot = await firestore
           .collection('bookings')
