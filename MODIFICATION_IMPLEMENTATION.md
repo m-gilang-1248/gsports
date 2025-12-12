@@ -25,27 +25,22 @@ This plan covers the critical fixes for booking serialization and navigation, an
 ## Phase 3: Implement Join Feature (Bloc & UI)
 **Goal:** Allow users to join a booking via code.
 
-- [ ] Update `lib/features/booking/presentation/bloc/history/history_event.dart`:
+- [x] Update `lib/features/booking/presentation/bloc/history/history_event.dart`:
     - Add `JoinBookingRequested(String splitCode)`.
-- [ ] Update `lib/features/booking/presentation/bloc/history/history_state.dart`:
-    - Add `JoinSuccess()` and `JoinFailure(String message)` states (or handle via side effects). *Decision: Let's keep `HistoryState` for the list, and maybe use a separate Bloc or just handle it within HistoryBloc and emit a specialized state that the UI listens to, then re-emits Loaded.*
-    - **Better Approach:** Add `JoinBookingStatus` to `HistoryLoaded` or use a mixin.
-    - **Simplest Approach for MVP:** Let `HistoryBloc` emit `HistoryLoading` -> (Join Logic) -> `HistoryLoaded` (refreshed). If error, emit `HistoryError`.
-    - Let's stick to: `HistoryBloc` handles it.
-- [ ] Update `lib/features/booking/presentation/bloc/history/history_bloc.dart`:
+- [x] Update `lib/features/booking/presentation/bloc/history/history_bloc.dart`:
     - Inject `JoinBooking` use case.
     - Implement `_onJoinBookingRequested`.
         - Call `JoinBooking`.
         - If success: Add `FetchBookingHistory`.
         - If fail: Emit `HistoryError` (or a specific error state if we don't want to replace the list).
+- [x] Register updated `HistoryBloc` in `injection_container.dart` (ensure `JoinBooking` is passed).
+- [x] Run `dart run build_runner build --delete-conflicting-outputs`.
+- [x] Run `dart_fix` and `dart_format`.
+- [x] Run tests.
 - [ ] Update `lib/features/booking/presentation/pages/booking_history_page.dart`:
     - Add `FloatingActionButton`.
     - Implement `_showJoinDialog`.
     - Listen for `HistoryError` (to show snackbar) and `HistoryLoaded` (to show success if previously loading).
-- [ ] Register updated `HistoryBloc` in `injection_container.dart` (ensure `JoinBooking` is passed).
-- [ ] Run `dart run build_runner build --delete-conflicting-outputs`.
-- [ ] Run `dart_fix` and `dart_format`.
-- [ ] Run tests.
 - [ ] Commit changes.
 
 ## Phase 4: Finalize
@@ -55,3 +50,4 @@ This plan covers the critical fixes for booking serialization and navigation, an
 ## Journal
 *   Phase 1: Fixed BookingModel `toJson` serialization for participants. Confirmed with `analyze_files` and `flutter test`. Committed changes.
 *   Phase 2: Changed navigation from `context.go` to `context.push` in `BookingHistoryCard`. Confirmed with `analyze_files` and `flutter test`. Committed changes.
+*   Phase 3: Updated `history_event.dart` with `JoinBookingRequested`. Updated `history_bloc.dart` to inject `JoinBooking` use case and handle the `JoinBookingRequested` event, including error handling and refreshing the booking list. Ran `build_runner` to update DI. Fixed a test error in `history_bloc_test.dart` related to `FirebaseAuth` mocking. All tests passed.
