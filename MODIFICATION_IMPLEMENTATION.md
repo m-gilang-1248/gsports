@@ -1,48 +1,45 @@
-# MODIFICATION IMPLEMENTATION PLAN: Split Bill Feature (UI & Detail Logic)
+# MODIFICATION IMPLEMENTATION PLAN: Fix Bugs & Implement Join UI
 
-This plan covers the implementation of the Booking Detail page, including the necessary backend logic for fetching a single booking and the state management.
+This plan covers the critical fixes for booking serialization and navigation, and the implementation of the Join Booking feature.
 
-## Phase 1: Backend & Repository Updates
-**Goal:** Enable fetching a single booking by ID.
+## Phase 1: Fix BookingModel Serialization
+**Goal:** Ensure `BookingModel.toJson()` produces a `List<Map>` for `participants`, preventing Firestore errors.
 
-- [x] Run all tests to ensure the project is in a good state.
-- [x] Create `lib/features/booking/domain/usecases/get_booking_detail.dart`.
-- [x] Update `lib/features/booking/domain/repositories/booking_repository.dart`:
-    - Add `Future<Either<Failure, Booking>> getBookingDetail(String bookingId);`.
-- [x] Update `lib/features/booking/data/datasources/booking_remote_data_source.dart`:
-    - Add `Future<BookingModel> getBookingDetail(String bookingId);`.
-- [x] Update `lib/features/booking/data/repositories/booking_repository_impl.dart`:
-    - Implement `getBookingDetail`.
-- [x] Implement `getBookingDetail` in `BookingRemoteDataSourceImpl`.
-- [x] Create unit tests for `GetBookingDetail` use case.
-- [x] Run `dart_fix` and `dart_format`.
-- [x] Run tests.
-- [x] Commit changes.
+- [ ] Run tests to confirm current state (expecting serialization failure if tested).
+- [ ] Update `lib/features/booking/data/models/booking_model.dart` to override `toJson` and manually convert `participants`.
+- [ ] Run `dart run build_runner build --delete-conflicting-outputs` (just in case, though the manual override might bypass the need for regen if done in the class).
+- [ ] Verify with a manual test or unit test that serialization works correctly.
 
-## Phase 2: State Management (BookingDetailBloc)
-**Goal:** Manage the state of the Booking Detail page.
+## Phase 2: Fix Navigation
+**Goal:** Ensure back button works correctly from `BookingDetailPage`.
 
-- [x] Create `lib/features/booking/presentation/bloc/detail/booking_detail_event.dart`.
-- [x] Create `lib/features/booking/presentation/bloc/detail/booking_detail_state.dart`.
-- [x] Create `lib/features/booking/presentation/bloc/detail/booking_detail_bloc.dart`.
-    - Handle `FetchBookingDetail`.
-    - Handle `GenerateCodeRequested` (call `GenerateSplitCode` use case, then refresh).
-- [x] Register `BookingDetailBloc` in dependency injection (`injection_container.dart`).
-- [x] Create unit tests for `BookingDetailBloc`.
-- [x] Run `dart_fix` and `dart_format`.
-- [x] Run tests.
-- [ ] Commit changes.
+- [ ] Update `lib/features/booking/presentation/pages/booking_history_page.dart`.
+- [ ] Change `context.go` to `context.push` in `BookingHistoryCard` onTap.
 
-## Phase 3: UI Implementation (BookingDetailPage)
-**Goal:** Build the UI for displaying booking details and managing split bill.
+## Phase 3: Implement Join Feature (Bloc & UI)
+**Goal:** Allow users to join a booking via code.
 
-- [ ] Create `lib/features/booking/presentation/pages/booking_detail_page.dart`.
-    - Implement the layout defined in the design doc (Header, Split Bill Section, Participants).
-    - Integrate `BookingDetailBloc`.
-- [ ] Update `lib/core/routes/app_router.dart` (or `main.dart` if simple routing) to add the `/booking-detail/:id` route.
-- [ ] Update `lib/features/booking/presentation/pages/booking_history_page.dart` to navigate to Detail Page on tap.
+- [ ] Update `lib/features/booking/presentation/bloc/history/history_event.dart`:
+    - Add `JoinBookingRequested(String splitCode)`.
+- [ ] Update `lib/features/booking/presentation/bloc/history/history_state.dart`:
+    - Add `JoinSuccess()` and `JoinFailure(String message)` states (or handle via side effects). *Decision: Let's keep `HistoryState` for the list, and maybe use a separate Bloc or just handle it within HistoryBloc and emit a specialized state that the UI listens to, then re-emits Loaded.*
+    - **Better Approach:** Add `JoinBookingStatus` to `HistoryLoaded` or use a mixin.
+    - **Simplest Approach for MVP:** Let `HistoryBloc` emit `HistoryLoading` -> (Join Logic) -> `HistoryLoaded` (refreshed). If error, emit `HistoryError`.
+    - Let's stick to: `HistoryBloc` handles it.
+- [ ] Update `lib/features/booking/presentation/bloc/history/history_bloc.dart`:
+    - Inject `JoinBooking` use case.
+    - Implement `_onJoinBookingRequested`.
+        - Call `JoinBooking`.
+        - If success: Add `FetchBookingHistory`.
+        - If fail: Emit `HistoryError` (or a specific error state if we don't want to replace the list).
+- [ ] Update `lib/features/booking/presentation/pages/booking_history_page.dart`:
+    - Add `FloatingActionButton`.
+    - Implement `_showJoinDialog`.
+    - Listen for `HistoryError` (to show snackbar) and `HistoryLoaded` (to show success if previously loading).
+- [ ] Register updated `HistoryBloc` in `injection_container.dart` (ensure `JoinBooking` is passed).
+- [ ] Run `dart run build_runner build --delete-conflicting-outputs`.
 - [ ] Run `dart_fix` and `dart_format`.
-- [ ] Verify UI with a manual run (hot reload/restart).
+- [ ] Run tests.
 - [ ] Commit changes.
 
 ## Phase 4: Finalize
@@ -50,5 +47,4 @@ This plan covers the implementation of the Booking Detail page, including the ne
 - [ ] Ask user for final review.
 
 ## Journal
-*   Phase 1: Implemented GetBookingDetail use case, updated BookingRepository and BookingRemoteDataSource. Created unit tests for GetBookingDetail and resolved issues with mocktail fallback values. All tests passed. Committed changes with message "feat: add GetBookingDetail use case, repo, datasource".
-*   Phase 2: Created BookingDetail Bloc, Events, and States. Registered Bloc via injectable. Added bloc_test dependency. Fixed import issues in Bloc and test files. Wrote comprehensive unit tests for BookingDetailBloc covering fetching and code generation. All tests passed.
+*   (To be updated)

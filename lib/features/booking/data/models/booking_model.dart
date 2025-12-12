@@ -126,5 +126,9 @@ class BookingModel extends Booking {
     );
   }
 
-  Map<String, dynamic> toJson() => _$BookingModelToJson(this);
+  Map<String, dynamic> toJson() {
+    final json = _$BookingModelToJson(this);
+    json['participants'] = participants.map((p) => p.toJson()).toList();
+    return json;
+  }
 }

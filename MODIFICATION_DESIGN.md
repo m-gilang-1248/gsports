@@ -1,84 +1,55 @@
-# MODIFICATION DESIGN: Split Bill Feature (UI & Detail Logic)
+# MODIFICATION DESIGN: Fix Bugs & Implement Join UI
 
 ## Overview
-This document outlines the design for the UI and additional backend logic required for the "Split Bill" feature in Gsports.
-It covers the `BookingDetailPage`, the `BookingDetailBloc`, and the necessary `GetBookingDetail` use case.
+This phase addresses critical bugs identified in the `BookingModel` serialization and navigation, and implements the "Join Booking" feature via UI and BLoC updates.
 
-## Goal
-To provide users with a dedicated page to view booking details, manage split bill codes, and see the list of participants.
-This completes the user-facing part of the Split Bill feature.
+## Problems & Solutions
 
-## Analysis
-- **Missing Backend Logic:** We need a way to fetch a *single* booking by ID to refresh the detail page. Current `GetMyBookings` returns a list.
-- **UI Requirements:**
-    - Minimalist design (Stitch-inspired).
-    - Clear display of the Split Code.
-    - List of participants.
-    - Ability to generate a code if one doesn't exist.
+### 1. Serialization Error in `BookingModel`
+- **Problem:** `participants` list is being serialized as a list of `PaymentParticipantModel` objects, but Firestore requires a list of Maps (`List<Map<String, dynamic>>`).
+- **Solution:** Override `toJson()` in `BookingModel` to explicitly convert `participants` to `List<Map<String, dynamic>>`.
+
+### 2. Navigation Issue in `BookingHistoryPage`
+- **Problem:** Using `context.go` replaces the navigation stack, causing the back button to exit the app or behave unexpectedly.
+- **Solution:** Use `context.push` to add the `BookingDetailPage` to the stack, allowing normal back navigation.
+
+### 3. Missing Join Feature
+- **Problem:** Users have no way to input a code to join a booking.
+- **Solution:**
+    - Add a FAB to `BookingHistoryPage`.
+    - Show a dialog for code input.
+    - Handle the join logic in `HistoryBloc` (since it manages the list view and joining affects the list).
 
 ## Detailed Design
 
-### 1. Backend: `GetBookingDetail` UseCase
-Location: `lib/features/booking/domain/usecases/get_booking_detail.dart`
-- **Repository Method:** `Future<Either<Failure, Booking>> getBookingDetail(String bookingId);`
-- **DataSource Method:** `Future<BookingModel> getBookingDetail(String bookingId);`
+### 1. `BookingModel` Update
+Location: `lib/features/booking/data/models/booking_model.dart`
 
-### 2. State Management: `BookingDetailBloc`
-Location: `lib/features/booking/presentation/bloc/detail/booking_detail_bloc.dart`
-
-**Events:**
-- `FetchBookingDetail(String bookingId)`
-- `GenerateCodeRequested(String bookingId)`
-
-**States:**
-- `DetailInitial`
-- `DetailLoading`
-- `DetailLoaded(Booking booking)`
-- `DetailError(String message)`
-
-### 3. UI: `BookingDetailPage`
-Location: `lib/features/booking/presentation/pages/booking_detail_page.dart`
-
-**Layout Structure:**
-- **Scaffold:** Standard AppBar ("Detail Booking").
-- **Body:** `SingleChildScrollView`.
-    - **Header Card (Venue Info):**
-        - Venue Name, Court Name, Date, Time.
-        - Status Chip (e.g., "Confirmed", "Waiting Payment").
-        - Style: `Card(elevation: 0, shape: RoundedRectangleBorder(side: BorderSide(color: Colors.grey[300])))`.
-    - **Split Bill Section:**
-        - Title: "Split Bill".
-        - Content (If `splitCode` is null):
-            - Text: "Bagikan tagihan dengan temanmu."
-            - Button: `OutlinedButton` -> "Aktifkan Patungan".
-        - Content (If `splitCode` exists):
-            - Container with grey border displaying the code (Typography: Heading/Bold).
-            - Icon Button for Copy to Clipboard.
-    - **Participants Section:**
-        - Title: "Peserta".
-        - `ListView.builder`:
-            - `ListTile`:
-                - Leading: CircleAvatar (Profile Pic or Initials).
-                - Title: Name.
-                - Trailing: Status Chip ("Host" - Paid, "Joined" - Pending).
-
-### 4. Navigation
-- Update `AppRouter` (`lib/core/routes/app_router.dart` or similar) to include `/booking-detail/:id`.
-- Update `BookingHistoryPage` to navigate to this route on tap.
-
-## Mermaid Diagram (Bloc Flow)
-```mermaid
-graph TD
-    UI[BookingDetailPage] -->|FetchBookingDetail| Bloc[BookingDetailBloc]
-    Bloc -->|GetBookingDetail| UseCase[GetBookingDetail]
-    UseCase -->|Result| Bloc
-    Bloc -->|DetailLoaded| UI
-    
-    UI -->|GenerateCodeRequested| Bloc
-    Bloc -->|GenerateSplitCode| UseCase2[GenerateSplitCode]
-    UseCase2 -->|Success| Bloc
-    Bloc -->|FetchBookingDetail| Bloc
+```dart
+@override
+Map<String, dynamic> toJson() {
+  final json = _$BookingModelToJson(this);
+  json['participants'] = participants.map((e) => e.toJson()).toList();
+  return json;
+}
 ```
 
+### 2. `HistoryBloc` Update
+Location: `lib/features/booking/presentation/bloc/history/history_bloc.dart`
+
+- **Event:** `JoinBookingRequested(String splitCode)`
+- **State:** `JoinLoading`, `JoinSuccess`, `JoinError` (These might need to be handled separately from the main `HistoryState` to avoid clearing the list, or we use `Listen` side effects).
+- **UseCase:** Inject `JoinBooking`.
+
+**Refined Bloc Approach:**
+To avoid messing up the `HistoryState` (which holds the list of bookings), we will use a `BlocListener` in the UI to handle success/error messages, and simply refresh the list (`FetchBookingHistory`) upon success. The `HistoryBloc` will handle the logic.
+
+### 3. UI Updates
+Location: `lib/features/booking/presentation/pages/booking_history_page.dart`
+
+- **FAB:** `FloatingActionButton` with `Icons.group_add`.
+- **Dialog:** `showDialog` with `TextField`.
+- **Logic:** Dispatch `JoinBookingRequested` -> Wait for result -> Dispatch `FetchBookingHistory`.
+
 ## Summary
-This phase bridges the backend logic with the user interface, providing the complete experience for managing a booking and inviting friends.
+These fixes will ensure the app doesn't crash on booking creation or navigation, and finally allows users to join bookings.
