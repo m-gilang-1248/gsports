@@ -158,6 +158,7 @@ class BookingBottomSheet extends StatelessWidget {
                       profileUrl: user.photoURL,
                     ),
                   ],
+                  participantIds: [user.uid],
                 );
 
                 context.read<BookingBloc>().add(BookingCreated(booking));

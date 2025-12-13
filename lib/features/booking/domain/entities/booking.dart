@@ -21,6 +21,7 @@ class Booking extends Equatable {
   final bool isSplitBill;
   final String? splitCode;
   final List<PaymentParticipant> participants;
+  final List<String> participantIds;
 
   const Booking({
     required this.id,
@@ -40,6 +41,7 @@ class Booking extends Equatable {
     this.isSplitBill = false,
     this.splitCode,
     this.participants = const [],
+    this.participantIds = const [],
   });
 
   @override
@@ -61,5 +63,6 @@ class Booking extends Equatable {
     isSplitBill,
     splitCode,
     participants,
+    participantIds,
   ];
 }

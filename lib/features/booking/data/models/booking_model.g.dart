@@ -32,6 +32,11 @@ BookingModel _$BookingModelFromJson(Map<String, dynamic> json) => BookingModel(
           )
           .toList() ??
       const [],
+  participantIds:
+      (json['participantIds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$BookingModelToJson(BookingModel instance) =>
@@ -52,4 +57,5 @@ Map<String, dynamic> _$BookingModelToJson(BookingModel instance) =>
       'isSplitBill': instance.isSplitBill,
       'splitCode': instance.splitCode,
       'participants': instance.participants,
+      'participantIds': instance.participantIds,
     };

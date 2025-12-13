@@ -39,6 +39,7 @@ class BookingRepositoryImpl implements BookingRepository {
         participants: booking.participants
             .map((e) => PaymentParticipantModel.fromEntity(e))
             .toList(),
+        participantIds: booking.participantIds,
       );
       final bookingId = await remoteDataSource.createBooking(bookingModel);
       return Right(bookingId);

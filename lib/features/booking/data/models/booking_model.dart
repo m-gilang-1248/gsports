@@ -54,6 +54,8 @@ class BookingModel extends Booking {
   final String? splitCode;
   @override
   final List<PaymentParticipantModel> participants;
+  @override
+  final List<String> participantIds;
 
   const BookingModel({
     required this.id,
@@ -73,6 +75,7 @@ class BookingModel extends Booking {
     this.isSplitBill = false,
     this.splitCode,
     this.participants = const [],
+    this.participantIds = const [], // Initialize participantIds here
   }) : super(
          id: id,
          userId: userId,
@@ -91,6 +94,7 @@ class BookingModel extends Booking {
          isSplitBill: isSplitBill,
          splitCode: splitCode,
          participants: participants,
+         participantIds: participantIds, // Pass to super
        );
 
   factory BookingModel.fromJson(Map<String, dynamic> json) =>
@@ -123,12 +127,18 @@ class BookingModel extends Booking {
               )
               .toList() ??
           const [],
+      participantIds: (data['participantIds'] as List?) // Parse participantIds
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     final json = _$BookingModelToJson(this);
     json['participants'] = participants.map((p) => p.toJson()).toList();
+    json['participantIds'] = participantIds; // Include in toJson
     return json;
   }
 }
