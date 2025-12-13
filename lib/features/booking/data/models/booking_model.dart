@@ -135,7 +135,9 @@ class BookingModel extends Booking {
               ?.map((e) => e as String)
               .toList() ??
           const [],
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : (data['startTime'] as Timestamp).toDate(),
     );
   }
 

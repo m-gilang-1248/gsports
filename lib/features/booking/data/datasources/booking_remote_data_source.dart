@@ -39,12 +39,17 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       final querySnapshot = await firestore
           .collection('bookings')
           .where('participantIds', arrayContains: userId)
-          .orderBy('startTime', descending: true)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => BookingModel.fromJson(doc.data()..['id'] = doc.id))
-          .toList();
+      final bookings =
+          querySnapshot.docs
+              .map((doc) => BookingModel.fromJson(doc.data()..['id'] = doc.id))
+              .toList();
+
+      // Client-side sort by createdAt descending (Newest first)
+      bookings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return bookings;
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Failed to fetch user bookings');
     } catch (e) {
