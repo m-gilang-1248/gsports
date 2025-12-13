@@ -22,6 +22,7 @@
 - **2025-12-13**: Phase 2 (Dialog Provider Scope Fix) completed:
     - Captured `BookingDetailBloc` instance before calling `showDialog`.
     - Used the captured `bloc` instance to dispatch events directly within the dialog, resolving `ProviderNotFoundException`.
+    - Also fixed `undefined_identifier` regression in `BookingDetailPage`.
 - **2025-12-13**: Phase 3 (Verification & Cleanup) completed:
     - Ran `dart fix` and `analyze_files` (no new issues, accepted existing warnings).
     - Ran `dart format` (no new issues).
