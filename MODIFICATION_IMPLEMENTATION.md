@@ -1,41 +1,21 @@
-# Implementation Plan: UI Refinement & Status Management
+# Implementation Plan: History Sorting & Dialog Provider Scope Fixes
 
-## Phase 1: Bloc Updates
-- [x] **Inject UseCase:** Update `BookingDetailBloc` to depend on `UpdateParticipantStatus`.
-- [x] **Define Event:** Add `UpdateParticipantPaymentStatus` event to `BookingDetailEvent`.
-- [x] **Implement Logic:** Handle the new event in `BookingDetailBloc` (call usecase -> refresh).
-- [x] **Register DI:** Ensure `BookingDetailBloc` is correctly registered with the new dependency in `injection_container.dart` (or auto-generated).
+## Phase 1: History Sorting Verification & Fix
+- [x] **Verify Query:** In `lib/features/booking/data/datasources/booking_remote_data_source.dart`, verified `getMyBookings` uses `.orderBy('startTime', descending: true)`. No change needed as this sorts newest first.
+- [x] **Verify UI:** In `lib/features/booking/presentation/pages/booking_history_page.dart`, verified `ListView` is not using `reverse: true` or any manual list reversal. No change needed.
 
-## Phase 2: UI Refactoring (BookingDetailPage)
-- [x] **Header Info:** Add "Dibuat pada" and "Estimasi Patungan" to `_buildBookingInfoCard`.
-    -   Use `NumberFormat` for currency.
-    -   Handle division safety.
-- [x] **Participant List Logic:** Update `_buildParticipantTile`.
-    -   Check `currentUser.uid == booking.userId` (Host Check).
-    -   If Host: Add `IconButton` (Edit) for *other* participants.
-- [x] **Interaction:** Implement the "Edit Status" dialog/bottom sheet.
-    -   Options: "Mark as Paid", "Mark as Pending".
-    -   Trigger `context.read<BookingDetailBloc>().add(UpdateParticipantPaymentStatus(...))`.
-- [x] **Styling:** Refine status chips (Green for Paid, Orange for Pending).
+## Phase 2: Dialog Provider Scope Fix
+- [ ] **Capture Bloc:** In `lib/features/booking/presentation/pages/booking_detail_page.dart` inside `_showUpdateStatusDialog`, capture `final bloc = context.read<BookingDetailBloc>();` *before* `showDialog`.
+- [ ] **Use Captured Bloc:** Inside `showDialog`'s `builder`, use the captured `bloc` variable to add events (e.g., `bloc.add(...)`) instead of calling `context.read<BookingDetailBloc>()` again.
 
 ## Phase 3: Verification & Cleanup
-- [ ] **Run Analysis:** `analyze_files`.
+- [ ] **Run Analysis:** `analyze_files` to ensure no lint errors.
 - [ ] **Format Code:** `dart_format`.
-- [ ] **Commit:** `feat(ui): refine booking detail and add host controls`.
+- [ ] **Commit:** `fix(booking): history sorting and dialog provider scope`.
 
 ## Journal
 - **2025-12-13**: Plan created.
-- **2025-12-13**: Phase 1 (UI Refinement & Status Management) completed:
-    - Injected `UpdateParticipantStatus` into `BookingDetailBloc`.
-    - Added `UpdateParticipantPaymentStatus` event to `booking_detail_event.dart`.
-    - Implemented `_onUpdateParticipantPaymentStatus` in `BookingDetailBloc` to call the use case and refresh.
-    - Updated `BookingDetailLoaded` state to include `isUpdatingParticipant` for UI feedback.
-    - Ran `build_runner` successfully to update DI.
-- **2025-12-13**: Phase 2 (UI Refactoring) completed:
-    - Updated `_buildBookingInfoCard` to display booking creation date and estimated share per person, with currency formatting and division safety.
-    - Modified `_buildSplitBillSection` to correctly pass `isHost`.
-    - Refactored `_buildParticipantsSection` and `_buildParticipantTile` to differentiate host/guest views and enable host to update participant payment status via a dialog.
-    - Implemented `_showUpdateStatusDialog` for status modification.
-    - Refined styling of payment status chips with appropriate colors (`green` for 'Lunas', `orange` for 'Pending').
-    - Fixed breaking changes in test files (`booking_detail_bloc_test.dart`, `get_my_bookings_test.dart`, `split_bill_usecases_test.dart`, `history_bloc_test.dart`) by adding `createdAt` to `Booking` instantiations and correcting mocktail fallback registration.
-    - All tests passed after fixes.
+- **2025-12-13**: Phase 1 (History Sorting Verification & Fix) completed:
+    - Verified `getMyBookings` query already uses `.orderBy('startTime', descending: true)` for newest-first sorting.
+    - Verified `BookingHistoryPage` does not reverse the `ListView`.
+    - No code changes required for sorting based on current understanding. Further clarification would be needed if the user's definition of "terbalik" implies something other than oldest-first vs newest-first.

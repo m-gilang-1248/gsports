@@ -44,12 +44,13 @@ class BookingDetailPage extends StatelessWidget {
                               children: [
                                 _buildBookingInfoCard(context, booking),
                                 const SizedBox(height: 24),
-                                _buildSplitBillSection(context, booking, isHost),
+                                _buildSplitBillSection(context, booking, isHost, currentUserUid),
                                 const SizedBox(height: 24),
                                 _buildParticipantsSection(
                                   context,
                                   booking,
                                   isHost,
+                                  currentUserUid,
                                   state.isUpdatingParticipant,
                                 ),
                               ],
@@ -171,8 +172,8 @@ class BookingDetailPage extends StatelessWidget {
     BuildContext context,
     Booking booking,
     bool isHost,
+    String? currentUserUid,
   ) {
-    final bool isHost = booking.userId == currentUserUid;
 
     return Card(
       elevation: 0,
@@ -295,6 +296,7 @@ class BookingDetailPage extends StatelessWidget {
     BuildContext context,
     Booking booking,
     bool isHost,
+    String? currentUserUid,
     bool isUpdatingParticipant,
   ) {
     return Card(
@@ -336,6 +338,7 @@ class BookingDetailPage extends StatelessWidget {
                     booking,
                     participant,
                     isHost,
+                    currentUserUid,
                   );
                 },
               ),
@@ -350,12 +353,10 @@ class BookingDetailPage extends StatelessWidget {
     Booking booking,
     PaymentParticipant participant,
     bool isHost,
+    String? currentUserUid,
   ) {
-    // Determine if the current participant is the current user.
-    final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    final bool isCurrentUser = participant.uid == currentUserUid;
     // Host can edit others' status, but not their own or if not host
-    final bool canEdit = isHost && !isCurrentUser;
+    final bool canEdit = isHost && (participant.uid != currentUserUid);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -407,6 +408,8 @@ class BookingDetailPage extends StatelessWidget {
     String bookingId,
     String participantUid,
   ) {
+    final bloc = context.read<BookingDetailBloc>(); // Capture bloc instance
+
     showDialog(
       context: context,
       builder: (context) {
@@ -418,26 +421,26 @@ class BookingDetailPage extends StatelessWidget {
               ListTile(
                 title: const Text('Tandai Lunas'),
                 onTap: () {
-                  context.read<BookingDetailBloc>().add(
-                        UpdateParticipantPaymentStatus(
-                          bookingId: bookingId,
-                          participantUid: participantUid,
-                          newStatus: 'paid',
-                        ),
-                      );
+                  bloc.add( // Use captured bloc
+                    UpdateParticipantPaymentStatus(
+                      bookingId: bookingId,
+                      participantUid: participantUid,
+                      newStatus: 'paid',
+                    ),
+                  );
                   Navigator.pop(context);
                 },
               ),
               ListTile(
                 title: const Text('Tandai Belum Bayar'),
                 onTap: () {
-                  context.read<BookingDetailBloc>().add(
-                        UpdateParticipantPaymentStatus(
-                          bookingId: bookingId,
-                          participantUid: participantUid,
-                          newStatus: 'pending',
-                        ),
-                      );
+                  bloc.add( // Use captured bloc
+                    UpdateParticipantPaymentStatus(
+                      bookingId: bookingId,
+                      participantUid: participantUid,
+                      newStatus: 'pending',
+                    ),
+                  );
                   Navigator.pop(context);
                 },
               ),
