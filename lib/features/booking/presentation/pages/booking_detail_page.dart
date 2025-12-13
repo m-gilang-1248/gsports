@@ -33,23 +33,28 @@ class BookingDetailPage extends StatelessWidget {
             if (state is BookingDetailLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is BookingDetailLoaded) {
-              final booking = state.booking;
-              final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildBookingInfoCard(context, booking),
-                    const SizedBox(height: 24),
-                    _buildSplitBillSection(context, booking, currentUserUid),
-                    const SizedBox(height: 24),
-                    _buildParticipantsSection(context, booking),
-                  ],
-                ),
-              );
-            } else if (state is BookingDetailError) {
+                          final booking = state.booking;
+                          final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+                          final bool isHost = booking.userId == currentUserUid;
+              
+                          return SingleChildScrollView(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildBookingInfoCard(context, booking),
+                                const SizedBox(height: 24),
+                                _buildSplitBillSection(context, booking, isHost),
+                                const SizedBox(height: 24),
+                                _buildParticipantsSection(
+                                  context,
+                                  booking,
+                                  isHost,
+                                  state.isUpdatingParticipant,
+                                ),
+                              ],
+                            ),
+                          );            } else if (state is BookingDetailError) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -78,11 +83,18 @@ class BookingDetailPage extends StatelessWidget {
   Widget _buildBookingInfoCard(BuildContext context, Booking booking) {
     final dateFormat = DateFormat('EEE, d MMM yyyy');
     final timeFormat = DateFormat('HH:mm');
+    final dateTimeFormat = DateFormat('dd MMM yyyy, HH:mm');
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
       decimalDigits: 0,
     );
+
+    // Calculate estimated share
+    final int numberOfParticipants = booking.participants.length;
+    final int estimatedShare = numberOfParticipants > 0
+        ? booking.totalPrice ~/ numberOfParticipants
+        : booking.totalPrice; // If no participants, host pays all
 
     return Card(
       elevation: 0,
@@ -108,6 +120,11 @@ class BookingDetailPage extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
+            Text(
+              'Dibuat pada: ${dateTimeFormat.format(booking.createdAt)}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -125,6 +142,24 @@ class BookingDetailPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+            if (booking.isSplitBill && numberOfParticipants > 0)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Estimasi Patungan per orang:',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    currencyFormat.format(estimatedShare),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.electricBlue,
+                    ),
+                  ),
+                ],
+              ),
+            const SizedBox(height: 8),
             _buildStatusChip(booking.paymentStatus, booking.status),
           ],
         ),
@@ -135,7 +170,7 @@ class BookingDetailPage extends StatelessWidget {
   Widget _buildSplitBillSection(
     BuildContext context,
     Booking booking,
-    String? currentUserUid,
+    bool isHost,
   ) {
     final bool isHost = booking.userId == currentUserUid;
 
@@ -256,7 +291,12 @@ class BookingDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantsSection(BuildContext context, Booking booking) {
+  Widget _buildParticipantsSection(
+    BuildContext context,
+    Booking booking,
+    bool isHost,
+    bool isUpdatingParticipant,
+  ) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -275,7 +315,9 @@ class BookingDetailPage extends StatelessWidget {
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            if (booking.participants.isEmpty)
+            if (isUpdatingParticipant)
+              const Center(child: CircularProgressIndicator())
+            else if (booking.participants.isEmpty)
               Text(
                 'Belum ada peserta yang bergabung.',
                 style: Theme.of(
@@ -289,7 +331,12 @@ class BookingDetailPage extends StatelessWidget {
                 itemCount: booking.participants.length,
                 itemBuilder: (context, index) {
                   final participant = booking.participants[index];
-                  return _buildParticipantTile(context, participant);
+                  return _buildParticipantTile(
+                    context,
+                    booking,
+                    participant,
+                    isHost,
+                  );
                 },
               ),
           ],
@@ -300,8 +347,16 @@ class BookingDetailPage extends StatelessWidget {
 
   Widget _buildParticipantTile(
     BuildContext context,
+    Booking booking,
     PaymentParticipant participant,
+    bool isHost,
   ) {
+    // Determine if the current participant is the current user.
+    final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+    final bool isCurrentUser = participant.uid == currentUserUid;
+    // Host can edit others' status, but not their own or if not host
+    final bool canEdit = isHost && !isCurrentUser;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -333,8 +388,63 @@ class BookingDetailPage extends StatelessWidget {
             ),
           ),
           _buildPaymentStatusChip(participant.paymentStatusToHost),
+          if (canEdit)
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              onPressed: () => _showUpdateStatusDialog(
+                context,
+                booking.id,
+                participant.uid!,
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  void _showUpdateStatusDialog(
+    BuildContext context,
+    String bookingId,
+    String participantUid,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Update Status Pembayaran'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('Tandai Lunas'),
+                onTap: () {
+                  context.read<BookingDetailBloc>().add(
+                        UpdateParticipantPaymentStatus(
+                          bookingId: bookingId,
+                          participantUid: participantUid,
+                          newStatus: 'paid',
+                        ),
+                      );
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text('Tandai Belum Bayar'),
+                onTap: () {
+                  context.read<BookingDetailBloc>().add(
+                        UpdateParticipantPaymentStatus(
+                          bookingId: bookingId,
+                          participantUid: participantUid,
+                          newStatus: 'pending',
+                        ),
+                      );
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -345,7 +455,7 @@ class BookingDetailPage extends StatelessWidget {
     switch (status) {
       case 'paid':
         color = Colors.green;
-        label = 'Paid';
+        label = 'Lunas';
         break;
       case 'pending':
         color = Colors.orange;

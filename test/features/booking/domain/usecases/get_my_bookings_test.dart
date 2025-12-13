@@ -33,6 +33,8 @@ void main() {
       paymentStatus: 'paid',
       isSplitBill: false,
       participants: const [],
+      participantIds: const [],
+      createdAt: DateTime.parse('2023-01-01'),
     ),
   ];
 

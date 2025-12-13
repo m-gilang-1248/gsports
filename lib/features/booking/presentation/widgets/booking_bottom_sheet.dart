@@ -157,8 +157,9 @@ class BookingBottomSheet extends StatelessWidget {
                       paymentStatusToHost: 'paid', // Host pays directly
                       profileUrl: user.photoURL,
                     ),
-                  ],
+                  ),
                   participantIds: [user.uid],
+                  createdAt: DateTime.now(),
                 );
 
                 context.read<BookingBloc>().add(BookingCreated(booking));

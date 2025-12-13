@@ -56,6 +56,8 @@ class BookingModel extends Booking {
   final List<PaymentParticipantModel> participants;
   @override
   final List<String> participantIds;
+  @override
+  final DateTime createdAt;
 
   const BookingModel({
     required this.id,
@@ -76,6 +78,7 @@ class BookingModel extends Booking {
     this.splitCode,
     this.participants = const [],
     this.participantIds = const [], // Initialize participantIds here
+    required this.createdAt,
   }) : super(
          id: id,
          userId: userId,
@@ -95,6 +98,7 @@ class BookingModel extends Booking {
          splitCode: splitCode,
          participants: participants,
          participantIds: participantIds, // Pass to super
+         createdAt: createdAt,
        );
 
   factory BookingModel.fromJson(Map<String, dynamic> json) =>
@@ -131,6 +135,7 @@ class BookingModel extends Booking {
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
 
@@ -139,6 +144,7 @@ class BookingModel extends Booking {
     final json = _$BookingModelToJson(this);
     json['participants'] = participants.map((p) => p.toJson()).toList();
     json['participantIds'] = participantIds; // Include in toJson
+    json['createdAt'] = Timestamp.fromDate(createdAt);
     return json;
   }
 }

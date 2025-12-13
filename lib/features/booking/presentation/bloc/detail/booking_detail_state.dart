@@ -13,11 +13,26 @@ class BookingDetailLoading extends BookingDetailState {}
 
 class BookingDetailLoaded extends BookingDetailState {
   final Booking booking;
+  final bool isUpdatingParticipant;
 
-  const BookingDetailLoaded(this.booking);
+  const BookingDetailLoaded(
+    this.booking, {
+    this.isUpdatingParticipant = false,
+  });
 
   @override
-  List<Object> get props => [booking];
+  List<Object> get props => [booking, isUpdatingParticipant];
+
+  BookingDetailLoaded copyWith({
+    Booking? booking,
+    bool? isUpdatingParticipant,
+  }) {
+    return BookingDetailLoaded(
+      booking ?? this.booking,
+      isUpdatingParticipant:
+          isUpdatingParticipant ?? this.isUpdatingParticipant,
+    );
+  }
 }
 
 class BookingDetailError extends BookingDetailState {

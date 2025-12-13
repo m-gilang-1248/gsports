@@ -24,3 +24,18 @@ class GenerateCodeRequested extends BookingDetailEvent {
   @override
   List<Object> get props => [bookingId];
 }
+
+class UpdateParticipantPaymentStatus extends BookingDetailEvent {
+  final String bookingId;
+  final String participantUid;
+  final String newStatus;
+
+  const UpdateParticipantPaymentStatus({
+    required this.bookingId,
+    required this.participantUid,
+    required this.newStatus,
+  });
+
+  @override
+  List<Object> get props => [bookingId, participantUid, newStatus];
+}

@@ -22,6 +22,7 @@ class Booking extends Equatable {
   final String? splitCode;
   final List<PaymentParticipant> participants;
   final List<String> participantIds;
+  final DateTime createdAt;
 
   const Booking({
     required this.id,
@@ -42,6 +43,7 @@ class Booking extends Equatable {
     this.splitCode,
     this.participants = const [],
     this.participantIds = const [],
+    required this.createdAt,
   });
 
   @override
@@ -64,5 +66,6 @@ class Booking extends Equatable {
     splitCode,
     participants,
     participantIds,
+    createdAt,
   ];
 }

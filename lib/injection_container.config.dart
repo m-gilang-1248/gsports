@@ -140,6 +140,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i176.BookingDetailBloc(
         gh<_i548.GetBookingDetail>(),
         gh<_i698.GenerateSplitCode>(),
+        gh<_i416.UpdateParticipantStatus>(),
       ),
     );
     gh.lazySingleton<_i818.CheckAuthStatus>(

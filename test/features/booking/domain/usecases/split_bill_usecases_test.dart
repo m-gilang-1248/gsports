@@ -55,6 +55,8 @@ void main() {
     totalPrice: 100000,
     status: 'confirmed',
     paymentStatus: 'paid',
+    participantIds: const [],
+    createdAt: DateTime.now(),
   );
 
   group('GenerateSplitCode', () {

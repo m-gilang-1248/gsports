@@ -25,7 +25,7 @@ void main() {
   const tUserId = 'user123';
   const tSplitCode = 'ABCDEF';
 
-  final tBookings = [
+  final List<Booking> tBookings = [
     Booking(
       id: '1',
       userId: tUserId,
@@ -41,6 +41,8 @@ void main() {
       paymentStatus: 'paid',
       isSplitBill: false,
       participants: const [],
+      participantIds: const [],
+      createdAt: DateTime.parse('2023-01-01'),
     ),
   ];
 

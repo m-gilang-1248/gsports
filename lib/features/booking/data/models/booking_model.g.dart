@@ -37,6 +37,9 @@ BookingModel _$BookingModelFromJson(Map<String, dynamic> json) => BookingModel(
           ?.map((e) => e as String)
           .toList() ??
       const [],
+  createdAt: const TimestampConverter().fromJson(
+    json['createdAt'] as Timestamp,
+  ),
 );
 
 Map<String, dynamic> _$BookingModelToJson(BookingModel instance) =>
@@ -58,4 +61,5 @@ Map<String, dynamic> _$BookingModelToJson(BookingModel instance) =>
       'splitCode': instance.splitCode,
       'participants': instance.participants,
       'participantIds': instance.participantIds,
+      'createdAt': const TimestampConverter().toJson(instance.createdAt),
     };

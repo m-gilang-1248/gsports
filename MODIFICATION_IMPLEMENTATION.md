@@ -1,46 +1,41 @@
-# Implementation Plan: Split Bill Backend Refinement
+# Implementation Plan: UI Refinement & Status Management
 
-## Phase 1: Preparation & Entity Updates
-- [x] Run all tests to ensure the project is in a good state.
-- [x] **Modify Entity:** Update `lib/features/booking/domain/entities/booking.dart` to include `final List<String> participantIds`.
-- [x] **Modify Model:** Update `lib/features/booking/data/models/booking_model.dart` to include `participantIds` in properties, `fromJson`, `fromFirestore`, and `toJson`.
-- [x] **Run Build Runner:** Execute `dart run build_runner build --delete-conflicting-outputs` in `gsports` directory to regenerate `booking_model.g.dart`.
-- [x] **Fix Breaking Changes:** Update all code instantiating `Booking` or `BookingModel` (Repositories, Blocs, Tests) to provide `participantIds`.
+## Phase 1: Bloc Updates
+- [x] **Inject UseCase:** Update `BookingDetailBloc` to depend on `UpdateParticipantStatus`.
+- [x] **Define Event:** Add `UpdateParticipantPaymentStatus` event to `BookingDetailEvent`.
+- [x] **Implement Logic:** Handle the new event in `BookingDetailBloc` (call usecase -> refresh).
+- [x] **Register DI:** Ensure `BookingDetailBloc` is correctly registered with the new dependency in `injection_container.dart` (or auto-generated).
 
-## Phase 2: Logic & DataSource Updates
-- [x] **Update Create Logic:** In `BookingRemoteDataSource.createBooking`, ensure `participantIds` is initialized with `[booking.userId]`.
-- [x] **Update Join Logic:** In `BookingRemoteDataSource.joinBooking`, add `participantIds: FieldValue.arrayUnion([participantUid])` to the update call.
-- [x] **Update Query Logic:** In `BookingRemoteDataSource.getMyBookings`, change the query to `.where('participantIds', arrayContains: userId)`.
-- [x] **Implement Status Update (DataSource):** Add `updateParticipantStatus` to `BookingRemoteDataSource` using Read-Modify-Write strategy.
+## Phase 2: UI Refactoring (BookingDetailPage)
+- [x] **Header Info:** Add "Dibuat pada" and "Estimasi Patungan" to `_buildBookingInfoCard`.
+    -   Use `NumberFormat` for currency.
+    -   Handle division safety.
+- [x] **Participant List Logic:** Update `_buildParticipantTile`.
+    -   Check `currentUser.uid == booking.userId` (Host Check).
+    -   If Host: Add `IconButton` (Edit) for *other* participants.
+- [x] **Interaction:** Implement the "Edit Status" dialog/bottom sheet.
+    -   Options: "Mark as Paid", "Mark as Pending".
+    -   Trigger `context.read<BookingDetailBloc>().add(UpdateParticipantPaymentStatus(...))`.
+- [x] **Styling:** Refine status chips (Green for Paid, Orange for Pending).
 
-## Phase 3: Repository & UseCase Implementation
-- [x] **Update Repository Interface:** Add `updateParticipantStatus` to `BookingRepository` abstract class.
-- [x] **Update Repository Impl:** Implement `updateParticipantStatus` in `BookingRepositoryImpl`.
-- [x] **Create UseCase:** Create `lib/features/booking/domain/usecases/update_participant_status.dart`.
-- [x] **Register DI:** Register the new UseCase in `lib/injection_container.dart` (if manual) or ensure `@LazySingleton` annotation is present.
-
-## Phase 4: Verification & Cleanup
-- [x] **Fix Static Analysis:** Run `dart_fix` and `analyze_files`.
-- [ ] **Unit Tests:** Update existing tests or add new ones for the changed logic (especially the new query construction if mockable, and the status update logic).
-- [x] **Format Code:** Run `dart_format`.
-- [x] **Final Review:** Update `MODIFICATION_IMPLEMENTATION.md` journal.
-- [x] **Commit:** Create a commit with message `feat(booking): add participantIds and update status logic`.
-
-## Post-Implementation
-- [ ] **Manual Test:** Verify "My Bookings" shows joined bookings and Host can update status in the app (UI implementation is next, but backend must be ready).
-- [ ] Update `GEMINI.md`.
+## Phase 3: Verification & Cleanup
+- [ ] **Run Analysis:** `analyze_files`.
+- [ ] **Format Code:** `dart_format`.
+- [ ] **Commit:** `feat(ui): refine booking detail and add host controls`.
 
 ## Journal
 - **2025-12-13**: Plan created.
-- **2025-12-13**: Phase 1 completed:
-    - Ran tests (all passed).
-    - Modified `Booking` entity (`booking.dart`) to include `participantIds`.
-    - Modified `BookingModel` (`booking_model.dart`) to include `participantIds` in properties, constructor, `fromJson`, `fromFirestore`, and `toJson`.
-    - Ran `dart run build_runner build --delete-conflicting-outputs` successfully.
-    - Fixed breaking changes in `booking_bottom_sheet.dart` and `booking_repository_impl.dart` by providing `participantIds` to `Booking` and `BookingModel` constructors respectively.
-- **2025-12-13**: Phase 2 & 3 completed:
-    - Updated `BookingRemoteDataSource` to support `participantIds` query and status update.
-    - Added `copyWith` to `PaymentParticipantModel`.
-    - Updated `BookingRepository` and implementation.
-    - Created `UpdateParticipantStatus` use case.
-    - Verified with `analyze_files` (known warnings accepted).
+- **2025-12-13**: Phase 1 (UI Refinement & Status Management) completed:
+    - Injected `UpdateParticipantStatus` into `BookingDetailBloc`.
+    - Added `UpdateParticipantPaymentStatus` event to `booking_detail_event.dart`.
+    - Implemented `_onUpdateParticipantPaymentStatus` in `BookingDetailBloc` to call the use case and refresh.
+    - Updated `BookingDetailLoaded` state to include `isUpdatingParticipant` for UI feedback.
+    - Ran `build_runner` successfully to update DI.
+- **2025-12-13**: Phase 2 (UI Refactoring) completed:
+    - Updated `_buildBookingInfoCard` to display booking creation date and estimated share per person, with currency formatting and division safety.
+    - Modified `_buildSplitBillSection` to correctly pass `isHost`.
+    - Refactored `_buildParticipantsSection` and `_buildParticipantTile` to differentiate host/guest views and enable host to update participant payment status via a dialog.
+    - Implemented `_showUpdateStatusDialog` for status modification.
+    - Refined styling of payment status chips with appropriate colors (`green` for 'Lunas', `orange` for 'Pending').
+    - Fixed breaking changes in test files (`booking_detail_bloc_test.dart`, `get_my_bookings_test.dart`, `split_bill_usecases_test.dart`, `history_bloc_test.dart`) by adding `createdAt` to `Booking` instantiations and correcting mocktail fallback registration.
+    - All tests passed after fixes.
