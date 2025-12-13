@@ -23,4 +23,9 @@ abstract class BookingRepository {
     PaymentParticipant participant,
   );
   Future<Either<Failure, Booking>> getBookingDetail(String bookingId);
+  Future<Either<Failure, void>> updateParticipantStatus(
+    String bookingId,
+    String participantUid,
+    String newStatus,
+  );
 }

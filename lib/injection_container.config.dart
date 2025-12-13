@@ -38,6 +38,8 @@ import 'features/booking/domain/usecases/get_booking_detail.dart' as _i548;
 import 'features/booking/domain/usecases/get_my_bookings.dart' as _i776;
 import 'features/booking/domain/usecases/join_booking.dart' as _i1015;
 import 'features/booking/domain/usecases/update_booking_status.dart' as _i781;
+import 'features/booking/domain/usecases/update_participant_status.dart'
+    as _i416;
 import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
 import 'features/booking/presentation/bloc/detail/booking_detail_bloc.dart'
     as _i176;
@@ -112,6 +114,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i781.UpdateBookingStatus>(
       () => _i781.UpdateBookingStatus(gh<_i829.BookingRepository>()),
+    );
+    gh.lazySingleton<_i416.UpdateParticipantStatus>(
+      () => _i416.UpdateParticipantStatus(gh<_i829.BookingRepository>()),
     );
     gh.factory<_i698.GenerateSplitCode>(
       () => _i698.GenerateSplitCode(gh<_i829.BookingRepository>()),

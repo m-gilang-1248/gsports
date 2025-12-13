@@ -27,4 +27,20 @@ class PaymentParticipantModel extends PaymentParticipant {
       profileUrl: entity.profileUrl,
     );
   }
+
+  PaymentParticipantModel copyWith({
+    String? uid,
+    String? name,
+    String? status,
+    String? paymentStatusToHost,
+    String? profileUrl,
+  }) {
+    return PaymentParticipantModel(
+      uid: uid ?? this.uid,
+      name: name ?? this.name,
+      status: status ?? this.status,
+      paymentStatusToHost: paymentStatusToHost ?? this.paymentStatusToHost,
+      profileUrl: profileUrl ?? this.profileUrl,
+    );
+  }
 }

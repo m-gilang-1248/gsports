@@ -20,6 +20,11 @@ abstract class BookingRemoteDataSource {
   Future<void> generateSplitCode(String bookingId);
   Future<String> joinBooking(String splitCode, PaymentParticipant participant);
   Future<BookingModel> getBookingDetail(String bookingId);
+  Future<void> updateParticipantStatus(
+    String bookingId,
+    String participantUid,
+    String newStatus,
+  );
 }
 
 @LazySingleton(as: BookingRemoteDataSource)
@@ -33,7 +38,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     try {
       final querySnapshot = await firestore
           .collection('bookings')
-          .where('userId', isEqualTo: userId)
+          .where('participantIds', arrayContains: userId)
           .orderBy('startTime', descending: true)
           .get();
 
@@ -50,9 +55,13 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   @override
   Future<String> createBooking(BookingModel booking) async {
     try {
-      final docRef = await firestore
-          .collection('bookings')
-          .add(booking.toJson());
+      // Ensure participantIds contains at least the creator
+      final json = booking.toJson();
+      if ((json['participantIds'] as List?)?.isEmpty ?? true) {
+        json['participantIds'] = [booking.userId];
+      }
+
+      final docRef = await firestore.collection('bookings').add(json);
       return docRef.id;
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Failed to create booking');
@@ -171,6 +180,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         'participants': FieldValue.arrayUnion([
           PaymentParticipantModel.fromEntity(participant).toJson(),
         ]),
+        'participantIds': FieldValue.arrayUnion([participant.uid]),
       });
       return bookingDocRef.id;
     } on FirebaseException catch (e) {
@@ -204,6 +214,48 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       return BookingModel.fromFirestore(docSnapshot);
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Firebase Error');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> updateParticipantStatus(
+    String bookingId,
+    String participantUid,
+    String newStatus,
+  ) async {
+    try {
+      return firestore.runTransaction((transaction) async {
+        final docRef = firestore.collection('bookings').doc(bookingId);
+        final snapshot = await transaction.get(docRef);
+
+        if (!snapshot.exists) {
+          throw ServerException('Booking not found');
+        }
+
+        final bookingData = snapshot.data()!;
+        final participants = (bookingData['participants'] as List<dynamic>)
+            .map((e) => PaymentParticipantModel.fromJson(e))
+            .toList();
+
+        final index = participants.indexWhere((p) => p.uid == participantUid);
+        if (index == -1) {
+          throw ServerException('Participant not found');
+        }
+
+        // Update the participant status
+        final updatedParticipant = participants[index].copyWith(
+          paymentStatusToHost: newStatus,
+        );
+        participants[index] = updatedParticipant;
+
+        transaction.update(docRef, {
+          'participants': participants.map((e) => e.toJson()).toList(),
+        });
+      });
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Failed to update participant status');
     } catch (e) {
       throw ServerException(e.toString());
     }
