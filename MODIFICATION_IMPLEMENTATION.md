@@ -8,23 +8,23 @@
 - [x] **Fix Breaking Changes:** Update all code instantiating `Booking` or `BookingModel` (Repositories, Blocs, Tests) to provide `participantIds`.
 
 ## Phase 2: Logic & DataSource Updates
-- [ ] **Update Create Logic:** In `BookingRemoteDataSource.createBooking`, ensure `participantIds` is initialized with `[booking.userId]`.
-- [ ] **Update Join Logic:** In `BookingRemoteDataSource.joinBooking`, add `participantIds: FieldValue.arrayUnion([participantUid])` to the update call.
-- [ ] **Update Query Logic:** In `BookingRemoteDataSource.getMyBookings`, change the query to `.where('participantIds', arrayContains: userId)`.
-- [ ] **Implement Status Update (DataSource):** Add `updateParticipantStatus` to `BookingRemoteDataSource` using Read-Modify-Write strategy.
+- [x] **Update Create Logic:** In `BookingRemoteDataSource.createBooking`, ensure `participantIds` is initialized with `[booking.userId]`.
+- [x] **Update Join Logic:** In `BookingRemoteDataSource.joinBooking`, add `participantIds: FieldValue.arrayUnion([participantUid])` to the update call.
+- [x] **Update Query Logic:** In `BookingRemoteDataSource.getMyBookings`, change the query to `.where('participantIds', arrayContains: userId)`.
+- [x] **Implement Status Update (DataSource):** Add `updateParticipantStatus` to `BookingRemoteDataSource` using Read-Modify-Write strategy.
 
 ## Phase 3: Repository & UseCase Implementation
-- [ ] **Update Repository Interface:** Add `updateParticipantStatus` to `BookingRepository` abstract class.
-- [ ] **Update Repository Impl:** Implement `updateParticipantStatus` in `BookingRepositoryImpl`.
-- [ ] **Create UseCase:** Create `lib/features/booking/domain/usecases/update_participant_status.dart`.
-- [ ] **Register DI:** Register the new UseCase in `lib/injection_container.dart` (if manual) or ensure `@LazySingleton` annotation is present.
+- [x] **Update Repository Interface:** Add `updateParticipantStatus` to `BookingRepository` abstract class.
+- [x] **Update Repository Impl:** Implement `updateParticipantStatus` in `BookingRepositoryImpl`.
+- [x] **Create UseCase:** Create `lib/features/booking/domain/usecases/update_participant_status.dart`.
+- [x] **Register DI:** Register the new UseCase in `lib/injection_container.dart` (if manual) or ensure `@LazySingleton` annotation is present.
 
 ## Phase 4: Verification & Cleanup
-- [ ] **Fix Static Analysis:** Run `dart_fix` and `analyze_files`.
+- [x] **Fix Static Analysis:** Run `dart_fix` and `analyze_files`.
 - [ ] **Unit Tests:** Update existing tests or add new ones for the changed logic (especially the new query construction if mockable, and the status update logic).
-- [ ] **Format Code:** Run `dart_format`.
-- [ ] **Final Review:** Update `MODIFICATION_IMPLEMENTATION.md` journal.
-- [ ] **Commit:** Create a commit with message `feat(booking): add participantIds and update status logic`.
+- [x] **Format Code:** Run `dart_format`.
+- [x] **Final Review:** Update `MODIFICATION_IMPLEMENTATION.md` journal.
+- [x] **Commit:** Create a commit with message `feat(booking): add participantIds and update status logic`.
 
 ## Post-Implementation
 - [ ] **Manual Test:** Verify "My Bookings" shows joined bookings and Host can update status in the app (UI implementation is next, but backend must be ready).
@@ -38,3 +38,9 @@
     - Modified `BookingModel` (`booking_model.dart`) to include `participantIds` in properties, constructor, `fromJson`, `fromFirestore`, and `toJson`.
     - Ran `dart run build_runner build --delete-conflicting-outputs` successfully.
     - Fixed breaking changes in `booking_bottom_sheet.dart` and `booking_repository_impl.dart` by providing `participantIds` to `Booking` and `BookingModel` constructors respectively.
+- **2025-12-13**: Phase 2 & 3 completed:
+    - Updated `BookingRemoteDataSource` to support `participantIds` query and status update.
+    - Added `copyWith` to `PaymentParticipantModel`.
+    - Updated `BookingRepository` and implementation.
+    - Created `UpdateParticipantStatus` use case.
+    - Verified with `analyze_files` (known warnings accepted).
