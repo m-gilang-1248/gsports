@@ -1,57 +1,85 @@
-# Modification Design: History Sorting & Dialog Provider Scope Fixes
+# Modification Design: UI Building Blocks & Dependencies
 
 ## Overview
-This modification addresses two reported bugs: incorrect history sorting in the "My Bookings" list and a `ProviderNotFoundException` when attempting to update a participant's status via a dialog in the `BookingDetailPage`.
+This modification aims to establish a consistent Design System for the Gsports application by implementing core UI building blocks and updating necessary dependencies. This aligns with the "Functional Minimalism" design philosophy outlined in the UI/UX documentation.
 
-## Problem Analysis
+## Goal
+To replace basic, inconsistent UI elements with a standardized set of custom widgets (`buttons`, `text fields`, `colors`) and ensure the project has the required libraries for future features (`typography`, `svg`, `auth`).
 
-### 1. History Sorting
-- **Problem:** User reports "Urutan history terbalik (Lama di atas, Baru di bawah)", meaning old bookings appear at the top and new bookings at the bottom.
-- **Current Code (`booking_remote_data_source.dart`):** The `getMyBookings` query uses `.orderBy('startTime', descending: true)`. This should, in principle, sort bookings with the most recent `startTime` at the top (newest first).
-- **Ambiguity:** The phrase "terbalik" can be interpreted in different ways depending on the user's expectation. If "newest first" (most recent at top) is the desired behavior, the current code's `descending: true` is correct. If the user is seeing "oldest first" (oldest at top), then `descending: true` should be changed to `descending: false`.
-- **Conclusion for now:** Since `descending: true` typically means newest-first (most common for history lists), and the instruction was "Pastikan query `.orderBy('startTime', descending: true)`", no change will be made to the Firestore query for sorting at this stage, as it matches the direct instruction and common UX for history. If the issue persists, further clarification on the *desired* sort order (newest first vs. oldest first) from the user will be required. It's possible the `startTime` values in Firestore are not consistently reflecting the creation order, or the UI has an implicit reversal (though `BookingHistoryPage` review showed none).
+## Analysis of the Goal
+The current UI implementation is "basic" and lacks a unified visual identity. By creating reusable components now, we ensure consistency across all future screens and reduce code duplication.
+- **Dependencies:** We need `google_fonts` for typography, `flutter_svg` for icons, `carousel_slider` for venue display, and `google_sign_in` for upcoming auth features. `intl` is needed for currency formatting.
+- **Design System:** We need to define the color palette and core widgets (Buttons, TextFields) strictly following the Material 3 "Functional Minimalism" style (Black/White/Electric Blue).
 
-### 2. Dialog Provider Scope
-- **Problem:** `ProviderNotFoundException` occurs when opening the "Update Status Pembayaran" dialog in `BookingDetailPage`.
-- **Cause:** Dialogs and `showModalBottomSheet` are built in a new `Overlay` context, which does not automatically inherit the `BlocProvider` from the widget tree that triggered it. Therefore, `context.read<BookingDetailBloc>()` inside the dialog's `builder` cannot find the `BookingDetailBloc` instance.
-
-## Proposed Solution
-
-### 1. History Sorting Fix
-- **No Change in Query:** Based on current understanding and instruction, the `.orderBy('startTime', descending: true)` in `booking_remote_data_source.dart` will remain as is, assuming "newest first" is the desired behavior. The focus will be on the dialog fix first, and re-evaluation of sorting if the problem persists.
-
-### 2. Dialog Provider Scope Fix (`booking_detail_page.dart`)
-- **Strategy:** Capture the `BookingDetailBloc` instance from the current `BuildContext` *before* showing the dialog. Then, explicitly provide this instance to the dialog's widget tree using `BlocProvider.value`.
-- **Steps:**
-    1.  In the `_showUpdateStatusDialog` method, before calling `showDialog`, get the `BookingDetailBloc` instance: `final bloc = context.read<BookingDetailBloc>();`.
-    2.  In the `builder` of `showDialog`, wrap the `AlertDialog` (or its content) with `BlocProvider.value`:
-        ```dart
-        showDialog(
-          context: context,
-          builder: (innerContext) {
-            return BlocProvider.value(
-              value: bloc, // Provide the captured bloc
-              child: AlertDialog(
-                // ... dialog content
-              ),
-            );
-          },
-        );
-        ```
-    3.  Alternatively, inside the dialog, instead of `context.read<BookingDetailBloc>().add(...)`, use `bloc.add(...)` directly if `bloc` is captured outside and accessible. The latter is simpler and avoids the need for `BlocProvider.value` if only adding events. I will use the latter approach as it's more direct for this use case.
+## Alternatives Considered
+- **Using a UI Library (e.g., GetWidget):** Rejected. The design requirement is very specific ("Stitch" inspired, minimalist), and using a heavy library might introduce unnecessary bloat or style conflicts. Custom widgets give us full control.
+- **Modifying existing pages directly:** Rejected. It's better to build the components in isolation (`lib/core/presentation/widgets/`) first, then refactor existing pages to use them in subsequent steps. This minimizes breakage.
 
 ## Detailed Design
 
-### Flowchart (Dialog Context Fix)
-```mermaid
-graph TD
-    A[BookingDetailPage Widget Tree] --> B{Call _showUpdateStatusDialog}
-    B --> C[Capture: final bloc = context.read<BookingDetailBloc>()]
-    C --> D[Call showDialog(builder: (innerContext) {...})]
-    D --> E{Dialog's Builder Context}
-    E --> F[Inside Dialog: bloc.add(UpdateParticipantPaymentStatus(...))]
-    F --> G[Bloc receives event]
+### 1. Dependencies Update (`pubspec.yaml`)
+We will add/update the following packages:
+- `google_fonts: ^6.3.3`
+- `flutter_svg: ^2.2.3`
+- `carousel_slider: ^5.1.1`
+- `google_sign_in: ^7.2.0`
+- `intl: ^0.20.2`
+
+### 2. Color Palette (`lib/core/constants/app_colors.dart`)
+We will create a centralized color constant file.
+
+```dart
+import 'dart:ui';
+
+class AppColors {
+  static const Color primary = Color(0xFF212121); // Jet Black
+  static const Color accent = Color(0xFF2962FF);  // Electric Blue
+  static const Color surface = Color(0xFFFFFFFF); // Pure White
+  static const Color border = Color(0xFFE0E0E0);  // Grey-300
+  // Semantic colors will also be included as per UI/UX doc
+  static const Color success = Color(0xFF4CAF50);
+  static const Color error = Color(0xFFE53935);
+  static const Color warning = Color(0xFFFFC107);
+}
 ```
 
+### 3. Custom Buttons (`lib/core/presentation/widgets/custom_button.dart`)
+We will create `PrimaryButton` and `SecondaryButton` widgets.
+
+**PrimaryButton:**
+- **Type:** `FilledButton` (or `ElevatedButton` with 0 elevation).
+- **Style:**
+    - Background: `AppColors.primary`
+    - Text: `Colors.white`
+    - Height: 48-50px
+    - BorderRadius: 12px
+
+**SecondaryButton:**
+- **Type:** `OutlinedButton`
+- **Style:**
+    - Background: `Colors.white`
+    - Border: `AppColors.primary` (width 1.5)
+    - Text: `AppColors.primary`
+    - Height: 48-50px
+    - BorderRadius: 12px
+
+### 4. Custom Text Field (`lib/core/presentation/widgets/custom_text_field.dart`)
+We will create a `CustomTextField` widget.
+
+- **Type:** Wrapper around `TextFormField`.
+- **Properties:** `controller`, `label`, `hint`, `isPassword`, `validator`, `keyboardType`, etc.
+- **Style:**
+    - `filled`: true, `fillColor`: `Colors.transparent` (or white).
+    - `enabledBorder`: `OutlineInputBorder(borderSide: BorderSide(color: AppColors.border))`
+    - `focusedBorder`: `OutlineInputBorder(borderSide: BorderSide(color: AppColors.primary))`
+    - `errorBorder`: `OutlineInputBorder(borderSide: BorderSide(color: AppColors.error))`
+- **Feature:**
+    - `isPassword` toggle: Uses a local state to switch `obscureText` and the suffix icon (Eye/EyeOff).
+
 ## Summary
-The dialog context issue will be resolved by correctly scoping the `BookingDetailBloc` instance within the dialog. The sorting order will be re-evaluated if needed after confirming the current behavior is indeed "newest first" (descending).
+This modification lays the visual foundation of the app. By isolating these changes, we ensure a clean separation of concerns and prepare the codebase for a UI overhaul in the next steps without breaking existing functionality immediately.
+
+## References
+- [pub.dev/packages/google_fonts](https://pub.dev/packages/google_fonts)
+- [pub.dev/packages/flutter_svg](https://pub.dev/packages/flutter_svg)
+- [Material Design 3 Specs](https://m3.material.io/)

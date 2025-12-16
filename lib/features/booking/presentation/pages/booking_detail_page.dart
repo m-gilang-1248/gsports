@@ -33,29 +33,35 @@ class BookingDetailPage extends StatelessWidget {
             if (state is BookingDetailLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is BookingDetailLoaded) {
-                          final booking = state.booking;
-                          final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-                          final bool isHost = booking.userId == currentUserUid;
-              
-                          return SingleChildScrollView(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildBookingInfoCard(context, booking),
-                                const SizedBox(height: 24),
-                                _buildSplitBillSection(context, booking, isHost, currentUserUid),
-                                const SizedBox(height: 24),
-                                _buildParticipantsSection(
-                                  context,
-                                  booking,
-                                  isHost,
-                                  currentUserUid,
-                                  state.isUpdatingParticipant,
-                                ),
-                              ],
-                            ),
-                          );            } else if (state is BookingDetailError) {
+              final booking = state.booking;
+              final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+              final bool isHost = booking.userId == currentUserUid;
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildBookingInfoCard(context, booking),
+                    const SizedBox(height: 24),
+                    _buildSplitBillSection(
+                      context,
+                      booking,
+                      isHost,
+                      currentUserUid,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildParticipantsSection(
+                      context,
+                      booking,
+                      isHost,
+                      currentUserUid,
+                      state.isUpdatingParticipant,
+                    ),
+                  ],
+                ),
+              );
+            } else if (state is BookingDetailError) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -123,7 +129,9 @@ class BookingDetailPage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Dibuat pada: ${dateTimeFormat.format(booking.createdAt)}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             Row(
@@ -174,7 +182,6 @@ class BookingDetailPage extends StatelessWidget {
     bool isHost,
     String? currentUserUid,
   ) {
-
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -421,7 +428,8 @@ class BookingDetailPage extends StatelessWidget {
               ListTile(
                 title: const Text('Tandai Lunas'),
                 onTap: () {
-                  bloc.add( // Use captured bloc
+                  bloc.add(
+                    // Use captured bloc
                     UpdateParticipantPaymentStatus(
                       bookingId: bookingId,
                       participantUid: participantUid,
@@ -434,7 +442,8 @@ class BookingDetailPage extends StatelessWidget {
               ListTile(
                 title: const Text('Tandai Belum Bayar'),
                 onTap: () {
-                  bloc.add( // Use captured bloc
+                  bloc.add(
+                    // Use captured bloc
                     UpdateParticipantPaymentStatus(
                       bookingId: bookingId,
                       participantUid: participantUid,
@@ -472,7 +481,7 @@ class BookingDetailPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color),
       ),
@@ -512,7 +521,7 @@ class BookingDetailPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color),
       ),

@@ -49,7 +49,7 @@ class ProfilePage extends StatelessWidget {
                     const SizedBox(height: 16),
                     // Name
                     Text(
-                      user.displayName ?? 'No Name',
+                      user.displayName,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -58,7 +58,7 @@ class ProfilePage extends StatelessWidget {
                     const SizedBox(height: 8),
                     // Email
                     Text(
-                      user.email ?? 'No Email',
+                      user.email,
                       style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     const SizedBox(height: 16),

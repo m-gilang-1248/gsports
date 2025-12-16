@@ -76,21 +76,14 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
     );
 
     await result.fold(
-      (failure) async => emit(BookingDetailError(_mapFailureToMessage(failure))),
+      (failure) async =>
+          emit(BookingDetailError(_mapFailureToMessage(failure))),
       (_) async =>
           add(FetchBookingDetail(event.bookingId)), // Refresh booking details
     );
   }
 
-
   String _mapFailureToMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case ServerFailure:
-        return (failure as ServerFailure).message ?? 'Server Error';
-      case CacheFailure:
-        return (failure as CacheFailure).message ?? 'Cache Error';
-      default:
-        return 'Unexpected Error';
-    }
+    return failure.message;
   }
 }

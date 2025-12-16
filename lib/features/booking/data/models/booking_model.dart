@@ -131,7 +131,8 @@ class BookingModel extends Booking {
               )
               .toList() ??
           const [],
-      participantIds: (data['participantIds'] as List?) // Parse participantIds
+      participantIds:
+          (data['participantIds'] as List?) // Parse participantIds
               ?.map((e) => e as String)
               .toList() ??
           const [],

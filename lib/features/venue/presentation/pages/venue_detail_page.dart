@@ -232,7 +232,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withOpacity(0.2),
+                        color: AppColors.warning.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(

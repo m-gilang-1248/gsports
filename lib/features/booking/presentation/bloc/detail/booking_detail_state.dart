@@ -15,10 +15,7 @@ class BookingDetailLoaded extends BookingDetailState {
   final Booking booking;
   final bool isUpdatingParticipant;
 
-  const BookingDetailLoaded(
-    this.booking, {
-    this.isUpdatingParticipant = false,
-  });
+  const BookingDetailLoaded(this.booking, {this.isUpdatingParticipant = false});
 
   @override
   List<Object> get props => [booking, isUpdatingParticipant];

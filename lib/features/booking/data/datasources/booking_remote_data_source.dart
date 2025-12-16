@@ -41,10 +41,9 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
           .where('participantIds', arrayContains: userId)
           .get();
 
-      final bookings =
-          querySnapshot.docs
-              .map((doc) => BookingModel.fromJson(doc.data()..['id'] = doc.id))
-              .toList();
+      final bookings = querySnapshot.docs
+          .map((doc) => BookingModel.fromJson(doc.data()..['id'] = doc.id))
+          .toList();
 
       // Client-side sort by createdAt descending (Newest first)
       bookings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
