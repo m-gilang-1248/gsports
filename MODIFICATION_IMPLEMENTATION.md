@@ -1,5 +1,10 @@
 ## Journal
 
+### Phase 5: Finalization
+- **Action:** Updated `GEMINI.md` and `README.md` to reflect the new UI Design System changes.
+- **Learnings/Surprises:** None.
+- **Deviation:** None.
+
 ### Phase 4: Implement `custom_text_field.dart`
 - **Action:** Created `lib/core/presentation/widgets/custom_text_field.dart` with `CustomTextField` wrapper.
 - **Learnings/Surprises:** None.
@@ -88,6 +93,6 @@
 - [x] After committing the change, if an app is running, use the `hot_reload` tool to reload it.
 
 ## Phase 5: Finalization
-- [ ] Update any `README.md` file for the package with relevant information from the modification (if any).
-- [ ] Update any `GEMINI.md` file in the project directory so that it still correctly describes the app, its purpose, and implementation details and the layout of the files.
-- [ ] Ask the user to inspect the package (and running app, if any) and say if they are satisfied with it, or if any modifications are needed.
+- [x] Update any `README.md` file for the package with relevant information from the modification (if any).
+- [x] Update any `GEMINI.md` file in the project directory so that it still correctly describes the app, its purpose, and implementation details and the layout of the files.
+- [x] Ask the user to inspect the package (and running app, if any) and say if they are satisfied with it, or if any modifications are needed.

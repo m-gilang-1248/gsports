@@ -16,3 +16,6 @@ Gsports is a SaaS (Software as a Service) mobile application for real-time sport
 - Core Configuration (Theme, Router, Placeholder Pages)
 - **Navigation Shell:** Implemented `MainPage` with Bottom Navigation and State Preservation (`IndexedStack`).
 - **Venue Discovery:** Basic Venue List implemented.
+
+**Phase 2: Authentication & UI Foundation - In Progress**
+- **UI Design System:** Core widgets (Buttons, Inputs) and Theme established.
