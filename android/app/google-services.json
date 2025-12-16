@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "236446670878-127t9mafvequilnhkge7v5j3rogqch4s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gsports",
+            "certificate_hash": "25876acbd26784ef363ba09b86b3ebab5038cd6a"
+          }
+        },
+        {
           "client_id": "236446670878-1dhvf0n72br9qpkquc1k0aue2tskj6d2.apps.googleusercontent.com",
           "client_type": 3
         }
