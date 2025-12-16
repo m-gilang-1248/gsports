@@ -19,3 +19,4 @@ Gsports is a SaaS (Software as a Service) mobile application for real-time sport
 
 **Phase 2: Authentication & UI Foundation - In Progress**
 - **UI Design System:** Core widgets (Buttons, Inputs) and Theme established.
+- **Tech Spec:** Updated for Guest/Owner features.
