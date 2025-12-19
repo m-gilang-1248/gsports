@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gsports/core/constants/app_colors.dart';
+import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:gsports/features/booking/presentation/widgets/booking_bottom_sheet.dart';
 import 'package:gsports/features/booking/presentation/widgets/booking_time_slot_grid.dart';
@@ -72,7 +72,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   'Booking ${state.bookingId} menunggu pembayaran. Silakan selesaikan transaksi Anda.',
                 ),
                 backgroundColor:
-                    AppColors.info, // You might need to define AppColors.info
+                    AppColors.secondary, // You might need to define AppColors.info
               ),
             );
             // Optionally navigate to a "My Bookings" page or keep on current page
@@ -145,7 +145,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   }
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.electricBlue,
+                  backgroundColor: AppColors.secondary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -312,7 +312,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today, color: AppColors.electricBlue),
+            const Icon(Icons.calendar_today, color: AppColors.secondary),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,7 +357,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           decoration: BoxDecoration(
             color: isSelected ? Colors.blue.shade50 : Colors.white,
             border: Border.all(
-              color: isSelected ? AppColors.electricBlue : Colors.grey.shade300,
+              color: isSelected ? AppColors.secondary : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -386,7 +386,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   ),
                   child: const Icon(
                     Icons.sports_tennis,
-                    color: AppColors.electricBlue,
+                    color: AppColors.secondary,
                   ),
                 ),
                 title: Text(

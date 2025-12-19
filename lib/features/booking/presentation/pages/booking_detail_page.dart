@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
-import 'package:gsports/core/constants/app_colors.dart';
+import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
@@ -145,7 +145,7 @@ class BookingDetailPage extends StatelessWidget {
                   currencyFormat.format(booking.totalPrice),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.electricBlue,
+                    color: AppColors.secondary,
                   ),
                 ),
               ],
@@ -163,7 +163,7 @@ class BookingDetailPage extends StatelessWidget {
                     currencyFormat.format(estimatedShare),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.electricBlue,
+                      color: AppColors.secondary,
                     ),
                   ),
                 ],
@@ -221,8 +221,8 @@ class BookingDetailPage extends StatelessWidget {
                           );
                         },
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.electricBlue,
-                          side: const BorderSide(color: AppColors.electricBlue),
+                          foregroundColor: AppColors.secondary,
+                          side: const BorderSide(color: AppColors.secondary),
                         ),
                       ),
                     )

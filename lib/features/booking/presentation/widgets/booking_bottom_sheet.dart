@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:gsports/core/constants/app_colors.dart';
+import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
@@ -166,7 +166,7 @@ class BookingBottomSheet extends StatelessWidget {
                 Navigator.pop(context); // Close sheet
               },
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.electricBlue,
+                backgroundColor: AppColors.secondary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

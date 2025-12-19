@@ -1,91 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:gsports/core/constants/app_colors.dart';
+import '../../config/app_colors.dart';
 
-class PrimaryButton extends StatelessWidget {
-  final VoidCallback? onPressed;
+class CustomButton extends StatelessWidget {
   final String text;
+  final VoidCallback? onPressed;
   final bool isLoading;
+  final bool isOutlined;
+  final IconData? icon;
+  final double? width;
 
-  const PrimaryButton({
+  const CustomButton({
     super.key,
-    required this.onPressed,
     required this.text,
+    this.onPressed,
     this.isLoading = false,
+    this.isOutlined = false,
+    this.icon,
+    this.width = double.infinity,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: FilledButton(
-        onPressed: isLoading ? null : onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : Text(
+    final style = isOutlined
+        ? OutlinedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: AppColors.primary,
+            side: const BorderSide(color: AppColors.primary),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          )
+        : ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          );
+
+    final child = isLoading
+        ? SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: isOutlined ? AppColors.primary : Colors.white,
+            ),
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 20),
+                const SizedBox(width: 8),
+              ],
+              Text(
                 text,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
-      ),
-    );
-  }
-}
+            ],
+          );
 
-class SecondaryButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final String text;
-  final Widget? icon;
-
-  const SecondaryButton({
-    super.key,
-    required this.onPressed,
-    required this.text,
-    this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
     return SizedBox(
-      height: 48,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 0,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[icon!, const SizedBox(width: 8)],
-            Text(
-              text,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      width: width,
+      height: 50,
+      child: isOutlined
+          ? OutlinedButton(
+              onPressed: isLoading ? null : onPressed,
+              style: style,
+              child: child,
+            )
+          : ElevatedButton(
+              onPressed: isLoading ? null : onPressed,
+              style: style,
+              child: child,
             ),
-          ],
-        ),
-      ),
     );
   }
 }

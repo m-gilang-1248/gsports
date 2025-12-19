@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:gsports/core/constants/app_colors.dart';
+import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 
 class BookingTimeSlotGrid extends StatelessWidget {
@@ -111,7 +111,7 @@ class _TimeSlotCard extends StatelessWidget {
       textColor = Colors.grey;
       borderColor = Colors.transparent;
     } else if (isSelected) {
-      backgroundColor = AppColors.electricBlue;
+      backgroundColor = AppColors.secondary;
       textColor = Colors.white;
       borderColor = Colors.transparent;
     } else {
