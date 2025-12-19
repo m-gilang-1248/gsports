@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/presentation/widgets/custom_button.dart';
 import 'package:gsports/core/presentation/widgets/custom_text_field.dart';
+import 'package:gsports/core/presentation/widgets/google_sign_in_button.dart';
 
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -201,13 +202,38 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 24),
                     Row(
+                      children: [
+                        const Expanded(child: Divider()),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'Atau',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                        const Expanded(child: Divider()),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    GoogleSignInButton(
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              context.read<AuthBloc>().add(
+                                    AuthGoogleSignInRequested(
+                                      role: _selectedRole,
+                                    ),
+                                  );
+                            },
+                      isLoading: isLoading,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text('Sudah punya akun? '),
                         TextButton(
-                          onPressed: isLoading
-                              ? null
-                              : () => context.pop(),
+                          onPressed: isLoading ? null : () => context.pop(),
                           child: const Text(
                             'Masuk',
                             style: TextStyle(fontWeight: FontWeight.bold),

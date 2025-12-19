@@ -82,7 +82,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    final result = await _signInWithGoogle(NoParams());
+    final result = await _signInWithGoogle(SignInWithGoogleParams(role: event.role));
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
       (user) => emit(AuthAuthenticated(user)),

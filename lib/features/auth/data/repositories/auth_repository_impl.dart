@@ -65,9 +65,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> signInWithGoogle() async {
+  Future<Either<Failure, UserEntity>> signInWithGoogle({String? role}) async {
     try {
-      final userModel = await remoteDataSource.signInWithGoogle();
+      final userModel = await remoteDataSource.signInWithGoogle(role: role);
       return Right(userModel);
     } on ServerException catch (e, st) {
       debugPrint('AuthRepositoryImpl - ServerException: $e');

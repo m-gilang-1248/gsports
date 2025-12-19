@@ -22,7 +22,7 @@ abstract class AuthRemoteDataSource {
     String role = 'user',
   });
 
-  Future<UserModel> signInWithGoogle();
+  Future<UserModel> signInWithGoogle({String? role});
 
   Future<void> logout();
 
@@ -128,7 +128,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> signInWithGoogle() async {
+  Future<UserModel> signInWithGoogle({String? role}) async {
     try {
       // In google_sign_in 7.2.0, authenticate() is the interactive entry point.
       final gs.GoogleSignInAccount googleUser = await googleSignIn.authenticate();
@@ -136,6 +136,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final gs.GoogleSignInAuthentication googleAuth = googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
+        // accessToken is missing from GoogleSignInAuthentication in 7.2.0
       );
 
       final UserCredential userCredential =
@@ -157,7 +158,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           email: user.email ?? '',
           displayName: user.displayName ?? '',
           photoUrl: user.photoURL,
-          role: 'user',
+          role: role ?? 'user', // Use passed role or default to 'user'
         );
         await userDocRef.set(userData, SetOptions(merge: true));
       }

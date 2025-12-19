@@ -7,13 +7,19 @@ import '../entities/user_entity.dart';
 import '../repositories/auth_repository.dart';
 
 @injectable
-class SignInWithGoogle implements UseCase<UserEntity, NoParams> {
+class SignInWithGoogle implements UseCase<UserEntity, SignInWithGoogleParams> {
   final AuthRepository repository;
 
   SignInWithGoogle(this.repository);
 
   @override
-  Future<Either<Failure, UserEntity>> call(NoParams params) async {
-    return await repository.signInWithGoogle();
+  Future<Either<Failure, UserEntity>> call(SignInWithGoogleParams params) async {
+    return await repository.signInWithGoogle(role: params.role);
   }
+}
+
+class SignInWithGoogleParams {
+  final String? role;
+
+  const SignInWithGoogleParams({this.role});
 }

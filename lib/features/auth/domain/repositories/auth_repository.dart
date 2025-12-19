@@ -15,7 +15,7 @@ abstract class AuthRepository {
     String role = 'user',
   });
 
-  Future<Either<Failure, UserEntity>> signInWithGoogle();
+  Future<Either<Failure, UserEntity>> signInWithGoogle({String? role});
 
   Future<Either<Failure, void>> logout();
 

@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onGoogleLogin() {
-    context.read<AuthBloc>().add(AuthGoogleSignInRequested());
+    context.read<AuthBloc>().add(const AuthGoogleSignInRequested());
   }
 
   void _handleNavigation(AuthState state) {
