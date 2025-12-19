@@ -130,7 +130,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
-      // For google_sign_in 7.2.0, we use authenticate()
+      // In google_sign_in 7.2.0, authenticate() is the interactive entry point.
       final gs.GoogleSignInAccount googleUser = await googleSignIn.authenticate();
       
       final gs.GoogleSignInAuthentication googleAuth = googleUser.authentication;
@@ -172,6 +172,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(e.message ?? 'Firebase Error', stackTrace: st);
     } catch (e, st) {
       debugPrint('Unknown error during Google Sign-In: $e');
+      if (e is AuthException) rethrow;
       throw ServerException(e.toString(), stackTrace: st);
     }
   }
