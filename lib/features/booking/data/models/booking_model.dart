@@ -20,86 +20,29 @@ class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
 @TimestampConverter() // Apply converter to the entire class
 class BookingModel extends Booking {
   @override
-  @JsonKey(includeToJson: false) // ID is from doc.id, not in json data
-  final String id;
-  @override
-  final String userId;
-  @override
-  final String venueId;
-  @override
-  final String courtId;
-  @override
-  final String sportType;
-  @override
-  final DateTime date;
-  @override
-  final DateTime startTime;
-  @override
-  final DateTime endTime;
-  @override
-  final int durationHours;
-  @override
-  final int totalPrice;
-  @override
-  final String status;
-  @override
-  final String paymentStatus;
-  @override
-  final String? midtransOrderId;
-  @override
-  final String? midtransPaymentUrl;
-  @override
-  final bool isSplitBill;
-  @override
-  final String? splitCode;
-  @override
   final List<PaymentParticipantModel> participants;
-  @override
-  final List<String> participantIds;
-  @override
-  final DateTime createdAt;
 
   const BookingModel({
-    required this.id,
-    required this.userId,
-    required this.venueId,
-    required this.courtId,
-    required this.sportType,
-    required this.date,
-    required this.startTime,
-    required this.endTime,
-    required this.durationHours,
-    required this.totalPrice,
-    required this.status,
-    required this.paymentStatus,
-    this.midtransOrderId,
-    this.midtransPaymentUrl,
-    this.isSplitBill = false,
-    this.splitCode,
+    required super.id,
+    required super.userId,
+    required super.venueId,
+    required super.courtId,
+    required super.sportType,
+    required super.date,
+    required super.startTime,
+    required super.endTime,
+    required super.durationHours,
+    required super.totalPrice,
+    required super.status,
+    required super.paymentStatus,
+    super.midtransOrderId,
+    super.midtransPaymentUrl,
+    super.isSplitBill = false,
+    super.splitCode,
     this.participants = const [],
-    this.participantIds = const [], // Initialize participantIds here
-    required this.createdAt,
-  }) : super(
-         id: id,
-         userId: userId,
-         venueId: venueId,
-         courtId: courtId,
-         sportType: sportType,
-         date: date,
-         startTime: startTime,
-         endTime: endTime,
-         durationHours: durationHours,
-         totalPrice: totalPrice,
-         status: status,
-         paymentStatus: paymentStatus,
-         midtransOrderId: midtransOrderId,
-         midtransPaymentUrl: midtransPaymentUrl,
-         isSplitBill: isSplitBill,
-         splitCode: splitCode,
-         participants: participants,
-         participantIds: participantIds, // Pass to super
-         createdAt: createdAt,
-       );
+    super.participantIds = const [],
+    required super.createdAt,
+  }) : super(participants: participants);
 
   factory BookingModel.fromJson(Map<String, dynamic> json) =>
       _$BookingModelFromJson(json);
@@ -132,7 +75,7 @@ class BookingModel extends Booking {
               .toList() ??
           const [],
       participantIds:
-          (data['participantIds'] as List?) // Parse participantIds
+          (data['participantIds'] as List?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -146,7 +89,7 @@ class BookingModel extends Booking {
   Map<String, dynamic> toJson() {
     final json = _$BookingModelToJson(this);
     json['participants'] = participants.map((p) => p.toJson()).toList();
-    json['participantIds'] = participantIds; // Include in toJson
+    json['participantIds'] = participantIds;
     json['createdAt'] = Timestamp.fromDate(createdAt);
     return json;
   }

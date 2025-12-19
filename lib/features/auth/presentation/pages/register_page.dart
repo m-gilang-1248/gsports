@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gsports/core/presentation/widgets/custom_button.dart';
+import 'package:gsports/core/presentation/widgets/custom_text_field.dart';
 
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -18,12 +20,16 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  String _selectedRole = 'user'; // Default: 'Player'
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -34,22 +40,40 @@ class _RegisterPageState extends State<RegisterPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
           displayName: _nameController.text.trim(),
+          role: _selectedRole,
         ),
       );
+    }
+  }
+
+  void _handleNavigation(AuthState state) {
+    if (state is AuthAuthenticated) {
+      if (state.user.role == 'mitra') {
+        context.go('/owner-dashboard');
+      } else {
+        context.go('/home');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        backgroundColor: Colors.transparent,
+      ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
-              if (state is AuthAuthenticated) {
-                context.go('/home');
-              } else if (state is AuthFailure) {
+              _handleNavigation(state);
+              if (state is AuthFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
@@ -64,100 +88,189 @@ class _RegisterPageState extends State<RegisterPage> {
               return Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Create Account',
+                      'Buat Akun Baru',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Daftar sebagai pemain atau pemilik lapangan',
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 32),
-                    TextFormField(
+
+                    // Role Selection
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _RoleCard(
+                            label: 'Player',
+                            icon: Icons.sports_tennis,
+                            isSelected: _selectedRole == 'user',
+                            onTap: () => setState(() => _selectedRole = 'user'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _RoleCard(
+                            label: 'Venue Owner',
+                            icon: Icons.storefront,
+                            isSelected: _selectedRole == 'mitra',
+                            onTap:
+                                () => setState(() => _selectedRole = 'mitra'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    CustomTextField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Full Name',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person_outline),
-                      ),
+                      label: 'Nama Lengkap',
+                      hint: 'Masukkan nama lengkap',
+                      prefixIcon: const Icon(Icons.person_outline),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
+                          return 'Nama tidak boleh kosong';
                         }
                         return null;
                       },
                       enabled: !isLoading,
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
+                    CustomTextField(
                       controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.email_outlined),
-                      ),
+                      label: 'Email',
+                      hint: 'nama@email.com',
+                      prefixIcon: const Icon(Icons.email_outlined),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
+                          return 'Email tidak boleh kosong';
                         }
                         if (!value.contains('@')) {
-                          return 'Please enter a valid email';
+                          return 'Email tidak valid';
                         }
                         return null;
                       },
                       enabled: !isLoading,
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
+                    CustomTextField(
                       controller: _passwordController,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.lock_outline),
-                      ),
-                      obscureText: true,
+                      label: 'Password',
+                      hint: 'Masukkan password',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      isPassword: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
+                          return 'Password tidak boleh kosong';
                         }
                         if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
+                          return 'Password minimal 6 karakter';
                         }
                         return null;
                       },
                       enabled: !isLoading,
                     ),
-                    const SizedBox(height: 24),
-                    FilledButton(
-                      onPressed: isLoading ? null : _onRegister,
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('Sign Up'),
-                    ),
                     const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: isLoading ? null : () => context.go('/login'),
-                      child: const Text('Already have an account? Login'),
+                    CustomTextField(
+                      controller: _confirmPasswordController,
+                      label: 'Konfirmasi Password',
+                      hint: 'Ulangi password',
+                      prefixIcon: const Icon(Icons.lock_reset),
+                      isPassword: true,
+                      validator: (value) {
+                        if (value != _passwordController.text) {
+                          return 'Password tidak cocok';
+                        }
+                        return null;
+                      },
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 32),
+                    CustomButton(
+                      text: 'Daftar',
+                      onPressed: _onRegister,
+                      isLoading: isLoading,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Sudah punya akun? '),
+                        TextButton(
+                          onPressed: isLoading
+                              ? null
+                              : () => context.pop(),
+                          child: const Text(
+                            'Masuk',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               );
             },
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleCard extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RoleCard({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.black.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.black : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 40,
+              color: isSelected ? Colors.black : Colors.grey,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? Colors.black : Colors.grey,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -8,7 +8,8 @@ import 'package:gsports/core/presentation/pages/main_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_page.dart';
 import 'package:gsports/features/venue/presentation/pages/venue_detail_page.dart';
 import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
-import 'package:gsports/features/booking/presentation/pages/booking_detail_page.dart'; // New Import
+import 'package:gsports/features/booking/presentation/pages/booking_detail_page.dart';
+import 'package:gsports/features/partner/presentation/pages/owner_dashboard_page.dart'; // New Import
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -27,6 +28,10 @@ class AppRouter {
         builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const MainPage()),
+      GoRoute(
+        path: '/owner-dashboard',
+        builder: (context, state) => const OwnerDashboardPage(),
+      ),
       GoRoute(
         path: '/venue/:id',
         builder: (context, state) =>

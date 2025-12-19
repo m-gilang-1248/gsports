@@ -12,6 +12,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
 import 'package:firebase_auth/firebase_auth.dart' as _i59;
 import 'package:get_it/get_it.dart' as _i174;
+import 'package:google_sign_in/google_sign_in.dart' as _i116;
 import 'package:http/http.dart' as _i519;
 import 'package:injectable/injectable.dart' as _i526;
 
@@ -24,6 +25,7 @@ import 'features/auth/domain/usecases/check_auth_status.dart' as _i818;
 import 'features/auth/domain/usecases/login_user.dart' as _i1073;
 import 'features/auth/domain/usecases/logout_user.dart' as _i657;
 import 'features/auth/domain/usecases/register_user.dart' as _i14;
+import 'features/auth/domain/usecases/sign_in_with_google.dart' as _i648;
 import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
 import 'features/booking/data/datasources/booking_remote_data_source.dart'
     as _i97;
@@ -73,15 +75,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i974.FirebaseFirestore>(
       () => firebaseModule.firebaseFirestore,
     );
+    gh.lazySingleton<_i116.GoogleSignIn>(() => firebaseModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => networkModule.httpClient);
     gh.lazySingleton<_i1039.VenueRemoteDataSource>(
       () => _i1039.VenueRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
-    );
-    gh.factory<_i767.AuthRemoteDataSource>(
-      () => _i767.AuthRemoteDataSourceImpl(
-        firebaseAuth: gh<_i59.FirebaseAuth>(),
-        firebaseFirestore: gh<_i974.FirebaseFirestore>(),
-      ),
     );
     gh.lazySingleton<_i97.BookingRemoteDataSource>(
       () => _i97.BookingRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
@@ -94,6 +91,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i692.PaymentRemoteDataSource>(
       () => _i692.PaymentRemoteDataSourceImpl(gh<_i519.Client>()),
+    );
+    gh.factory<_i767.AuthRemoteDataSource>(
+      () => _i767.AuthRemoteDataSourceImpl(
+        firebaseAuth: gh<_i59.FirebaseAuth>(),
+        firebaseFirestore: gh<_i974.FirebaseFirestore>(),
+        googleSignIn: gh<_i116.GoogleSignIn>(),
+      ),
     );
     gh.factory<_i1015.AuthRepository>(
       () => _i111.AuthRepositoryImpl(
@@ -143,6 +147,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i416.UpdateParticipantStatus>(),
       ),
     );
+    gh.factory<_i648.SignInWithGoogle>(
+      () => _i648.SignInWithGoogle(gh<_i1015.AuthRepository>()),
+    );
     gh.lazySingleton<_i818.CheckAuthStatus>(
       () => _i818.CheckAuthStatus(gh<_i1015.AuthRepository>()),
     );
@@ -162,6 +169,15 @@ extension GetItInjectableX on _i174.GetIt {
         getVenueCourts: gh<_i606.GetVenueCourts>(),
       ),
     );
+    gh.factory<_i363.AuthBloc>(
+      () => _i363.AuthBloc(
+        gh<_i818.CheckAuthStatus>(),
+        gh<_i1073.LoginUser>(),
+        gh<_i14.RegisterUser>(),
+        gh<_i657.LogoutUser>(),
+        gh<_i648.SignInWithGoogle>(),
+      ),
+    );
     gh.factory<_i1064.HistoryBloc>(
       () => _i1064.HistoryBloc(
         getMyBookings: gh<_i776.GetMyBookings>(),
@@ -171,14 +187,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i376.PaymentRepository>(
       () => _i210.PaymentRepositoryImpl(gh<_i692.PaymentRemoteDataSource>()),
-    );
-    gh.factory<_i363.AuthBloc>(
-      () => _i363.AuthBloc(
-        gh<_i818.CheckAuthStatus>(),
-        gh<_i1073.LoginUser>(),
-        gh<_i14.RegisterUser>(),
-        gh<_i657.LogoutUser>(),
-      ),
     );
     gh.lazySingleton<_i206.CreateInvoice>(
       () => _i206.CreateInvoice(gh<_i376.PaymentRepository>()),

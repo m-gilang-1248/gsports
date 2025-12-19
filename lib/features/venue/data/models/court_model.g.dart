@@ -11,6 +11,7 @@ CourtModel _$CourtModelFromJson(Map<String, dynamic> json) => CourtModel(
   name: json['name'] as String,
   sportType: json['sportType'] as String,
   hourlyPrice: (json['hourlyPrice'] as num).toInt(),
+  isActive: json['isActive'] as bool? ?? true,
 );
 
 Map<String, dynamic> _$CourtModelToJson(CourtModel instance) =>
@@ -19,4 +20,5 @@ Map<String, dynamic> _$CourtModelToJson(CourtModel instance) =>
       'name': instance.name,
       'sportType': instance.sportType,
       'hourlyPrice': instance.hourlyPrice,
+      'isActive': instance.isActive,
     };

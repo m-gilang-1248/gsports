@@ -44,6 +44,7 @@ BookingModel _$BookingModelFromJson(Map<String, dynamic> json) => BookingModel(
 
 Map<String, dynamic> _$BookingModelToJson(BookingModel instance) =>
     <String, dynamic>{
+      'id': instance.id,
       'userId': instance.userId,
       'venueId': instance.venueId,
       'courtId': instance.courtId,
@@ -59,7 +60,7 @@ Map<String, dynamic> _$BookingModelToJson(BookingModel instance) =>
       'midtransPaymentUrl': instance.midtransPaymentUrl,
       'isSplitBill': instance.isSplitBill,
       'splitCode': instance.splitCode,
-      'participants': instance.participants,
       'participantIds': instance.participantIds,
       'createdAt': const TimestampConverter().toJson(instance.createdAt),
+      'participants': instance.participants,
     };

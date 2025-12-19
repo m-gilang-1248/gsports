@@ -18,6 +18,7 @@ class RegisterUser extends UseCase<UserEntity, RegisterUserParams> {
       email: params.email,
       password: params.password,
       displayName: params.displayName,
+      role: params.role,
     );
   }
 }
@@ -26,11 +27,13 @@ class RegisterUserParams {
   final String email;
   final String password;
   final String displayName;
+  final String role;
 
   const RegisterUserParams({
     required this.email,
     required this.password,
     required this.displayName,
+    this.role = 'user',
   });
 
   @override
@@ -40,9 +43,11 @@ class RegisterUserParams {
     return other is RegisterUserParams &&
         other.email == email &&
         other.password == password &&
-        other.displayName == displayName;
+        other.displayName == displayName &&
+        other.role == role;
   }
 
   @override
-  int get hashCode => email.hashCode ^ password.hashCode ^ displayName.hashCode;
+  int get hashCode =>
+      email.hashCode ^ password.hashCode ^ displayName.hashCode ^ role.hashCode;
 }

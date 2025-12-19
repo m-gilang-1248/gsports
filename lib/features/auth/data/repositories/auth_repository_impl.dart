@@ -42,12 +42,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String displayName,
+    String role = 'user',
   }) async {
     try {
       final userModel = await remoteDataSource.registerWithEmailPassword(
         email: email,
         password: password,
         displayName: displayName,
+        role: role,
       );
       return Right(userModel);
     } on ServerException catch (e, st) {
@@ -58,6 +60,23 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(AuthFailure(e.message, stackTrace: st));
     } catch (e, st) {
       debugPrint('AuthRepositoryImpl - Unknown error during registration: $e');
+      return Left(ServerFailure(e.toString(), stackTrace: st));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> signInWithGoogle() async {
+    try {
+      final userModel = await remoteDataSource.signInWithGoogle();
+      return Right(userModel);
+    } on ServerException catch (e, st) {
+      debugPrint('AuthRepositoryImpl - ServerException: $e');
+      return Left(ServerFailure(e.message, stackTrace: st));
+    } on AuthException catch (e, st) {
+      debugPrint('AuthRepositoryImpl - AuthException: $e');
+      return Left(AuthFailure(e.message, stackTrace: st));
+    } catch (e, st) {
+      debugPrint('AuthRepositoryImpl - Unknown error during Google Sign-In: $e');
       return Left(ServerFailure(e.toString(), stackTrace: st));
     }
   }

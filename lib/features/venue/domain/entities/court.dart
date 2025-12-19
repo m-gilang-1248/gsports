@@ -5,14 +5,16 @@ class Court extends Equatable {
   final String name;
   final String sportType;
   final int hourlyPrice;
+  final bool isActive; // Added isActive
 
   const Court({
     required this.id,
     required this.name,
     required this.sportType,
     required this.hourlyPrice,
+    this.isActive = true,
   });
 
   @override
-  List<Object?> get props => [id, name, sportType, hourlyPrice];
+  List<Object?> get props => [id, name, sportType, hourlyPrice, isActive];
 }

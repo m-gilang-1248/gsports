@@ -3,6 +3,7 @@ import 'package:gsports/features/venue/domain/entities/venue_location.dart';
 
 class Venue extends Equatable {
   final String id;
+  final String ownerId; // Added ownerId
   final String name;
   final String description;
   final String address;
@@ -16,6 +17,7 @@ class Venue extends Equatable {
 
   const Venue({
     required this.id,
+    required this.ownerId,
     required this.name,
     required this.description,
     required this.address,
@@ -31,6 +33,7 @@ class Venue extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    ownerId,
     name,
     description,
     address,

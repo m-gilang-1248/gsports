@@ -11,23 +11,25 @@ class VenueSeeder {
       final collection = _firestore.collection('venues');
       final snapshot = await collection.limit(1).get();
 
-      // If venues already exist, do nothing (or you could force overwrite if needed)
+      // If venues already exist, do nothing
       if (snapshot.docs.isNotEmpty) {
-        // print('Venues already seeded.');
         return;
       }
+
+      const dummyOwnerId = 'SYSTEM_SEED';
 
       // Data Dummy 1: GOR Badminton Juara
       final venue1 = VenueModel(
         id: '', // Auto ID
+        ownerId: dummyOwnerId,
         name: 'GOR Badminton Juara',
         description:
-            'GOR Badminton terbaik di Jakarta Selatan dengan fasilitas lengkap dan parkir luas. Lantai karpet standar internasional.',
+            'GOR Badminton terbaik di Jakarta Selatan dengan fasilitas lengkap dan parkir luas.',
         address: 'Jl. Fatmawati No. 10',
         city: 'Jakarta Selatan',
         location: const VenueLocation(lat: -6.295424, lng: 106.795134),
-        facilities: ['Parking', 'Wifi', 'Toilet', 'Mosque', 'Canteen'],
-        photos: [
+        facilities: const ['Parking', 'Wifi', 'Toilet', 'Mosque', 'Canteen'],
+        photos: const [
           'https://images.unsplash.com/photo-1626224583764-847649623db6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         ],
         rating: 4.8,
@@ -66,14 +68,15 @@ class VenueSeeder {
       // Data Dummy 2: Futsal Center Tebet
       final venue2 = VenueModel(
         id: '',
+        ownerId: dummyOwnerId,
         name: 'Futsal Center Tebet',
         description:
             'Lapangan futsal rumput sintetis kualitas FIFA. Buka 24 jam.',
         address: 'Jl. Tebet Raya No. 45',
         city: 'Jakarta Selatan',
         location: const VenueLocation(lat: -6.226959, lng: 106.852123),
-        facilities: ['Parking', 'Shower', 'Locker', 'Wifi'],
-        photos: [
+        facilities: const ['Parking', 'Shower', 'Locker', 'Wifi'],
+        photos: const [
           'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         ],
         rating: 4.5,
@@ -105,13 +108,14 @@ class VenueSeeder {
       // Data Dummy 3: Tennis Court Senayan
       final venue3 = VenueModel(
         id: '',
+        ownerId: dummyOwnerId,
         name: 'Tennis Court Senayan',
         description: 'Lapangan tenis outdoor dan indoor standar turnamen.',
         address: 'Gelora Bung Karno',
         city: 'Jakarta Pusat',
         location: const VenueLocation(lat: -6.218480, lng: 106.802549),
-        facilities: ['Parking', 'Shower', 'Pro Shop', 'Coach'],
-        photos: [
+        facilities: const ['Parking', 'Shower', 'Pro Shop', 'Coach'],
+        photos: const [
           'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         ],
         rating: 4.9,
@@ -139,10 +143,7 @@ class VenueSeeder {
       for (final court in courts3) {
         await venueRef3.collection('courts').add(court.toJson());
       }
-
-      // print('Seeding completed successfully.');
     } catch (e) {
-      // print('Error seeding data: $e');
       rethrow;
     }
   }

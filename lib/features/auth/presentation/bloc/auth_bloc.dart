@@ -6,6 +6,7 @@ import '../../domain/usecases/check_auth_status.dart';
 import '../../domain/usecases/login_user.dart';
 import '../../domain/usecases/logout_user.dart';
 import '../../domain/usecases/register_user.dart';
+import '../../domain/usecases/sign_in_with_google.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -15,16 +16,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUser _loginUser;
   final RegisterUser _registerUser;
   final LogoutUser _logoutUser;
+  final SignInWithGoogle _signInWithGoogle;
 
   AuthBloc(
     this._checkAuthStatus,
     this._loginUser,
     this._registerUser,
     this._logoutUser,
+    this._signInWithGoogle,
   ) : super(AuthInitial()) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<LoginSubmitted>(_onLoginSubmitted);
     on<RegisterSubmitted>(_onRegisterSubmitted);
+    on<AuthGoogleSignInRequested>(_onAuthGoogleSignInRequested);
     on<LogoutRequested>(_onLogoutRequested);
   }
 
@@ -64,8 +68,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
         displayName: event.displayName,
+        role: event.role,
       ),
     );
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) => emit(AuthAuthenticated(user)),
+    );
+  }
+
+  Future<void> _onAuthGoogleSignInRequested(
+    AuthGoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await _signInWithGoogle(NoParams());
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
       (user) => emit(AuthAuthenticated(user)),

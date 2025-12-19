@@ -9,42 +9,16 @@ part 'user_model.g.dart';
 
 @JsonSerializable()
 class UserModel extends UserEntity {
-  @override
-  final String uid;
-  @override
-  final String email;
-  @override
-  final String displayName;
-  @override
-  final String? photoUrl;
-  @override
-  final String role; // e.g., 'user', 'mitra', 'admin'
-  @override
-  final String tier; // e.g., 'free', 'premium'
-  @override
-  final DateTime? tierExpiryDate;
-  @override
-  final DateTime createdAt;
-
   const UserModel({
-    required this.uid,
-    required this.email,
-    required this.displayName,
-    this.photoUrl,
-    required this.role,
-    required this.tier,
-    this.tierExpiryDate,
-    required this.createdAt,
-  }) : super(
-         uid: uid,
-         email: email,
-         displayName: displayName,
-         photoUrl: photoUrl,
-         role: role,
-         tier: tier,
-         tierExpiryDate: tierExpiryDate,
-         createdAt: createdAt,
-       );
+    required super.uid,
+    required super.email,
+    required super.displayName,
+    super.photoUrl,
+    required super.role,
+    required super.tier,
+    super.tierExpiryDate,
+    required super.createdAt,
+  });
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);

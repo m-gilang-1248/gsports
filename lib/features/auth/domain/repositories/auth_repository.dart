@@ -12,7 +12,10 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String displayName,
+    String role = 'user',
   });
+
+  Future<Either<Failure, UserEntity>> signInWithGoogle();
 
   Future<Either<Failure, void>> logout();
 
