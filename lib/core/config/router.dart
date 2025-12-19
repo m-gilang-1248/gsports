@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,7 +10,7 @@ import 'package:gsports/features/booking/presentation/pages/booking_page.dart';
 import 'package:gsports/features/venue/presentation/pages/venue_detail_page.dart';
 import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_detail_page.dart';
-import 'package:gsports/features/partner/presentation/pages/owner_dashboard_page.dart'; // New Import
+import 'package:gsports/features/partner/presentation/pages/owner_dashboard_page.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -18,6 +19,26 @@ class AppRouter {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/',
     redirect: (context, state) {
+      final user = FirebaseAuth.instance.currentUser;
+      final isLoggedIn = user != null;
+      final path = state.uri.path;
+
+      // Whitelist Strategy
+      final publicRoutes = ['/login', '/register', '/home', '/'];
+      final isPublic = publicRoutes.contains(path) || path.startsWith('/venue');
+
+      // Guard: Redirect guest to login if accessing protected route
+      if (!isLoggedIn && !isPublic) {
+        return '/login';
+      }
+
+      // Auth Skip: Redirect authenticated user away from auth pages
+      if (isLoggedIn && (path == '/login' || path == '/register')) {
+        // Here we could ideally check roles, but for now we default to home
+        // Role check would usually require a Bloc state or Firestore fetch
+        return '/home';
+      }
+
       return null;
     },
     routes: [

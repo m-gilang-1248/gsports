@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/core/presentation/widgets/custom_button.dart';
 import 'package:gsports/core/presentation/widgets/custom_text_field.dart';
 import 'package:gsports/core/presentation/widgets/google_sign_in_button.dart';
@@ -176,6 +177,17 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 24),
+                      TextButton(
+                        onPressed: () => context.go('/home'),
+                        child: const Text(
+                          'Masuk sebagai Tamu',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
                       ),
                     ],
                   ),
