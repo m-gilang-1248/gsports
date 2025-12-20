@@ -9,16 +9,37 @@ import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail
 import 'package:firebase_auth/firebase_auth.dart'; // For checking current user UID
 import 'package:flutter/services.dart'; // For Clipboard
 
-class BookingDetailPage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
+import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/features/booking/domain/entities/booking.dart';
+import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
+import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
+import 'package:gsports/features/booking/presentation/widgets/payment_timer_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // For checking current user UID
+import 'package:flutter/services.dart'; // For Clipboard
+import 'package:go_router/go_router.dart';
+
+class BookingDetailPage extends StatefulWidget {
   final String bookingId;
 
   const BookingDetailPage({super.key, required this.bookingId});
 
   @override
+  State<BookingDetailPage> createState() => _BookingDetailPageState();
+}
+
+class _BookingDetailPageState extends State<BookingDetailPage> {
+  bool _isExpired = false;
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          GetIt.I<BookingDetailBloc>()..add(FetchBookingDetail(bookingId)),
+          GetIt.I<BookingDetailBloc>()
+            ..add(FetchBookingDetail(widget.bookingId)),
       child: Scaffold(
         appBar: AppBar(title: const Text('Detail Booking')),
         body: BlocConsumer<BookingDetailBloc, BookingDetailState>(
@@ -37,29 +58,91 @@ class BookingDetailPage extends StatelessWidget {
               final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
               final bool isHost = booking.userId == currentUserUid;
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildBookingInfoCard(context, booking),
-                    const SizedBox(height: 24),
-                    _buildSplitBillSection(
-                      context,
-                      booking,
-                      isHost,
-                      currentUserUid,
+              // Update expired state based on booking status
+              final bool actuallyExpired =
+                  booking.status == 'cancelled' || _isExpired;
+
+              return Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (booking.status == 'waiting_payment') ...[
+                            PaymentTimerWidget(
+                              createdAt: booking.createdAt,
+                              onExpired: () {
+                                setState(() {
+                                  _isExpired = true;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          _buildBookingInfoCard(context, booking),
+                          const SizedBox(height: 24),
+                          _buildSplitBillSection(
+                            context,
+                            booking,
+                            isHost,
+                            currentUserUid,
+                          ),
+                          const SizedBox(height: 24),
+                          _buildParticipantsSection(
+                            context,
+                            booking,
+                            isHost,
+                            currentUserUid,
+                            state.isUpdatingParticipant,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 24),
-                    _buildParticipantsSection(
-                      context,
-                      booking,
-                      isHost,
-                      currentUserUid,
-                      state.isUpdatingParticipant,
+                  ),
+                  if (booking.status == 'waiting_payment' && isHost)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, -4),
+                          ),
+                        ],
+                      ),
+                      child: SafeArea(
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: FilledButton(
+                            onPressed: actuallyExpired
+                                ? null
+                                : () => _onPayPressed(context, booking),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: actuallyExpired
+                                  ? Colors.grey
+                                  : AppColors.secondary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              actuallyExpired
+                                  ? 'Pembayaran Kedaluwarsa'
+                                  : 'Bayar Sekarang',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                ],
               );
             } else if (state is BookingDetailError) {
               return Center(
@@ -71,7 +154,7 @@ class BookingDetailPage extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {
                         context.read<BookingDetailBloc>().add(
-                          FetchBookingDetail(bookingId),
+                          FetchBookingDetail(widget.bookingId),
                         );
                       },
                       child: const Text('Retry'),
@@ -85,6 +168,16 @@ class BookingDetailPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _onPayPressed(BuildContext context, Booking booking) {
+    if (booking.midtransPaymentUrl != null) {
+      context.push('/payment', extra: booking.midtransPaymentUrl);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Link pembayaran tidak tersedia')),
+      );
+    }
   }
 
   Widget _buildBookingInfoCard(BuildContext context, Booking booking) {
