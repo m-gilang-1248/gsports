@@ -25,20 +25,17 @@ class BookingHistoryPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.calendar_today_outlined,
-                  size: 80,
-                  color: Colors.grey,
-                ),
+                const Icon(Icons.calendar_today_outlined,
+                    size: 80, color: Colors.grey),
                 const SizedBox(height: 16),
                 const Text(
-                  'Masuk untuk melihat riwayat booking',
+                  'Login untuk mengakses riwayat booking',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Lihat status pembayaran dan detail lapangan yang telah Anda pesan.',
+                  'Silakan masuk untuk melihat status pembayaran dan detail lapangan yang telah Anda pesan.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey),
                 ),

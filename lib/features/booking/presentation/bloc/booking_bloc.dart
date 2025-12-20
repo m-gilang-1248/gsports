@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
@@ -44,10 +45,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     final availabilityMap = <int, bool>{};
     final date = event.date;
     final courtId = event.courtId;
+    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
     // Check hours 08:00 to 22:00 (inclusive start)
-    // Optimizing: In a real app, we'd fetch all bookings once.
-    // Here we loop UseCase calls as per design decision for MVP simplicity.
     // Parallelizing requests for speed.
 
     final futures = <Future<void>>[];
@@ -71,7 +71,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
             print(
               'Check Hour $hour for Court $courtId on $date: FAILED - ${failure.message}',
             );
-            availabilityMap[hour] = false; // Treat error as unavailable
+            // If guest and error occurs (e.g. permission), default to AVAILABLE
+            // This ensures they can select a slot and see the login redirect.
+            availabilityMap[hour] = !isLoggedIn;
           },
           (isAvailable) {
             print(

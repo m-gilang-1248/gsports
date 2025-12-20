@@ -124,9 +124,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   if (user == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          'Silakan masuk terlebih dahulu untuk melakukan booking',
-                        ),
+                        content: Text('Login untuk melakukan booking'),
                         duration: Duration(seconds: 2),
                       ),
                     );

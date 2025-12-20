@@ -100,23 +100,16 @@ class ProfilePage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.person_outline,
-                        size: 80,
-                        color: Colors.grey,
-                      ),
+                      const Icon(Icons.person_outline, size: 80, color: Colors.grey),
                       const SizedBox(height: 16),
                       const Text(
-                        'Masuk untuk melihat profil Anda',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        'Login untuk mengakses profil',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Kelola data diri dan status member Anda dengan login terlebih dahulu.',
+                        'Silakan masuk untuk mengelola data diri dan status member Anda.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey),
                       ),
