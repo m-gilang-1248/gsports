@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +10,7 @@ import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
 import 'package:gsports/injection_container.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class VenueDetailPage extends StatefulWidget {
   final String venueId;
@@ -43,7 +43,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 backgroundColor: AppColors.success,
               ),
             );
-            // Optionally navigate to home or booking history
             context.go('/home');
           } else if (state is BookingPaymentPageReady) {
             _handlePaymentNavigation(context, state);
@@ -56,7 +55,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 backgroundColor: AppColors.success,
               ),
             );
-            context.go('/home'); // Navigate to home or booking history
+            context.go('/home');
           } else if (state is BookingCancelledState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -72,12 +71,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 content: Text(
                   'Booking ${state.bookingId} menunggu pembayaran. Silakan selesaikan transaksi Anda.',
                 ),
-                backgroundColor: AppColors
-                    .secondary, // You might need to define AppColors.info
+                backgroundColor: AppColors.secondary,
               ),
             );
-            // Optionally navigate to a "My Bookings" page or keep on current page
-            // context.go('/my-bookings');
           } else if (state is BookingFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -132,7 +128,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                     return;
                   }
 
-                  // Get current venue and court from VenueBloc state (bit hacky access but valid in this scope)
                   final venueState = context.read<VenueBloc>().state;
                   if (venueState is VenueDetailLoaded) {
                     final court = venueState.courts.firstWhere(
@@ -143,7 +138,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
                       builder: (sheetContext) {
-                        // Pass the EXISTING BookingBloc to the sheet
                         return BlocProvider.value(
                           value: context.read<BookingBloc>(),
                           child: BookingBottomSheet(
@@ -195,11 +189,16 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               fit: StackFit.expand,
               children: [
                 venue.photos.isNotEmpty
-                    ? Image.network(
-                        venue.photos.first,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(color: Colors.grey),
+                    ? PageView.builder(
+                        itemCount: venue.photos.length,
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            venue.photos[index],
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(color: Colors.grey),
+                          );
+                        },
                       )
                     : Container(color: Colors.grey),
                 const DecoratedBox(
@@ -211,6 +210,27 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                     ),
                   ),
                 ),
+                if (venue.photos.length > 1)
+                  Positioned(
+                    bottom: 16,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        venue.photos.length,
+                        (index) => Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -221,7 +241,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Venue Info
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -245,7 +264,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.2),
+                        color: AppColors.warning.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -265,13 +284,44 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 24),
+                Text(
+                  'Fasilitas',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: venue.facilities.map((facility) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // In a real app, map facility string to icon
+                          const Icon(Icons.check_circle_outline,
+                              size: 16, color: AppColors.secondary),
+                          const SizedBox(width: 8),
+                          Text(
+                            facility,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
                 const Divider(height: 32),
-
-                // Date Picker Section
                 _buildDatePicker(context),
                 const SizedBox(height: 24),
-
-                // Courts List
                 Text(
                   'Pilih Lapangan & Jadwal',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -313,8 +363,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           setState(() {
             _selectedDate = date;
           });
-          // Refresh availability if a court was already expanded?
-          // For MVP, we let user re-select the court to refresh.
         }
       },
       child: Container(
@@ -455,11 +503,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
       extra: state.paymentUrl,
     );
 
-    // Dispatch a new event to handle the payment result
     context.read<BookingBloc>().add(
       BookingPaymentCompleted(
         bookingId: state.bookingId,
-        status: result ?? 'cancelled', // Default to cancelled if result is null
+        status: result ?? 'cancelled',
       ),
     );
   }
