@@ -7,6 +7,7 @@ import 'package:gsports/features/auth/presentation/pages/register_page.dart';
 import 'package:gsports/features/auth/presentation/pages/splash_page.dart';
 import 'package:gsports/core/presentation/pages/main_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_page.dart';
+import 'package:gsports/features/home/presentation/pages/search_page.dart';
 import 'package:gsports/features/venue/presentation/pages/venue_detail_page.dart';
 import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_detail_page.dart';
@@ -52,6 +53,13 @@ class AppRouter {
       GoRoute(
         path: '/owner-dashboard',
         builder: (context, state) => const OwnerDashboardPage(),
+      ),
+      GoRoute(
+        path: '/search',
+        builder: (context, state) {
+          final category = state.uri.queryParameters['category'];
+          return SearchPage(initialCategory: category);
+        },
       ),
       GoRoute(
         path: '/venue/:id',

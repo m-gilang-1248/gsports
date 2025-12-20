@@ -9,120 +9,60 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 *   **Phase 1 (Foundation):** Project created, dependencies added. Folder structure set up. Core config (Theme, Router, DI) implemented. Encountered `CardTheme` analysis error (type mismatch with `CardThemeData?`), temporarily commented out `cardTheme` in `AppTheme`. `build_runner` run but no injectables yet. Firebase setup for Android successfully completed, including `firebase_options.dart` generation and `main.dart` update.
 *   **Sprint 4 Completed:** Midtrans integration with Re-query logic & Zombie Booking prevention is implemented.
 *   **Sprint 5 Completed:** Foundation, Basic Auth, Venue Discovery, Booking System, Payment (Midtrans), and Split Bill are functional (MVP level).
+*   **Sprint 6 Completed:** UI Foundation, Auth Revolution, and Guest Mode.
+    *   **Design System:** Implemented v2.1 Design Tokens (Colors, Typography) and Core Widgets (`CustomButton`, `CustomTextField`).
+    *   **Auth Revamp:** Added Google Sign-In (Credential Manager), Multi-Role Registration (Player vs Owner), and Role-Based Navigation.
+    *   **Guest Mode:** Implemented Router Whitelisting to allow unauthenticated exploration of Home and Venue Details. Guests are redirected to Login only when attempting to book.
 *   **Pivot Point:** Moving away from immediate Monetization in sprint 6. Focusing on "Twin Tower" strategy (User & Owner Apps) and High-Fidelity UI/UX.
 
 ## Phase 1: Foundation & Setup
 - [x] Create Flutter project `gsports` using `create_project`.
-    - Target directory: `.` (Current directory `gsports`).
-    - Platform: `android`, `ios` (default).
-    - Type: `flutter`, Template: `app`, Empty: `true`.
-- [x] Clean up default boilerplate (remove `flutter_test` folder if generic, main.dart comments).
-- [x] Update `pubspec.yaml` with dependencies:
-    - `flutter_bloc`, `equatable`, `get_it`, `injectable`, `go_router`, `flutter_dotenv`
-    - `firebase_core`, `cloud_firestore`, `firebase_auth`, `firebase_storage`
-    - `json_annotation`, `google_fonts`, `cached_network_image`, `shimmer`, `intl`
-    - `webview_flutter` (for Midtrans)
-    - Dev: `build_runner`, `json_serializable`, `mocktail`, `very_good_analysis` (or `flutter_lints`).
+- [x] Clean up default boilerplate.
+- [x] Update `pubspec.yaml` with dependencies.
 - [x] Run `flutter pub get`.
-- [x] Setup **Clean Architecture** Folder Structure:
-    - `lib/core/{config, constants, error, network, usecases, utils}`
-    - `lib/features/`
-- [x] Implement **Core Config**:
-    - `ThemeData` (Material 3, Black/White/Electric Blue).
-    - `GoRouter` configuration (basic shell).
-    - `InjectionContainer` (GetIt) setup.
-- [x] Initialize **Firebase**:
-    - Setup `firebase_options.dart` (assuming user has CLI or provide instructions/placeholder).
-    - Call `Firebase.initializeApp()` in `main.dart`.
+- [x] Setup **Clean Architecture** Folder Structure.
+- [x] Implement **Core Config**.
+- [x] Initialize **Firebase**.
 
 ## Phase 2: Authentication & User Profile
-- [x] **Domain Layer (Auth):**
-    - Entities: `UserEntity`.
-    - UseCases: `LoginUser`, `RegisterUser`, `LogoutUser`, `CheckAuthStatus`.
-    - Repository Interface: `AuthRepository`.
-- [x] **Data Layer (Auth):**
-    - Models: `UserModel` (fromJson/toJson).
-    - Datasource: `AuthRemoteDataSource` (Firebase Auth wrapper).
-    - Repository Impl: `AuthRepositoryImpl`.
-- [x] **Presentation Layer (Auth):**
-    - BLoC: `AuthBloc` (Events: Started, LoginRequested, LogoutRequested).
-    - UI: `LoginPage` & `RegisterPage` (Material 3 Outlined Inputs).
-- [x] **Profile Management:**
-    - Create `users` collection in Firestore upon registration.
-    - `ProfilePage` to view/edit data.
-- [x] **Dependency Injection:** Register Auth feature dependencies.
+- [x] **Domain Layer (Auth)**
+- [x] **Data Layer (Auth)**
+- [x] **Presentation Layer (Auth)**
+- [x] **Profile Management**
+- [x] **Dependency Injection**
 
 ## Phase 3: Venue Discovery (Supply Side)
-- [x] **Domain Layer (Venue):**
-    - Entities: `Venue`, `Court`.
-    - UseCases: `GetVenues`, `GetVenueDetail`.
-    - Repository Interface: `VenueRepository`.
-- [x] **Data Layer (Venue):**
-    - Models: `VenueModel`, `CourtModel`.
-    - Datasource: `VenueRemoteDataSource` (Firestore).
-    - Repository Impl: `VenueRepositoryImpl`.
-- [x] **Presentation Layer (Venue):**
-    - BLoC: `VenueBloc`.
-    - UI: `HomePage` (Venue List with `VenueCard` & `FilterChips`).
-    - UI: `VenueDetailPage` (SliverAppBar, Facilities, Court List).
-- [x] **Seeding:** Create a temporary script or manual entry to add 1-2 dummy venues in Firestore for testing.
+- [x] **Domain Layer (Venue)**
+- [x] **Data Layer (Venue)**
+- [x] **Presentation Layer (Venue)**
+- [x] **Seeding**
 
 ## Phase 4: Core Booking & Payment
-- [x] **Domain Layer (Booking):**
-    - Entities: `Booking`.
-    - UseCases: `CreateBooking`.
-- [x] **Data Layer (Booking):**
-    - Datasource: `BookingRemoteDataSource` (Firestore write + Cloud Function Trigger stub).
-    - Repository Impl: `BookingRepositoryImpl`.
-- [x] **Presentation Layer (Booking):**
-    - UI: `BookingBottomSheet` or Page.
-    - Logic: Date/Time Picker -> Check Availability.
-- [x] **Midtrans Integration:**
-    - [x] Create `PaymentService` (Backend Logic: Domain & Data layers for Snap Token).
-    - [x] UI: `WebView` wrapper to display Midtrans Snap.
-    - [x] Handle Callback/Return URL.
+- [x] **Domain Layer (Booking)**
+- [x] **Data Layer (Booking)**
+- [x] **Presentation Layer (Booking)**
+- [x] **Midtrans Integration**
 
 ## Phase 5: Unique Features
-- [x] **Split Bill:**
-    - [x] Domain: Created `PaymentParticipant` entity.
-    - [x] Data: Created `PaymentParticipantModel`.
-    - [x] Data: Updated `Booking` entity to use `List<PaymentParticipant>`.
-    - [x] Data: Updated `BookingModel` to handle `PaymentParticipantModel` serialization.
-    - [x] Backend: Implemented `GenerateSplitCode` use case.
-    - [x] Backend: Implemented `JoinBooking` use case (returns `bookingId`).
-    - [x] Backend: Implemented `GetBookingDetail` use case.
-    - [x] Backend: Updated `BookingRepository` and `BookingRemoteDataSource` for new use cases.
-    - [x] Bloc: Created `BookingDetailBloc` (events, states, bloc) for `BookingDetailPage`.
-    - [x] UI: Created `BookingDetailPage` with split code display, participant list, and generate code button.
-    - [x] Navigation: Added `/booking-detail/:id` route.
-    - [x] Navigation: Updated `BookingHistoryCard` to push to `BookingDetailPage`.
-    - [x] Fix: Corrected `BookingModel.toJson` to serialize `participants` correctly.
-    - [x] Fix: Changed `context.go` to `context.push` in `BookingHistoryCard`.
-    - [x] UI: Added `FloatingActionButton` and `Join Booking` dialog to `BookingHistoryPage`.
-    - [x] Bloc: Updated `HistoryBloc` to handle `JoinBookingRequested` and emit `HistoryJoinSuccess(bookingId)`.
-    - [x] UI: Implemented Copy to Clipboard for `splitCode` in `BookingDetailPage`.
-    - [x] UI: Updated `BookingHistoryPage` listener to navigate to `BookingDetailPage` on `HistoryJoinSuccess`.
-- [ ] **Scoreboard:**
-    - BLoC: `ScoreboardBloc` (In-memory logic for Badminton/Futsal).
-    - UI: `ScoreboardPage` (Big numbers, increment/decrement).
-    - Logic: "Save Match" -> Write to `matches` collection.
+- [x] **Split Bill** (MVP)
+- [ ] **Scoreboard**
 
 ## Sprint 6: UI Foundation & Auth Revolution (The Face Lift)
 *Goal: Move away from 'Basic UI'. Implement professional Design System & complete Authentication features.*
 
 ### Phase 1: Design System & Assets
-- [ ] **Dependencies:** Add `google_fonts`, `flutter_svg`, `carousel_slider`, `google_sign_in`, `image_picker`.
-- [ ] **Assets:** Setup folder structure for SVG icons (Google logo, Sport icons).
-- [ ] **Global Widgets:** Create `AppColors`, `CustomButton`, `CustomTextField` (with built-in obscure toggle), `StatusChip`.
+- [x] **Dependencies:** Added `google_fonts`, `flutter_svg`, `carousel_slider`, `google_sign_in`, `image_picker`.
+- [x] **Assets:** Setup folder structure.
+- [x] **Global Widgets:** Created `AppColors`, `AppTheme` (v2.1), `CustomButton`, `CustomTextField`.
 
 ### Phase 2: Auth Logic Upgrade
-- [ ] **Google Auth:** Implement `SignInWithGoogle` in `AuthRemoteDataSource` & Bloc.
-- [ ] **Role Logic:** Update `UserEntity` to strictly support 'user' or 'owner'. Update Firestore logic to save this role.
+- [x] **Google Auth:** Implemented `SignInWithGoogle` in `AuthRemoteDataSource` & Bloc (using Credential Manager).
+- [x] **Role Logic:** Updated `UserEntity` to support 'user' or 'mitra'. Implemented Role-Based Navigation.
 
 ### Phase 3: Auth UI Revamp
-- [ ] **Login Page:** Rebuild using `CustomTextField` (Hide/Show Pass) and `GoogleSignInButton`.
-- [ ] **Register Page:** Add "Role Selection" (Player vs Venue Owner) and Confirm Password field.
-- [ ] **Guest Mode:** Update `router.dart` logic to allow access to Home/Detail without login.
+- [x] **Login Page:** Rebuilt using Design System v2.1. Added Google Sign-In and Guest Mode entry.
+- [x] **Register Page:** Added Role Selection (Player vs Venue Owner) and Google Sign-Up support.
+- [x] **Guest Mode:** Implemented strict router whitelist for public access (Home/Venue) and redirect logic for protected actions.
 
 ---
 
