@@ -27,7 +27,7 @@ class CustomButton extends StatelessWidget {
             foregroundColor: AppColors.primary,
             side: const BorderSide(color: AppColors.primary),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12), // v2.2 Spec
             ),
           )
         : ElevatedButton.styleFrom(
@@ -35,7 +35,7 @@ class CustomButton extends StatelessWidget {
             foregroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12), // v2.2 Spec
             ),
           );
 

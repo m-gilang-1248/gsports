@@ -22,10 +22,17 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    // If coming from Category Rail, set as query or filter logic (simplification: filter by query)
+    
+    // Fix: Trigger search immediately if category is present
     if (widget.initialCategory != null) {
       _query = widget.initialCategory!;
       _searchController.text = _query;
+    }
+    
+    // Ensure Venue List is loaded if not already
+    final bloc = context.read<VenueBloc>();
+    if (bloc.state is! VenueListLoaded) {
+      bloc.add(VenueFetchListRequested());
     }
   }
 
@@ -39,53 +46,59 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.primary),
+          icon: const Icon(Icons.arrow_back_ios_new),
           onPressed: () => context.pop(),
         ),
-        title: TextField(
-          controller: _searchController,
-          autofocus: widget.initialCategory == null,
-          decoration: InputDecoration(
-            hintText: 'Cari nama lapangan atau olahraga...',
-            border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.grey[400]),
+        title: Container(
+          decoration: BoxDecoration(
+            color: AppColors.neutral,
+            borderRadius: BorderRadius.circular(12),
           ),
-          onChanged: (value) {
-            setState(() {
-              _query = value;
-            });
-          },
-        ),
-        actions: [
-          if (_query.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.grey),
-              onPressed: () {
-                setState(() {
-                  _query = '';
-                  _searchController.clear();
-                });
-              },
+          child: TextField(
+            controller: _searchController,
+            autofocus: widget.initialCategory == null,
+            decoration: InputDecoration(
+              hintText: 'Cari nama lapangan atau olahraga...',
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              suffixIcon: _query.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      onPressed: () {
+                        setState(() {
+                          _query = '';
+                          _searchController.clear();
+                        });
+                      },
+                    )
+                  : null,
             ),
-        ],
+            onChanged: (value) {
+              setState(() {
+                _query = value;
+              });
+            },
+          ),
+        ),
       ),
       body: BlocBuilder<VenueBloc, VenueState>(
         builder: (context, state) {
           if (state is VenueListLoaded) {
             final filteredVenues = state.venues.where((venue) {
               final queryLower = _query.toLowerCase();
-              if (queryLower.isEmpty) return true; // Show all if empty query (or just category)
+              if (queryLower.isEmpty) return true;
 
               final matchName = venue.name.toLowerCase().contains(queryLower);
               final matchCity = venue.city.toLowerCase().contains(queryLower);
               final matchAddress = venue.address.toLowerCase().contains(queryLower);
-              // Also check facilities as proxy for sports (e.g. 'badminton' in facilities or desc)
               final matchFacilities = venue.facilities.any((f) => f.toLowerCase().contains(queryLower));
               
-              return matchName || matchCity || matchAddress || matchFacilities;
+              // Simple proxy for category matching since we don't have explicit category field yet
+              final matchCategory = widget.initialCategory != null && 
+                  (matchName || matchFacilities || venue.name.toLowerCase().contains(widget.initialCategory!.toLowerCase()));
+
+              return matchName || matchCity || matchAddress || matchFacilities || matchCategory;
             }).toList();
 
             if (filteredVenues.isEmpty) {

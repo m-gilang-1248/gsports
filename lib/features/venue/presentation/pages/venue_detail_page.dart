@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +11,6 @@ import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
 import 'package:gsports/injection_container.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class VenueDetailPage extends StatefulWidget {
   final String venueId;
@@ -23,6 +23,7 @@ class VenueDetailPage extends StatefulWidget {
 
 class _VenueDetailPageState extends State<VenueDetailPage> {
   DateTime _selectedDate = DateTime.now();
+  int _currentImageIndex = 0; // Track carousel index
 
   @override
   void initState() {
@@ -48,32 +49,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             _handlePaymentNavigation(context, state);
           } else if (state is BookingPaidSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Pembayaran untuk booking ${state.bookingId} berhasil!',
-                ),
+              const SnackBar(
+                content: Text('Pembayaran berhasil!'),
                 backgroundColor: AppColors.success,
               ),
             );
             context.go('/home');
-          } else if (state is BookingCancelledState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Booking ${state.bookingId} dibatalkan karena pembayaran tidak selesai.',
-                ),
-                backgroundColor: AppColors.warning,
-              ),
-            );
-          } else if (state is BookingWaitingForPayment) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Booking ${state.bookingId} menunggu pembayaran. Silakan selesaikan transaksi Anda.',
-                ),
-                backgroundColor: AppColors.secondary,
-              ),
-            );
           } else if (state is BookingFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -91,7 +72,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               } else if (venueState is VenueError) {
                 return Center(child: Text(venueState.message));
               } else if (venueState is VenueDetailLoaded) {
-                return _buildContent(
+                return _buildLayout(
                   context,
                   venueState.venue,
                   venueState.courts,
@@ -100,269 +81,246 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               return const SizedBox.shrink();
             },
           ),
-          bottomNavigationBar: _buildBottomBar(context),
+          bottomNavigationBar: _buildStickyBottomBar(context),
         ),
       ),
     );
   }
 
-  Widget _buildBottomBar(BuildContext context) {
-    return BlocBuilder<BookingBloc, BookingState>(
-      builder: (context, state) {
-        if (state is BookingAvailabilityLoaded &&
-            state.selectedStartTime != null) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: FilledButton(
-                onPressed: () {
-                  final user = FirebaseAuth.instance.currentUser;
-                  if (user == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Login untuk melakukan booking'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                    context.push('/login');
-                    return;
-                  }
+  Widget _buildLayout(BuildContext context, Venue venue, List<Court> courts) {
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
 
-                  final venueState = context.read<VenueBloc>().state;
-                  if (venueState is VenueDetailLoaded) {
-                    final court = venueState.courts.firstWhere(
-                      (c) => c.id == state.selectedCourtId,
-                    );
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (sheetContext) {
-                        return BlocProvider.value(
-                          value: context.read<BookingBloc>(),
-                          child: BookingBottomSheet(
-                            venue: venueState.venue,
-                            court: court,
-                            date: state.selectedDate,
-                            startTime: state.selectedStartTime!,
-                          ),
+    return Stack(
+      children: [
+        // Layer 1: Image Carousel (Fixed height)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: MediaQuery.of(context).size.height * 0.4, // 40% height
+          child: Stack(
+            children: [
+              venue.photos.isNotEmpty
+                  ? PageView.builder(
+                      itemCount: venue.photos.length,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentImageIndex = index;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        return Image.network(
+                          venue.photos[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(color: Colors.grey),
                         );
                       },
-                    );
-                  }
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    )
+                  : Container(color: Colors.grey[300]),
+              // Gradient Overlay for visibility
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.4),
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.4),
+                    ],
                   ),
                 ),
-                child: const Text(
-                  'Lanjut ke Pembayaran',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
               ),
-            ),
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget _buildContent(BuildContext context, Venue venue, List<Court> courts) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 250.0,
-          pinned: true,
-          // Improve contrast: Title is white on expanded (over image), Black on collapsed (default surface)
-          // We can use a custom flexible space to handle this, or rely on system theme adaptation.
-          // For now, let's keep it simple: Add a shadow to the title for expanded state visibility.
-          foregroundColor: AppColors.primary, // Collapsed color
-          backgroundColor: Colors.white,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.favorite_border),
-              onPressed: () {
-                // TODO: Implement Favorite Logic
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Ditambahkan ke Favorit')),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.share),
-              onPressed: () {
-                // TODO: Implement Share
-              },
-            ),
-          ],
-          flexibleSpace: FlexibleSpaceBar(
-            title: Text(
-              venue.name,
-              style: const TextStyle(
-                color: AppColors.primary, // Force black for visibility when collapsed?
-                // Actually, standard SliverAppBar behavior fades the title in.
-                // Let's rely on standard behavior but ensure text is readable.
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            background: Stack(
-              fit: StackFit.expand,
-              children: [
-                venue.photos.isNotEmpty
-                    ? PageView.builder(
-                        itemCount: venue.photos.length,
-                        itemBuilder: (context, index) {
-                          return Image.network(
-                            venue.photos[index],
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(color: Colors.grey),
-                          );
-                        },
-                      )
-                    : Container(color: Colors.grey),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black54],
-                    ),
-                  ),
-                ),
-                if (venue.photos.length > 1)
-                  Positioned(
-                    bottom: 16,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        venue.photos.length,
-                        (index) => Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.8),
-                          ),
+              // Dots Indicator
+              if (venue.photos.length > 1)
+                Positioned(
+                  bottom: 48, // Above the overlapping card
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      venue.photos.length,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: _currentImageIndex == index ? 24 : 8,
+                        height: 8,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: _currentImageIndex == index
+                              ? AppColors.primary
+                              : Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            venue.city,
-                            style: Theme.of(context).textTheme.labelLarge
-                                ?.copyWith(color: Colors.grey),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(venue.address),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            size: 18,
-                            color: AppColors.warning,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            venue.rating.toString(),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 24),
-                Text(
-                  'Fasilitas',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: venue.facilities.map((facility) {
-                    return Chip(
-                      label: Text(
-                        facility,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      avatar: const Icon(Icons.check, size: 16, color: AppColors.secondary),
-                      backgroundColor: AppColors.background,
-                      side: BorderSide.none,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 24),
-                _buildDatePicker(context),
-                const SizedBox(height: 24),
-                Text(
-                  'Pilih Lapangan & Jadwal',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+
+        // Layer 2: Custom App Bar (Floating)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white, // White icons
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new),
+              onPressed: () => context.pop(),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.favorite_border),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Saved to Favorites')),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.share),
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+
+        // Layer 3: Content Body (Overlapping)
+        Positioned.fill(
+          top: MediaQuery.of(context).size.height * 0.35, // Overlap by 5%
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Title Header
+                  Text(
+                    venue.name,
+                    style: Theme.of(context).textTheme.headlineLarge,
                   ),
-                ),
-                const SizedBox(height: 12),
-                courts.isEmpty
-                    ? const Center(child: Text('Tidak ada lapangan tersedia.'))
-                    : ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: courts.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          return _buildCourtItem(context, courts[index]);
-                        },
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          venue.address,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
                       ),
-                const SizedBox(height: 80),
-              ],
+                      const SizedBox(width: 16),
+                      const Icon(Icons.star, size: 18, color: AppColors.warning),
+                      const SizedBox(width: 4),
+                      Text(
+                        venue.rating.toString(),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 2. Price Block
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.neutral,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Start from',
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                        Text(
+                          '${currencyFormat.format(venue.minPrice)} / jam',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: AppColors.primary,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 3. Description
+                  Text(
+                    'Description',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    venue.description,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 4. Facilities
+                  Text(
+                    'Facilities',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: venue.facilities.map((facility) {
+                      return Chip(
+                        label: Text(facility),
+                        avatar: const Icon(Icons.check_circle, size: 16, color: AppColors.primary),
+                        backgroundColor: AppColors.surface,
+                        side: BorderSide.none,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 1,
+                        shadowColor: Colors.black12,
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 24),
+
+                  // Date Selection
+                  _buildDatePicker(context),
+                  const SizedBox(height: 24),
+                  
+                  // Courts
+                  Text(
+                    'Choose Court',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  courts.isEmpty
+                      ? const Center(child: Text('No courts available'))
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: courts.length,
+                          separatorBuilder: (ctx, i) => const SizedBox(height: 12),
+                          itemBuilder: (ctx, i) => _buildCourtItem(context, courts[i]),
+                        ),
+                  const SizedBox(height: 100), // Space for sticky bottom bar
+                ],
+              ),
             ),
           ),
         ),
@@ -371,56 +329,71 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   }
 
   Widget _buildDatePicker(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        final date = await showDatePicker(
-          context: context,
-          initialDate: _selectedDate,
-          firstDate: DateTime.now(),
-          lastDate: DateTime.now().add(const Duration(days: 30)),
-        );
-        if (date != null) {
-          setState(() {
-            _selectedDate = date;
-          });
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_today, color: AppColors.secondary),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Tanggal Booking',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Select Date', style: Theme.of(context).textTheme.headlineMedium),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 80,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 14,
+            itemBuilder: (context, index) {
+              final date = DateTime.now().add(Duration(days: index));
+              final isSelected = date.day == _selectedDate.day && 
+                               date.month == _selectedDate.month;
+              
+              return GestureDetector(
+                onTap: () => setState(() => _selectedDate = date),
+                child: Container(
+                  width: 60,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.border,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        DateFormat('MMM').format(date),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isSelected ? Colors.white : AppColors.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        date.day.toString(),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        DateFormat('E').format(date),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isSelected ? Colors.white : AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  DateFormat(
-                    'EEEE, d MMMM yyyy',
-                    'id_ID',
-                  ).format(_selectedDate),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const Spacer(),
-            const Icon(Icons.chevron_right, color: Colors.grey),
-          ],
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 
   Widget _buildCourtItem(BuildContext context, Court court) {
-    final formatter = NumberFormat.currency(
+    final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
       decimalDigits: 0,
@@ -436,12 +409,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.blue.shade50 : Colors.white,
+            color: isSelected ? AppColors.primary.withOpacity(0.05) : AppColors.surface,
             border: Border.all(
-              color: isSelected ? AppColors.secondary : Colors.grey.shade300,
+              color: isSelected ? AppColors.primary : AppColors.border,
               width: isSelected ? 2 : 1,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             children: [
@@ -456,38 +429,29 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                     );
                   }
                 },
-                contentPadding: const EdgeInsets.all(12),
+                contentPadding: const EdgeInsets.all(16),
                 leading: Container(
-                  width: 50,
-                  height: 50,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade200),
+                    color: AppColors.neutral,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.sports_tennis,
-                    color: AppColors.secondary,
-                  ),
+                  child: const Icon(Icons.sports_tennis, color: AppColors.primary),
                 ),
                 title: Text(
                   court.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 subtitle: Text(court.sportType),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      formatter.format(court.hourlyPrice),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const Text('/ jam', style: TextStyle(fontSize: 12)),
-                  ],
+                trailing: Text(
+                  currencyFormat.format(court.hourlyPrice),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               if (isSelected) ...[
@@ -497,10 +461,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Pilih Jam Main',
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
+                      Text('Available Slots', style: Theme.of(context).textTheme.labelMedium),
                       const SizedBox(height: 12),
                       const BookingTimeSlotGrid(),
                     ],
@@ -512,6 +473,80 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         );
       },
     );
+  }
+
+  Widget _buildStickyBottomBar(BuildContext context) {
+    return BlocBuilder<BookingBloc, BookingState>(
+      builder: (context, state) {
+        if (state is BookingAvailabilityLoaded && state.selectedStartTime != null) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: FilledButton(
+                  onPressed: () => _onBookingPressed(context, state),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Book Now',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  void _onBookingPressed(BuildContext context, BookingAvailabilityLoaded state) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login required to book')),
+      );
+      context.push('/login');
+      return;
+    }
+
+    final venueState = context.read<VenueBloc>().state;
+    if (venueState is VenueDetailLoaded) {
+      final court = venueState.courts.firstWhere((c) => c.id == state.selectedCourtId);
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) {
+          return BlocProvider.value(
+            value: context.read<BookingBloc>(),
+            child: BookingBottomSheet(
+              venue: venueState.venue,
+              court: court,
+              date: state.selectedDate,
+              startTime: state.selectedStartTime!,
+            ),
+          );
+        },
+      );
+    }
   }
 
   Future<void> _handlePaymentNavigation(

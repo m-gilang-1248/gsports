@@ -52,9 +52,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                       const SizedBox(height: 24),
                       Text(
                         'Rekomendasi Lapangan',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context).textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -94,11 +92,28 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                   ),
                 ],
               ),
-              IconButton(
-                onPressed: () {
-                  // TODO: Implement Notifications
-                },
-                icon: const Icon(Icons.notifications_outlined),
+              Stack(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      // TODO: Implement Notifications
+                    },
+                    icon: const Icon(Icons.notifications_outlined,
+                        color: AppColors.textPrimary),
+                  ),
+                  Positioned(
+                    right: 12,
+                    top: 12,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  )
+                ],
               ),
             ],
           );
@@ -127,7 +142,8 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
               ),
               TextButton(
                 onPressed: () => context.go('/login'),
-                child: const Text('Masuk'),
+                child: const Text('Masuk',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           );
@@ -142,9 +158,15 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -152,10 +174,13 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
             const SizedBox(width: 12),
             Text(
               'Cari lapangan...',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: AppColors.textTertiary),
             ),
             const Spacer(),
-            const Icon(Icons.filter_list, color: AppColors.textSecondary),
+            const Icon(Icons.tune, color: AppColors.primary),
           ],
         ),
       ),
@@ -166,21 +191,21 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
     final categories = [
       {'name': 'Badminton', 'icon': Icons.sports_tennis},
       {'name': 'Futsal', 'icon': Icons.sports_soccer},
-      {'name': 'Tennis', 'icon': Icons.sports_tennis_outlined}, // Placeholder for Tennis
+      {'name': 'Tennis', 'icon': Icons.sports_tennis_outlined},
       {'name': 'Basketball', 'icon': Icons.sports_basketball},
       {'name': 'Golf', 'icon': Icons.sports_golf},
       {'name': 'Volley', 'icon': Icons.sports_volleyball},
     ];
 
     return SizedBox(
-      height: 100,
+      height: 90,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
           return Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.only(right: 20),
             child: InkWell(
               onTap: () {
                 context.push('/search?category=${category['name']}');
@@ -188,9 +213,12 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
               borderRadius: BorderRadius.circular(8),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: AppColors.background,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      color: AppColors.neutral,
+                      shape: BoxShape.circle,
+                    ),
                     child: Icon(
                       category['icon'] as IconData,
                       color: AppColors.primary,
@@ -200,7 +228,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                   const SizedBox(height: 8),
                   Text(
                     category['name'] as String,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ],
               ),
