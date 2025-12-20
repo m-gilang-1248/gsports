@@ -24,11 +24,29 @@ class VenueDetailPage extends StatefulWidget {
 class _VenueDetailPageState extends State<VenueDetailPage> {
   DateTime _selectedDate = DateTime.now();
   int _currentImageIndex = 0;
+  late ScrollController _scrollController;
+  bool _isCollapsed = false;
 
   @override
   void initState() {
     super.initState();
     context.read<VenueBloc>().add(VenueFetchDetailRequested(widget.venueId));
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      final collapsed = _scrollController.hasClients &&
+          _scrollController.offset > (MediaQuery.of(context).size.height * 0.4 - kToolbarHeight - 20);
+      if (collapsed != _isCollapsed) {
+        setState(() {
+          _isCollapsed = collapsed;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -103,23 +121,37 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
     return Stack(
       children: [
-        // Layer 1: Collapsing Image Header (using NestedScrollView would be ideal for true collapse, 
-        // but for now we implement the shrink effect requested via CustomScrollView + SliverAppBar)
         CustomScrollView(
+          controller: _scrollController,
           slivers: [
             SliverAppBar(
               expandedHeight: MediaQuery.of(context).size.height * 0.4,
               pinned: true,
-              backgroundColor: Colors.transparent, // Let content show through or standard behavior
+              backgroundColor: Colors.white,
               elevation: 0,
+              scrolledUnderElevation: 0,
+              centerTitle: true,
+              title: _isCollapsed
+                  ? Text(
+                      venue.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    )
+                  : null,
               leading: Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
+                  color: _isCollapsed ? Colors.transparent : Colors.black.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                  icon: Icon(
+                    Icons.arrow_back_ios_new,
+                    color: _isCollapsed ? AppColors.textPrimary : Colors.white,
+                  ),
                   onPressed: () => context.pop(),
                 ),
               ),
@@ -127,11 +159,14 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 Container(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: _isCollapsed ? Colors.transparent : Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.favorite_border, color: Colors.white),
+                    icon: Icon(
+                      Icons.favorite_border,
+                      color: _isCollapsed ? AppColors.textPrimary : Colors.white,
+                    ),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Saved to Favorites')),
@@ -143,11 +178,14 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 Container(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: _isCollapsed ? Colors.transparent : Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.share, color: Colors.white),
+                    icon: Icon(
+                      Icons.share,
+                      color: _isCollapsed ? AppColors.textPrimary : Colors.white,
+                    ),
                     onPressed: () {},
                   ),
                 ),
@@ -181,9 +219,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.4),
+                            Colors.black.withValues(alpha: 0.4),
                             Colors.transparent,
-                            Colors.black.withOpacity(0.4),
+                            Colors.black.withValues(alpha: 0.4),
                           ],
                         ),
                       ),
@@ -206,7 +244,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                               decoration: BoxDecoration(
                                 color: _currentImageIndex == index
                                     ? AppColors.primary
-                                    : Colors.white.withOpacity(0.8),
+                                    : Colors.white.withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -219,12 +257,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             ),
             
             // Layer 2: Content Body (SliverToBoxAdapter with overlapped top)
-            // To achieve the overlapping effect with SliverAppBar, we usually use SliverOverlapInjector 
-            // or just a negative margin transform if using standard stack.
-            // Since we switched to CustomScrollView for shrinking header, strict overlapping like standard Stack 
-            // is harder without NestedScrollView. 
-            // Let's stick to the requested "Header Shrinks" requirement which is solved by SliverAppBar.
-            // We can style the top of this content to look rounded.
             SliverToBoxAdapter(
               child: Container(
                 decoration: const BoxDecoration(
@@ -376,7 +408,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 365)), // Full calendar access
                 );
-                if (date != null) {
+                if (date != null && context.mounted) {
                   setState(() => _selectedDate = date);
                   // Refresh availability for the new date if a court is selected
                   final venueState = context.read<VenueBloc>().state;
@@ -485,7 +517,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withOpacity(0.05) : AppColors.surface,
+            color: isSelected ? AppColors.primary.withValues(alpha: 0.05) : AppColors.surface,
             border: Border.all(
               color: isSelected ? AppColors.primary : AppColors.border,
               width: isSelected ? 2 : 1,
@@ -562,7 +594,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               color: AppColors.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
@@ -598,7 +630,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login required to book')),
+        const SnackBar(content: Text('Login untuk melakukan booking')),
       );
       context.push('/login');
       return;
@@ -634,6 +666,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
       '/payment',
       extra: state.paymentUrl,
     );
+
+    if (!context.mounted) return;
 
     // If result is null (back button) or 'cancelled', dispatch cancellation
     final status = result ?? 'cancelled';

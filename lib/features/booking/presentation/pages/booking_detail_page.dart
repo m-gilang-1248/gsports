@@ -273,6 +273,7 @@ class BookingDetailPage extends StatelessWidget {
                             Clipboard.setData(
                               ClipboardData(text: booking.splitCode!),
                             ).then((_) {
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Kode berhasil disalin!'),

@@ -20,6 +20,7 @@ class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
 @TimestampConverter() // Apply converter to the entire class
 class BookingModel extends Booking {
   @override
+  @JsonKey(includeToJson: true) // Ensure participants are included if overridden
   final List<PaymentParticipantModel> participants;
 
   const BookingModel({
@@ -88,6 +89,7 @@ class BookingModel extends Booking {
   @override
   Map<String, dynamic> toJson() {
     final json = _$BookingModelToJson(this);
+    // Explicitly handle participants serialization
     json['participants'] = participants.map((p) => p.toJson()).toList();
     json['participantIds'] = participantIds;
     json['createdAt'] = Timestamp.fromDate(createdAt);

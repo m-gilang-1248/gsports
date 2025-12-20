@@ -68,17 +68,11 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
 
         result.fold(
           (failure) {
-            print(
-              'Check Hour $hour for Court $courtId on $date: FAILED - ${failure.message}',
-            );
             // If guest and error occurs (e.g. permission), default to AVAILABLE
             // This ensures they can select a slot and see the login redirect.
             availabilityMap[hour] = !isLoggedIn;
           },
           (isAvailable) {
-            print(
-              'Check Hour $hour for Court $courtId on $date: Available: $isAvailable',
-            );
             availabilityMap[hour] = isAvailable;
           },
         );

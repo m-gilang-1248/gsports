@@ -31,6 +31,8 @@ class VenueSeeder {
         facilities: const ['Parking', 'Wifi', 'Toilet', 'Mosque', 'Canteen'],
         photos: const [
           'https://images.unsplash.com/photo-1626224583764-847649623db6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+          'https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+          'https://images.unsplash.com/photo-1534158914592-062992fbe900?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         ],
         rating: 4.8,
         minPrice: 50000,
@@ -78,6 +80,7 @@ class VenueSeeder {
         facilities: const ['Parking', 'Shower', 'Locker', 'Wifi'],
         photos: const [
           'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+          'https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         ],
         rating: 4.5,
         minPrice: 120000,
@@ -117,6 +120,7 @@ class VenueSeeder {
         facilities: const ['Parking', 'Shower', 'Pro Shop', 'Coach'],
         photos: const [
           'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+          'https://images.unsplash.com/photo-1622279457486-62dcc4a4bd13?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
         ],
         rating: 4.9,
         minPrice: 150000,

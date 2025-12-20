@@ -7,8 +7,8 @@ part 'venue_model.g.dart';
 
 @JsonSerializable()
 class VenueModel extends Venue {
-  @JsonKey(fromJson: _locationFromJson, toJson: _locationToJson)
   @override
+  @JsonKey(fromJson: _locationFromJson, toJson: _locationToJson)
   final VenueLocation location;
 
   const VenueModel({
