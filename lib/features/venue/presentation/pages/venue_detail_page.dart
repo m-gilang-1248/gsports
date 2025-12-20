@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -71,8 +72,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 content: Text(
                   'Booking ${state.bookingId} menunggu pembayaran. Silakan selesaikan transaksi Anda.',
                 ),
-                backgroundColor:
-                    AppColors.secondary, // You might need to define AppColors.info
+                backgroundColor: AppColors
+                    .secondary, // You might need to define AppColors.info
               ),
             );
             // Optionally navigate to a "My Bookings" page or keep on current page
@@ -119,6 +120,20 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               padding: const EdgeInsets.all(16.0),
               child: FilledButton(
                 onPressed: () {
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Silakan masuk terlebih dahulu untuk melakukan booking',
+                        ),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    context.push('/login');
+                    return;
+                  }
+
                   // Get current venue and court from VenueBloc state (bit hacky access but valid in this scope)
                   final venueState = context.read<VenueBloc>().state;
                   if (venueState is VenueDetailLoaded) {

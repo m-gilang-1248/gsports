@@ -6,6 +6,7 @@ import 'package:gsports/features/booking/presentation/bloc/history/history_bloc.
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gsports/core/presentation/widgets/custom_button.dart';
 
 class BookingHistoryPage extends StatelessWidget {
   const BookingHistoryPage({super.key});
@@ -16,7 +17,41 @@ class BookingHistoryPage extends StatelessWidget {
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
     if (userId == null) {
-      return const Center(child: Text('Not logged in'));
+      return Scaffold(
+        appBar: AppBar(title: const Text('My Bookings')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 80,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Masuk untuk melihat riwayat booking',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Lihat status pembayaran dan detail lapangan yang telah Anda pesan.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 32),
+                CustomButton(
+                  text: 'Masuk Sekarang',
+                  onPressed: () => context.go('/login'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     return BlocProvider(

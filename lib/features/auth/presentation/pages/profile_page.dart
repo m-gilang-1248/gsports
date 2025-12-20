@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gsports/core/presentation/widgets/custom_button.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_event.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
@@ -93,7 +94,41 @@ class ProfilePage extends StatelessWidget {
             } else if (state is AuthLoading) {
               return const Center(child: CircularProgressIndicator());
             } else {
-              return const Center(child: Text('Failed to load profile'));
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.person_outline,
+                        size: 80,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Masuk untuk melihat profil Anda',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Kelola data diri dan status member Anda dengan login terlebih dahulu.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 32),
+                      CustomButton(
+                        text: 'Masuk Sekarang',
+                        onPressed: () => context.go('/login'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }
           },
         ),
