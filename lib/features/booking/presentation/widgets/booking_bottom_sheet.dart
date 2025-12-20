@@ -107,9 +107,22 @@ class BookingBottomSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Total Harga',
-                style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Total Harga',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    '$durationHours Jam x ${currencyFormat.format(court.hourlyPrice)}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
               ),
               Text(
                 currencyFormat.format(totalPrice),
