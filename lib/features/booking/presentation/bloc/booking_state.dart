@@ -15,13 +15,13 @@ class BookingAvailabilityLoaded extends BookingState {
   final Map<int, bool> availabilityMap; // Hour -> IsAvailable
   final String selectedCourtId;
   final DateTime selectedDate;
-  final DateTime? selectedStartTime; // Nullable if no slot selected yet
+  final List<DateTime> selectedSlots;
 
   const BookingAvailabilityLoaded({
     required this.availabilityMap,
     required this.selectedCourtId,
     required this.selectedDate,
-    this.selectedStartTime,
+    this.selectedSlots = const [],
   });
 
   @override
@@ -29,23 +29,23 @@ class BookingAvailabilityLoaded extends BookingState {
     availabilityMap,
     selectedCourtId,
     selectedDate,
-    selectedStartTime,
+    selectedSlots,
   ];
 
   BookingAvailabilityLoaded copyWith({
     Map<int, bool>? availabilityMap,
     String? selectedCourtId,
     DateTime? selectedDate,
-    DateTime? selectedStartTime,
-    bool clearSelectedStartTime = false,
+    List<DateTime>? selectedSlots,
+    bool clearSelectedSlots = false,
   }) {
     return BookingAvailabilityLoaded(
       availabilityMap: availabilityMap ?? this.availabilityMap,
       selectedCourtId: selectedCourtId ?? this.selectedCourtId,
       selectedDate: selectedDate ?? this.selectedDate,
-      selectedStartTime: clearSelectedStartTime
-          ? null
-          : (selectedStartTime ?? this.selectedStartTime),
+      selectedSlots: clearSelectedSlots
+          ? []
+          : (selectedSlots ?? this.selectedSlots),
     );
   }
 }

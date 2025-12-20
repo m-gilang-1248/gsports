@@ -13,7 +13,8 @@ class MockGetBookingDetail extends Mock implements GetBookingDetail {}
 
 class MockGenerateSplitCode extends Mock implements GenerateSplitCode {}
 
-class MockUpdateParticipantStatus extends Mock implements UpdateParticipantStatus {} // New Mock
+class MockUpdateParticipantStatus extends Mock
+    implements UpdateParticipantStatus {} // New Mock
 
 class FakeBooking extends Fake implements Booking {}
 
@@ -25,13 +26,16 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(FakeBooking());
-    registerFallbackValue(MockUpdateParticipantStatus()); // Register fallback for the use case itself
+    registerFallbackValue(
+      MockUpdateParticipantStatus(),
+    ); // Register fallback for the use case itself
   });
 
   setUp(() {
     mockGetBookingDetail = MockGetBookingDetail();
     mockGenerateSplitCode = MockGenerateSplitCode();
-    mockUpdateParticipantStatus = MockUpdateParticipantStatus(); // Initialize new mock
+    mockUpdateParticipantStatus =
+        MockUpdateParticipantStatus(); // Initialize new mock
     bookingDetailBloc = BookingDetailBloc(
       mockGetBookingDetail,
       mockGenerateSplitCode,

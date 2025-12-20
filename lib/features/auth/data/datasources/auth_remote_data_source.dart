@@ -131,16 +131,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> signInWithGoogle({String? role}) async {
     try {
       // In google_sign_in 7.2.0, authenticate() is the interactive entry point.
-      final gs.GoogleSignInAccount googleUser = await googleSignIn.authenticate();
-      
-      final gs.GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final gs.GoogleSignInAccount googleUser = await googleSignIn
+          .authenticate();
+
+      final gs.GoogleSignInAuthentication googleAuth =
+          googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
         // accessToken is missing from GoogleSignInAuthentication in 7.2.0
       );
 
-      final UserCredential userCredential =
-          await firebaseAuth.signInWithCredential(credential);
+      final UserCredential userCredential = await firebaseAuth
+          .signInWithCredential(credential);
       final User? user = userCredential.user;
 
       if (user == null) {

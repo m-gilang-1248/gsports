@@ -86,7 +86,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         availabilityMap: availabilityMap,
         selectedCourtId: courtId,
         selectedDate: date,
-        selectedStartTime: null, // Reset selection on new check
+        selectedSlots: const [], // Reset selection on new check
       ),
     );
   }
@@ -94,17 +94,49 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   void _onSlotSelected(BookingSlotSelected event, Emitter<BookingState> emit) {
     if (state is BookingAvailabilityLoaded) {
       final currentState = state as BookingAvailabilityLoaded;
-      if (currentState.selectedStartTime != null &&
-          currentState.selectedStartTime!.year == event.startTime.year &&
-          currentState.selectedStartTime!.month == event.startTime.month &&
-          currentState.selectedStartTime!.day == event.startTime.day &&
-          currentState.selectedStartTime!.hour == event.startTime.hour) {
-        // Deselect if the same slot is tapped again
-        emit(currentState.copyWith(clearSelectedStartTime: true));
+      final selectedSlots = List<DateTime>.from(currentState.selectedSlots);
+      final tappedSlot = event.startTime;
+
+      if (selectedSlots.isEmpty) {
+        selectedSlots.add(tappedSlot);
       } else {
-        // Select new slot
-        emit(currentState.copyWith(selectedStartTime: event.startTime));
+        final isSelected = selectedSlots.any(
+          (s) => s.isAtSameMomentAs(tappedSlot),
+        );
+
+        if (isSelected) {
+          // Deselection logic: Trim tail
+          final index = selectedSlots.indexWhere(
+            (s) => s.isAtSameMomentAs(tappedSlot),
+          );
+          selectedSlots.removeRange(index, selectedSlots.length);
+        } else {
+          // Check if consecutive
+          selectedSlots.sort();
+          final first = selectedSlots.first;
+          final last = selectedSlots.last;
+
+          final isNext = tappedSlot.isAtSameMomentAs(
+            last.add(const Duration(hours: 1)),
+          );
+          final isPrev = tappedSlot.isAtSameMomentAs(
+            first.subtract(const Duration(hours: 1)),
+          );
+
+          if (isNext) {
+            selectedSlots.add(tappedSlot);
+          } else if (isPrev) {
+            selectedSlots.insert(0, tappedSlot);
+          } else {
+            // Not consecutive: Reset and select only new
+            selectedSlots.clear();
+            selectedSlots.add(tappedSlot);
+          }
+        }
       }
+
+      selectedSlots.sort();
+      emit(currentState.copyWith(selectedSlots: selectedSlots));
     }
   }
 

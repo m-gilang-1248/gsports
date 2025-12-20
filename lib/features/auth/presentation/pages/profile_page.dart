@@ -100,11 +100,18 @@ class ProfilePage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.person_outline, size: 80, color: Colors.grey),
+                      const Icon(
+                        Icons.person_outline,
+                        size: 80,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(height: 16),
                       const Text(
                         'Login untuk mengakses profil',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),

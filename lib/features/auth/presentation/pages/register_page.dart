@@ -122,8 +122,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             label: 'Venue Owner',
                             icon: Icons.storefront,
                             isSelected: _selectedRole == 'mitra',
-                            onTap:
-                                () => setState(() => _selectedRole = 'mitra'),
+                            onTap: () =>
+                                setState(() => _selectedRole = 'mitra'),
                           ),
                         ),
                       ],
@@ -220,10 +220,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           ? null
                           : () {
                               context.read<AuthBloc>().add(
-                                    AuthGoogleSignInRequested(
-                                      role: _selectedRole,
-                                    ),
-                                  );
+                                AuthGoogleSignInRequested(role: _selectedRole),
+                              );
                             },
                       isLoading: isLoading,
                     ),
@@ -274,7 +272,9 @@ class _RoleCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.black.withValues(alpha: 0.05) : Colors.white,
+          color: isSelected
+              ? Colors.black.withValues(alpha: 0.05)
+              : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.black : Colors.grey.shade300,

@@ -22,13 +22,13 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    
+
     // Fix: Trigger search immediately if category is present
     if (widget.initialCategory != null) {
       _query = widget.initialCategory!;
       _searchController.text = _query;
     }
-    
+
     // Ensure Venue List is loaded if not already
     final bloc = context.read<VenueBloc>();
     if (bloc.state is! VenueListLoaded) {
@@ -91,14 +91,27 @@ class _SearchPageState extends State<SearchPage> {
 
               final matchName = venue.name.toLowerCase().contains(queryLower);
               final matchCity = venue.city.toLowerCase().contains(queryLower);
-              final matchAddress = venue.address.toLowerCase().contains(queryLower);
-              final matchFacilities = venue.facilities.any((f) => f.toLowerCase().contains(queryLower));
-              
-              // Simple proxy for category matching since we don't have explicit category field yet
-              final matchCategory = widget.initialCategory != null && 
-                  (matchName || matchFacilities || venue.name.toLowerCase().contains(widget.initialCategory!.toLowerCase()));
+              final matchAddress = venue.address.toLowerCase().contains(
+                queryLower,
+              );
+              final matchFacilities = venue.facilities.any(
+                (f) => f.toLowerCase().contains(queryLower),
+              );
 
-              return matchName || matchCity || matchAddress || matchFacilities || matchCategory;
+              // Simple proxy for category matching since we don't have explicit category field yet
+              final matchCategory =
+                  widget.initialCategory != null &&
+                  (matchName ||
+                      matchFacilities ||
+                      venue.name.toLowerCase().contains(
+                        widget.initialCategory!.toLowerCase(),
+                      ));
+
+              return matchName ||
+                  matchCity ||
+                  matchAddress ||
+                  matchFacilities ||
+                  matchCategory;
             }).toList();
 
             if (filteredVenues.isEmpty) {

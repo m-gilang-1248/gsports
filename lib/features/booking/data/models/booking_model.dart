@@ -20,7 +20,9 @@ class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
 @TimestampConverter() // Apply converter to the entire class
 class BookingModel extends Booking {
   @override
-  @JsonKey(includeToJson: true) // Ensure participants are included if overridden
+  @JsonKey(
+    includeToJson: true,
+  ) // Ensure participants are included if overridden
   final List<PaymentParticipantModel> participants;
 
   const BookingModel({
@@ -76,9 +78,7 @@ class BookingModel extends Booking {
               .toList() ??
           const [],
       participantIds:
-          (data['participantIds'] as List?)
-              ?.map((e) => e as String)
-              .toList() ??
+          (data['participantIds'] as List?)?.map((e) => e as String).toList() ??
           const [],
       createdAt: data['createdAt'] != null
           ? (data['createdAt'] as Timestamp).toDate()

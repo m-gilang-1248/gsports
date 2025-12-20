@@ -28,9 +28,7 @@ class OwnerDashboardPage extends StatelessWidget {
             ),
           ],
         ),
-        body: const Center(
-          child: Text('Welcome, Venue Owner! (Placeholder)'),
-        ),
+        body: const Center(child: Text('Welcome, Venue Owner! (Placeholder)')),
       ),
     );
   }

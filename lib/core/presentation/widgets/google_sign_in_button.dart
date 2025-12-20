@@ -37,10 +37,7 @@ class GoogleSignInButton extends StatelessWidget {
                   const SizedBox(width: 12),
                   const Text(
                     "Lanjutkan dengan Google",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ],
               ),

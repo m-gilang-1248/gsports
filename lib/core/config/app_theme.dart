@@ -19,7 +19,7 @@ class AppTheme {
         brightness: Brightness.light,
       ),
       scaffoldBackgroundColor: AppColors.background,
-      
+
       // Typography v2.2
       textTheme: GoogleFonts.interTextTheme().copyWith(
         headlineLarge: GoogleFonts.inter(
@@ -65,7 +65,9 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.transparent), // Cleaner look
+          borderSide: const BorderSide(
+            color: Colors.transparent,
+          ), // Cleaner look
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -86,9 +88,7 @@ class AppTheme {
       // Card Theme v2.2
       cardTheme: CardThemeData(
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: AppColors.surface,
       ),
 
@@ -100,7 +100,7 @@ class AppTheme {
         centerTitle: true,
         scrolledUnderElevation: 0,
       ),
-      
+
       // Bottom Sheet Theme
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surface,

@@ -33,8 +33,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     context.read<VenueBloc>().add(VenueFetchDetailRequested(widget.venueId));
     _scrollController = ScrollController();
     _scrollController.addListener(() {
-      final collapsed = _scrollController.hasClients &&
-          _scrollController.offset > (MediaQuery.of(context).size.height * 0.4 - kToolbarHeight - 20);
+      final collapsed =
+          _scrollController.hasClients &&
+          _scrollController.offset >
+              (MediaQuery.of(context).size.height * 0.4 - kToolbarHeight - 20);
       if (collapsed != _isCollapsed) {
         setState(() {
           _isCollapsed = collapsed;
@@ -144,7 +146,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               leading: Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: _isCollapsed ? Colors.transparent : Colors.black.withValues(alpha: 0.3),
+                  color: _isCollapsed
+                      ? Colors.transparent
+                      : Colors.black.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
@@ -159,13 +163,17 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 Container(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: _isCollapsed ? Colors.transparent : Colors.black.withValues(alpha: 0.3),
+                    color: _isCollapsed
+                        ? Colors.transparent
+                        : Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: Icon(
                       Icons.favorite_border,
-                      color: _isCollapsed ? AppColors.textPrimary : Colors.white,
+                      color: _isCollapsed
+                          ? AppColors.textPrimary
+                          : Colors.white,
                     ),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -178,13 +186,17 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 Container(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: _isCollapsed ? Colors.transparent : Colors.black.withValues(alpha: 0.3),
+                    color: _isCollapsed
+                        ? Colors.transparent
+                        : Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: Icon(
                       Icons.share,
-                      color: _isCollapsed ? AppColors.textPrimary : Colors.white,
+                      color: _isCollapsed
+                          ? AppColors.textPrimary
+                          : Colors.white,
                     ),
                     onPressed: () {},
                   ),
@@ -255,7 +267,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 ),
               ),
             ),
-            
+
             // Layer 2: Content Body (SliverToBoxAdapter with overlapped top)
             SliverToBoxAdapter(
               child: Container(
@@ -263,7 +275,11 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   color: AppColors.background,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
-                transform: Matrix4.translationValues(0, -20, 0), // Slight overlap visual hack
+                transform: Matrix4.translationValues(
+                  0,
+                  -20,
+                  0,
+                ), // Slight overlap visual hack
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
@@ -277,7 +293,11 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 16, color: AppColors.primary),
+                          const Icon(
+                            Icons.location_on,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -286,7 +306,11 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          const Icon(Icons.star, size: 18, color: AppColors.warning),
+                          const Icon(
+                            Icons.star,
+                            size: 18,
+                            color: AppColors.warning,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             venue.rating.toString(),
@@ -312,9 +336,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                             ),
                             Text(
                               '${currencyFormat.format(venue.minPrice)} / jam',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: AppColors.primary,
-                                  ),
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(color: AppColors.primary),
                             ),
                           ],
                         ),
@@ -345,7 +368,11 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         children: venue.facilities.map((facility) {
                           return Chip(
                             label: Text(facility),
-                            avatar: const Icon(Icons.check_circle, size: 16, color: AppColors.primary),
+                            avatar: const Icon(
+                              Icons.check_circle,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
                             backgroundColor: AppColors.surface,
                             side: BorderSide.none,
                             shape: RoundedRectangleBorder(
@@ -363,7 +390,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                       // Date Selection
                       _buildDatePicker(context),
                       const SizedBox(height: 24),
-                      
+
                       // Courts
                       Text(
                         'Choose Court',
@@ -376,10 +403,14 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: courts.length,
-                              separatorBuilder: (ctx, i) => const SizedBox(height: 12),
-                              itemBuilder: (ctx, i) => _buildCourtItem(context, courts[i]),
+                              separatorBuilder: (ctx, i) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (ctx, i) =>
+                                  _buildCourtItem(context, courts[i]),
                             ),
-                      const SizedBox(height: 100), // Space for sticky bottom bar
+                      const SizedBox(
+                        height: 100,
+                      ), // Space for sticky bottom bar
                     ],
                   ),
                 ),
@@ -398,7 +429,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Select Date', style: Theme.of(context).textTheme.headlineMedium),
+            Text(
+              'Select Date',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
             IconButton(
               icon: const Icon(Icons.calendar_month, color: AppColors.primary),
               onPressed: () async {
@@ -406,22 +440,24 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   context: context,
                   initialDate: _selectedDate,
                   firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)), // Full calendar access
+                  lastDate: DateTime.now().add(
+                    const Duration(days: 365),
+                  ), // Full calendar access
                 );
                 if (date != null && context.mounted) {
                   setState(() => _selectedDate = date);
                   // Refresh availability for the new date if a court is selected
                   final venueState = context.read<VenueBloc>().state;
                   final bookingState = context.read<BookingBloc>().state;
-                  if (venueState is VenueDetailLoaded && 
+                  if (venueState is VenueDetailLoaded &&
                       bookingState is BookingAvailabilityLoaded) {
-                     // Check availability again for the currently selected court but new date
-                     context.read<BookingBloc>().add(
-                        BookingAvailabilityChecked(
-                          courtId: bookingState.selectedCourtId,
-                          date: date,
-                        ),
-                     );
+                    // Check availability again for the currently selected court but new date
+                    context.read<BookingBloc>().add(
+                      BookingAvailabilityChecked(
+                        courtId: bookingState.selectedCourtId,
+                        date: date,
+                      ),
+                    );
                   }
                 }
               },
@@ -436,22 +472,23 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             itemCount: 14,
             itemBuilder: (context, index) {
               final date = DateTime.now().add(Duration(days: index));
-              final isSelected = date.day == _selectedDate.day && 
-                               date.month == _selectedDate.month &&
-                               date.year == _selectedDate.year;
-              
+              final isSelected =
+                  date.day == _selectedDate.day &&
+                  date.month == _selectedDate.month &&
+                  date.year == _selectedDate.year;
+
               return GestureDetector(
                 onTap: () {
                   setState(() => _selectedDate = date);
                   // Trigger availability check update
                   final bookingState = context.read<BookingBloc>().state;
                   if (bookingState is BookingAvailabilityLoaded) {
-                     context.read<BookingBloc>().add(
-                        BookingAvailabilityChecked(
-                          courtId: bookingState.selectedCourtId,
-                          date: date,
-                        ),
-                     );
+                    context.read<BookingBloc>().add(
+                      BookingAvailabilityChecked(
+                        courtId: bookingState.selectedCourtId,
+                        date: date,
+                      ),
+                    );
                   }
                 },
                 child: Container(
@@ -471,7 +508,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         DateFormat('MMM').format(date),
                         style: TextStyle(
                           fontSize: 12,
-                          color: isSelected ? Colors.white : AppColors.textSecondary,
+                          color: isSelected
+                              ? Colors.white
+                              : AppColors.textSecondary,
                         ),
                       ),
                       Text(
@@ -479,14 +518,18 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                          color: isSelected
+                              ? Colors.white
+                              : AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         DateFormat('E').format(date),
                         style: TextStyle(
                           fontSize: 12,
-                          color: isSelected ? Colors.white : AppColors.textSecondary,
+                          color: isSelected
+                              ? Colors.white
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -517,7 +560,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withValues(alpha: 0.05) : AppColors.surface,
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.05)
+                : AppColors.surface,
             border: Border.all(
               color: isSelected ? AppColors.primary : AppColors.border,
               width: isSelected ? 2 : 1,
@@ -546,7 +591,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                     color: AppColors.neutral,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.sports_tennis, color: AppColors.primary),
+                  child: const Icon(
+                    Icons.sports_tennis,
+                    color: AppColors.primary,
+                  ),
                 ),
                 title: Text(
                   court.name,
@@ -570,7 +618,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Available Slots', style: Theme.of(context).textTheme.labelMedium),
+                      Text(
+                        'Available Slots',
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
                       const SizedBox(height: 12),
                       const BookingTimeSlotGrid(),
                     ],
@@ -587,7 +638,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   Widget _buildStickyBottomBar(BuildContext context) {
     return BlocBuilder<BookingBloc, BookingState>(
       builder: (context, state) {
-        if (state is BookingAvailabilityLoaded && state.selectedStartTime != null) {
+        if (state is BookingAvailabilityLoaded &&
+            state.selectedSlots.isNotEmpty) {
           return Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -626,7 +678,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     );
   }
 
-  void _onBookingPressed(BuildContext context, BookingAvailabilityLoaded state) {
+  void _onBookingPressed(
+    BuildContext context,
+    BookingAvailabilityLoaded state,
+  ) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -638,7 +693,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
     final venueState = context.read<VenueBloc>().state;
     if (venueState is VenueDetailLoaded) {
-      final court = venueState.courts.firstWhere((c) => c.id == state.selectedCourtId);
+      final court = venueState.courts.firstWhere(
+        (c) => c.id == state.selectedCourtId,
+      );
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -650,7 +707,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               venue: venueState.venue,
               court: court,
               date: state.selectedDate,
-              startTime: state.selectedStartTime!,
+              selectedSlots: state.selectedSlots,
             ),
           );
         },
@@ -672,10 +729,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     // If result is null (back button) or 'cancelled', dispatch cancellation
     final status = result ?? 'cancelled';
     context.read<BookingBloc>().add(
-      BookingPaymentCompleted(
-        bookingId: state.bookingId,
-        status: status,
-      ),
+      BookingPaymentCompleted(bookingId: state.bookingId, status: status),
     );
   }
 }

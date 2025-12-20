@@ -13,7 +13,12 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
     *   **Design System:** Implemented v2.1 Design Tokens (Colors, Typography) and Core Widgets (`CustomButton`, `CustomTextField`).
     *   **Auth Revamp:** Added Google Sign-In (Credential Manager), Multi-Role Registration (Player vs Owner), and Role-Based Navigation.
     *   **Guest Mode:** Implemented Router Whitelisting to allow unauthenticated exploration of Home and Venue Details. Guests are redirected to Login only when attempting to book.
-*   **Pivot Point:** Moving away from immediate Monetization in sprint 6. Focusing on "Twin Tower" strategy (User & Owner Apps) and High-Fidelity UI/UX.
+*   **Sprint 8 Completed:** Discovery & Booking Experience Polish (UI/UX v2.2).
+    *   **Home Revamp:** Dynamic Header (User/Guest), Search Bar, and Category Rail.
+    *   **Venue Detail:** Overlapping "Stack" layout, Collapsing Image Header, Sticky Title, and Facilities Chips.
+    *   **Search Page:** Dedicated search screen with filtering logic.
+    *   **Calendar:** Improved date picker with full calendar access and immediate availability refresh.
+    *   **Visuals:** Full migration to "Modern Blue" (#1565C0) theme and rounded aesthetics.
 
 ## Phase 1: Foundation & Setup
 - [x] Create Flutter project `gsports` using `create_project`.
@@ -48,41 +53,28 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 - [ ] **Scoreboard**
 
 ## Sprint 6: UI Foundation & Auth Revolution (The Face Lift)
-*Goal: Move away from 'Basic UI'. Implement professional Design System & complete Authentication features.*
-
-### Phase 1: Design System & Assets
-- [x] **Dependencies:** Added `google_fonts`, `flutter_svg`, `carousel_slider`, `google_sign_in`, `image_picker`.
-- [x] **Assets:** Setup folder structure.
-- [x] **Global Widgets:** Created `AppColors`, `AppTheme` (v2.1), `CustomButton`, `CustomTextField`.
-
-### Phase 2: Auth Logic Upgrade
-- [x] **Google Auth:** Implemented `SignInWithGoogle` in `AuthRemoteDataSource` & Bloc (using Credential Manager).
-- [x] **Role Logic:** Updated `UserEntity` to support 'user' or 'mitra'. Implemented Role-Based Navigation.
-
-### Phase 3: Auth UI Revamp
-- [x] **Login Page:** Rebuilt using Design System v2.1. Added Google Sign-In and Guest Mode entry.
-- [x] **Register Page:** Added Role Selection (Player vs Venue Owner) and Google Sign-Up support.
-- [x] **Guest Mode:** Implemented strict router whitelist for public access (Home/Venue) and redirect logic for protected actions.
-
----
+- [x] **Design System & Assets:** Implemented v2.1 Design Tokens & Core Widgets.
+- [x] **Auth Logic Upgrade:** Google Auth & Role Logic.
+- [x] **Auth UI Revamp:** Login/Register Pages with new design & Guest Mode.
 
 ## Sprint 8: Discovery & Booking Experience (User Side)
 *Goal: Make finding and booking venues seamless and visually appealing.*
 
 ### Phase 1: Home Revamp
-- [ ] **Header:** Implement Greeting ("Hello, [Name]") & Notification Icon (replacing Seeder).
-- [ ] **Search:** Create `SearchBar` widget (UI only, navigating to SearchPage).
-- [ ] **Categories:** Create Horizontal Scroll List with Sport Icons.
-- [ ] **Venue List:** Update `VenueCard` to use new Design System (No overflow, better typography).
+- [x] **Header:** Dynamic Greeting & Notification Icon.
+- [x] **Search:** `SearchBar` widget & Search Page logic.
+- [x] **Categories:** Horizontal Scroll List with Sport Icons.
+- [x] **Venue List:** New `VenueCard` (16:10 aspect ratio, overlay tags).
 
 ### Phase 2: Venue Detail Polish
-- [ ] **Header:** Replace static image with `CarouselSlider` (Multiple photos).
-- [ ] **Content:** Implement Grid Layout for Facilities.
-- [ ] **Interactions:** Add "Like/Favorite" button logic (Backend & UI).
+- [x] **Header:** Collapsing Image Carousel with Gradient.
+- [x] **Content:** Overlapping Body, Sticky Title, Facilities Chips.
+- [x] **Interactions:** Favorite Button & Share.
+- [x] **Booking:** Sticky Bottom Bar & Full Calendar Picker.
 
 ### Phase 3: Booking Logic Upgrade
 - [ ] **Multiple Selection:** Refactor `BookingBloc` to allow selecting multiple consecutive slots.
-- [ ] **Timer:** Add 60-minute countdown/deadline logic for payment.
+- [ ] **Timer:** Add 15-minute countdown/deadline logic for payment.
 
 ---
 
@@ -144,17 +136,6 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 - [ ] Final Bug Fixes.
 - [ ] Performance Profiling.
 - [ ] Play Store Assets.
-
-## Standard Checks (Perform after EACH Phase)
-- [ ] Create/modify unit tests for testing the code added or modified in this phase.
-- [ ] Run `dart_fix` to clean up the code.
-- [ ] Run `analyze_files` and fix any issues.
-- [ ] Run tests to ensure they pass.
-- [ ] Run `dart_format`.
-- [ ] Update `IMPLEMENTATION.md` (Journal & Checkboxes).
-- [ ] Verify changes with `git diff`.
-- [ ] Commit changes with a clear message (User Approval Required).
-- [ ] Hot Reload/Restart app if running.
 
 ## Final Steps
 - [ ] Create `README.md` (Comprehensive).

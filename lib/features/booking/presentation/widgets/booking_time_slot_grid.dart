@@ -18,7 +18,7 @@ class BookingTimeSlotGrid extends StatelessWidget {
         if (state is BookingAvailabilityLoaded) {
           final availabilityMap = state.availabilityMap;
           final selectedDate = state.selectedDate;
-          final selectedStartTime = state.selectedStartTime;
+          final selectedSlots = state.selectedSlots;
 
           // Sort hours to display them in order
           final sortedHours = availabilityMap.keys.toList()..sort();
@@ -42,12 +42,9 @@ class BookingTimeSlotGrid extends StatelessWidget {
               final isAvailable = availabilityMap[hour] ?? false;
 
               // Determine if this slot is selected
-              bool isSelected = false;
-              if (selectedStartTime != null) {
-                isSelected =
-                    selectedStartTime.hour == hour &&
-                    selectedStartTime.day == selectedDate.day;
-              }
+              final isSelected = selectedSlots.any(
+                (s) => s.hour == hour && s.day == selectedDate.day,
+              );
 
               // Formatting hour "08:00"
               final timeString = '${hour.toString().padLeft(2, '0')}:00';

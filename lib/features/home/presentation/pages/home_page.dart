@@ -14,7 +14,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -80,15 +81,15 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                   Text(
                     'Lokasi Anda',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   Text(
                     'Jakarta', // Hardcoded for MVP
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
               ),
@@ -98,8 +99,10 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                     onPressed: () {
                       // TODO: Implement Notifications
                     },
-                    icon: const Icon(Icons.notifications_outlined,
-                        color: AppColors.textPrimary),
+                    icon: const Icon(
+                      Icons.notifications_outlined,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   Positioned(
                     right: 12,
@@ -112,7 +115,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                         shape: BoxShape.circle,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ],
@@ -128,22 +131,24 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                   Text(
                     'Selamat Datang,',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   Text(
                     'Cari Lapangan?',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
               ),
               TextButton(
                 onPressed: () => context.go('/login'),
-                child: const Text('Masuk',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Masuk',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           );
@@ -174,10 +179,9 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
             const SizedBox(width: 12),
             Text(
               'Cari lapangan...',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: AppColors.textTertiary),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textTertiary),
             ),
             const Spacer(),
             const Icon(Icons.tune, color: AppColors.primary),
@@ -277,18 +281,15 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
           return SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final venue = state.venues[index];
-                  return VenueCard(
-                    venue: venue,
-                    onTap: () {
-                      context.push('/venue/${venue.id}');
-                    },
-                  );
-                },
-                childCount: state.venues.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final venue = state.venues[index];
+                return VenueCard(
+                  venue: venue,
+                  onTap: () {
+                    context.push('/venue/${venue.id}');
+                  },
+                );
+              }, childCount: state.venues.length),
             ),
           );
         }

@@ -13,7 +13,9 @@ class SignInWithGoogle implements UseCase<UserEntity, SignInWithGoogleParams> {
   SignInWithGoogle(this.repository);
 
   @override
-  Future<Either<Failure, UserEntity>> call(SignInWithGoogleParams params) async {
+  Future<Either<Failure, UserEntity>> call(
+    SignInWithGoogleParams params,
+  ) async {
     return await repository.signInWithGoogle(role: params.role);
   }
 }

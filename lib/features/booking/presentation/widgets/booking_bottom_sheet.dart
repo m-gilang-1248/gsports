@@ -13,22 +13,25 @@ class BookingBottomSheet extends StatelessWidget {
   final Venue venue;
   final Court court;
   final DateTime date;
-  final DateTime startTime;
+  final List<DateTime> selectedSlots;
 
   const BookingBottomSheet({
     super.key,
     required this.venue,
     required this.court,
     required this.date,
-    required this.startTime,
+    required this.selectedSlots,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // MVP: Fixed 1 hour duration
-    final endTime = startTime.add(const Duration(hours: 1));
-    final durationHours = 1;
+
+    // Calculate dynamic values
+    final sortedSlots = List<DateTime>.from(selectedSlots)..sort();
+    final startTime = sortedSlots.first;
+    final endTime = sortedSlots.last.add(const Duration(hours: 1));
+    final durationHours = sortedSlots.length;
     final totalPrice = court.hourlyPrice * durationHours;
 
     final currencyFormat = NumberFormat.currency(

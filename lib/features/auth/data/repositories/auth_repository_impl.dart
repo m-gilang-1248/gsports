@@ -76,7 +76,9 @@ class AuthRepositoryImpl implements AuthRepository {
       debugPrint('AuthRepositoryImpl - AuthException: $e');
       return Left(AuthFailure(e.message, stackTrace: st));
     } catch (e, st) {
-      debugPrint('AuthRepositoryImpl - Unknown error during Google Sign-In: $e');
+      debugPrint(
+        'AuthRepositoryImpl - Unknown error during Google Sign-In: $e',
+      );
       return Left(ServerFailure(e.toString(), stackTrace: st));
     }
   }

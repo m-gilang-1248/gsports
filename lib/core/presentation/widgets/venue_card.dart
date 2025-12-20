@@ -8,11 +8,7 @@ class VenueCard extends StatelessWidget {
   final Venue venue;
   final VoidCallback onTap;
 
-  const VenueCard({
-    super.key,
-    required this.venue,
-    required this.onTap,
-  });
+  const VenueCard({super.key, required this.venue, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +24,8 @@ class VenueCard extends StatelessWidget {
     if (venue.name.toLowerCase().contains('badminton')) sportType = 'Badminton';
     if (venue.name.toLowerCase().contains('futsal')) sportType = 'Futsal';
     if (venue.name.toLowerCase().contains('tennis')) sportType = 'Tennis';
-    if (venue.name.toLowerCase().contains('basketball')) sportType = 'Basketball';
+    if (venue.name.toLowerCase().contains('basketball'))
+      sportType = 'Basketball';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -69,8 +66,10 @@ class VenueCard extends StatelessWidget {
                             ),
                             errorWidget: (context, url, error) => Container(
                               color: AppColors.neutral,
-                              child: const Icon(Icons.broken_image,
-                                  color: Colors.grey),
+                              child: const Icon(
+                                Icons.broken_image,
+                                color: Colors.grey,
+                              ),
                             ),
                           )
                         : Container(
@@ -84,7 +83,9 @@ class VenueCard extends StatelessWidget {
                     left: 12,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(20),
@@ -98,9 +99,11 @@ class VenueCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.sports_tennis, // Generic icon for now
-                              size: 12,
-                              color: AppColors.primary),
+                          Icon(
+                            Icons.sports_tennis, // Generic icon for now
+                            size: 12,
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             sportType.toUpperCase(),
@@ -120,7 +123,9 @@ class VenueCard extends StatelessWidget {
                     right: 12,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
@@ -128,8 +133,11 @@ class VenueCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.star,
-                              size: 14, color: AppColors.warning),
+                          const Icon(
+                            Icons.star,
+                            size: 14,
+                            color: AppColors.warning,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             venue.rating.toString(),
@@ -160,8 +168,11 @@ class VenueCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 14, color: AppColors.textSecondary),
+                        const Icon(
+                          Icons.location_on_outlined,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -183,9 +194,8 @@ class VenueCard extends StatelessWidget {
                           ),
                           TextSpan(
                             text: currencyFormat.format(venue.minPrice),
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: AppColors.primary,
-                                ),
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(color: AppColors.primary),
                           ),
                         ],
                       ),
