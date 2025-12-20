@@ -83,7 +83,7 @@ class _PaymentPageState extends State<PaymentPage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false, // Prevent default back behavior
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         context.pop('cancelled'); // Return 'cancelled' on back button press
       },

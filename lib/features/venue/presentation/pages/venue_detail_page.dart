@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +10,7 @@ import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
 import 'package:gsports/injection_container.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class VenueDetailPage extends StatefulWidget {
   final String venueId;
@@ -23,7 +23,7 @@ class VenueDetailPage extends StatefulWidget {
 
 class _VenueDetailPageState extends State<VenueDetailPage> {
   DateTime _selectedDate = DateTime.now();
-  int _currentImageIndex = 0; // Track carousel index
+  int _currentImageIndex = 0;
 
   @override
   void initState() {
@@ -55,6 +55,13 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               ),
             );
             context.go('/home');
+          } else if (state is BookingCancelledState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Pembayaran dibatalkan'),
+                backgroundColor: AppColors.error,
+              ),
+            );
           } else if (state is BookingFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -96,233 +103,257 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
     return Stack(
       children: [
-        // Layer 1: Image Carousel (Fixed height)
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: MediaQuery.of(context).size.height * 0.4, // 40% height
-          child: Stack(
-            children: [
-              venue.photos.isNotEmpty
-                  ? PageView.builder(
-                      itemCount: venue.photos.length,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentImageIndex = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        return Image.network(
-                          venue.photos[index],
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(color: Colors.grey),
-                        );
-                      },
-                    )
-                  : Container(color: Colors.grey[300]),
-              // Gradient Overlay for visibility
-              Container(
+        // Layer 1: Collapsing Image Header (using NestedScrollView would be ideal for true collapse, 
+        // but for now we implement the shrink effect requested via CustomScrollView + SliverAppBar)
+        CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: MediaQuery.of(context).size.height * 0.4,
+              pinned: true,
+              backgroundColor: Colors.transparent, // Let content show through or standard behavior
+              elevation: 0,
+              leading: Container(
+                margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.4),
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.4),
-                    ],
-                  ),
+                  color: Colors.black.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                  onPressed: () => context.pop(),
                 ),
               ),
-              // Dots Indicator
-              if (venue.photos.length > 1)
-                Positioned(
-                  bottom: 48, // Above the overlapping card
-                  left: 0,
-                  right: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      venue.photos.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: _currentImageIndex == index ? 24 : 8,
-                        height: 8,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: _currentImageIndex == index
-                              ? AppColors.primary
-                              : Colors.white.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
+              actions: [
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    shape: BoxShape.circle,
                   ),
-                ),
-            ],
-          ),
-        ),
-
-        // Layer 2: Custom App Bar (Floating)
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            foregroundColor: Colors.white, // White icons
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new),
-              onPressed: () => context.pop(),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.favorite_border),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Saved to Favorites')),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.share),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-
-        // Layer 3: Content Body (Overlapping)
-        Positioned.fill(
-          top: MediaQuery.of(context).size.height * 0.35, // Overlap by 5%
-          child: Container(
-            decoration: const BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. Title Header
-                  Text(
-                    venue.name,
-                    style: Theme.of(context).textTheme.headlineLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, size: 16, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          venue.address,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      const Icon(Icons.star, size: 18, color: AppColors.warning),
-                      const SizedBox(width: 4),
-                      Text(
-                        venue.rating.toString(),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 2. Price Block
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.neutral,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Start from',
-                          style: Theme.of(context).textTheme.labelMedium,
-                        ),
-                        Text(
-                          '${currencyFormat.format(venue.minPrice)} / jam',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: AppColors.primary,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 3. Description
-                  Text(
-                    'Description',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    venue.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 4. Facilities
-                  Text(
-                    'Facilities',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: venue.facilities.map((facility) {
-                      return Chip(
-                        label: Text(facility),
-                        avatar: const Icon(Icons.check_circle, size: 16, color: AppColors.primary),
-                        backgroundColor: AppColors.surface,
-                        side: BorderSide.none,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        elevation: 1,
-                        shadowColor: Colors.black12,
+                  child: IconButton(
+                    icon: const Icon(Icons.favorite_border, color: Colors.white),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Saved to Favorites')),
                       );
-                    }).toList(),
+                    },
                   ),
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 24),
-
-                  // Date Selection
-                  _buildDatePicker(context),
-                  const SizedBox(height: 24),
-                  
-                  // Courts
-                  Text(
-                    'Choose Court',
-                    style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 12),
-                  courts.isEmpty
-                      ? const Center(child: Text('No courts available'))
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: courts.length,
-                          separatorBuilder: (ctx, i) => const SizedBox(height: 12),
-                          itemBuilder: (ctx, i) => _buildCourtItem(context, courts[i]),
+                  child: IconButton(
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    onPressed: () {},
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  children: [
+                    venue.photos.isNotEmpty
+                        ? PageView.builder(
+                            itemCount: venue.photos.length,
+                            onPageChanged: (index) {
+                              setState(() {
+                                _currentImageIndex = index;
+                              });
+                            },
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                venue.photos[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(color: Colors.grey),
+                              );
+                            },
+                          )
+                        : Container(color: Colors.grey[300]),
+                    // Gradient Overlay
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.4),
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.4),
+                          ],
                         ),
-                  const SizedBox(height: 100), // Space for sticky bottom bar
-                ],
+                      ),
+                    ),
+                    // Dots Indicator
+                    if (venue.photos.length > 1)
+                      Positioned(
+                        bottom: 32,
+                        left: 0,
+                        right: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            venue.photos.length,
+                            (index) => AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: _currentImageIndex == index ? 24 : 8,
+                              height: 8,
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              decoration: BoxDecoration(
+                                color: _currentImageIndex == index
+                                    ? AppColors.primary
+                                    : Colors.white.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
+            
+            // Layer 2: Content Body (SliverToBoxAdapter with overlapped top)
+            // To achieve the overlapping effect with SliverAppBar, we usually use SliverOverlapInjector 
+            // or just a negative margin transform if using standard stack.
+            // Since we switched to CustomScrollView for shrinking header, strict overlapping like standard Stack 
+            // is harder without NestedScrollView. 
+            // Let's stick to the requested "Header Shrinks" requirement which is solved by SliverAppBar.
+            // We can style the top of this content to look rounded.
+            SliverToBoxAdapter(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                ),
+                transform: Matrix4.translationValues(0, -20, 0), // Slight overlap visual hack
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1. Title Header
+                      Text(
+                        venue.name,
+                        style: Theme.of(context).textTheme.headlineLarge,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 16, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              venue.address,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          const Icon(Icons.star, size: 18, color: AppColors.warning),
+                          const SizedBox(width: 4),
+                          Text(
+                            venue.rating.toString(),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 2. Price Block
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.neutral,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Start from',
+                              style: Theme.of(context).textTheme.labelMedium,
+                            ),
+                            Text(
+                              '${currencyFormat.format(venue.minPrice)} / jam',
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 3. Description
+                      Text(
+                        'Description',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        venue.description,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 4. Facilities
+                      Text(
+                        'Facilities',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: venue.facilities.map((facility) {
+                          return Chip(
+                            label: Text(facility),
+                            avatar: const Icon(Icons.check_circle, size: 16, color: AppColors.primary),
+                            backgroundColor: AppColors.surface,
+                            side: BorderSide.none,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            elevation: 1,
+                            shadowColor: Colors.black12,
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 32),
+                      const Divider(),
+                      const SizedBox(height: 24),
+
+                      // Date Selection
+                      _buildDatePicker(context),
+                      const SizedBox(height: 24),
+                      
+                      // Courts
+                      Text(
+                        'Choose Court',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      courts.isEmpty
+                          ? const Center(child: Text('No courts available'))
+                          : ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: courts.length,
+                              separatorBuilder: (ctx, i) => const SizedBox(height: 12),
+                              itemBuilder: (ctx, i) => _buildCourtItem(context, courts[i]),
+                            ),
+                      const SizedBox(height: 100), // Space for sticky bottom bar
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -332,7 +363,39 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Select Date', style: Theme.of(context).textTheme.headlineMedium),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Select Date', style: Theme.of(context).textTheme.headlineMedium),
+            IconButton(
+              icon: const Icon(Icons.calendar_month, color: AppColors.primary),
+              onPressed: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedDate,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 365)), // Full calendar access
+                );
+                if (date != null) {
+                  setState(() => _selectedDate = date);
+                  // Refresh availability for the new date if a court is selected
+                  final venueState = context.read<VenueBloc>().state;
+                  final bookingState = context.read<BookingBloc>().state;
+                  if (venueState is VenueDetailLoaded && 
+                      bookingState is BookingAvailabilityLoaded) {
+                     // Check availability again for the currently selected court but new date
+                     context.read<BookingBloc>().add(
+                        BookingAvailabilityChecked(
+                          courtId: bookingState.selectedCourtId,
+                          date: date,
+                        ),
+                     );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
         SizedBox(
           height: 80,
@@ -342,10 +405,23 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             itemBuilder: (context, index) {
               final date = DateTime.now().add(Duration(days: index));
               final isSelected = date.day == _selectedDate.day && 
-                               date.month == _selectedDate.month;
+                               date.month == _selectedDate.month &&
+                               date.year == _selectedDate.year;
               
               return GestureDetector(
-                onTap: () => setState(() => _selectedDate = date),
+                onTap: () {
+                  setState(() => _selectedDate = date);
+                  // Trigger availability check update
+                  final bookingState = context.read<BookingBloc>().state;
+                  if (bookingState is BookingAvailabilityLoaded) {
+                     context.read<BookingBloc>().add(
+                        BookingAvailabilityChecked(
+                          courtId: bookingState.selectedCourtId,
+                          date: date,
+                        ),
+                     );
+                  }
+                },
                 child: Container(
                   width: 60,
                   margin: const EdgeInsets.only(right: 12),
@@ -420,6 +496,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             children: [
               ListTile(
                 onTap: () {
+                  // Only fetch if selecting a new court OR date changed (date logic handled in date picker)
                   if (!isSelected) {
                     context.read<BookingBloc>().add(
                       BookingAvailabilityChecked(
@@ -558,10 +635,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
       extra: state.paymentUrl,
     );
 
+    // If result is null (back button) or 'cancelled', dispatch cancellation
+    final status = result ?? 'cancelled';
     context.read<BookingBloc>().add(
       BookingPaymentCompleted(
         bookingId: state.bookingId,
-        status: result ?? 'cancelled',
+        status: status,
       ),
     );
   }
