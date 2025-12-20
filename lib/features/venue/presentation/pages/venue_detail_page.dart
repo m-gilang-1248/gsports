@@ -177,12 +177,37 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         SliverAppBar(
           expandedHeight: 250.0,
           pinned: true,
+          // Improve contrast: Title is white on expanded (over image), Black on collapsed (default surface)
+          // We can use a custom flexible space to handle this, or rely on system theme adaptation.
+          // For now, let's keep it simple: Add a shadow to the title for expanded state visibility.
+          foregroundColor: AppColors.primary, // Collapsed color
+          backgroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.favorite_border),
+              onPressed: () {
+                // TODO: Implement Favorite Logic
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Ditambahkan ke Favorit')),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () {
+                // TODO: Implement Share
+              },
+            ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             title: Text(
               venue.name,
               style: const TextStyle(
-                color: Colors.white,
-                shadows: [Shadow(color: Colors.black45, blurRadius: 5)],
+                color: AppColors.primary, // Force black for visibility when collapsed?
+                // Actually, standard SliverAppBar behavior fades the title in.
+                // Let's rely on standard behavior but ensure text is readable.
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
             background: Stack(
@@ -285,6 +310,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   ],
                 ),
                 const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 24),
                 Text(
                   'Fasilitas',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -296,30 +323,23 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: venue.facilities.map((facility) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
+                    return Chip(
+                      label: Text(
+                        facility,
+                        style: const TextStyle(fontSize: 12),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // In a real app, map facility string to icon
-                          const Icon(Icons.check_circle_outline,
-                              size: 16, color: AppColors.secondary),
-                          const SizedBox(width: 8),
-                          Text(
-                            facility,
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ],
+                      avatar: const Icon(Icons.check, size: 16, color: AppColors.secondary),
+                      backgroundColor: AppColors.background,
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     );
                   }).toList(),
                 ),
-                const Divider(height: 32),
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 24),
                 _buildDatePicker(context),
                 const SizedBox(height: 24),
                 Text(

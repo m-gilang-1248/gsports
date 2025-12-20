@@ -98,10 +98,11 @@ class VenueCard extends StatelessWidget {
                 children: [
                   Text(
                     venue.name,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800, // Extra Bold
+                      color: AppColors.primary,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -109,14 +110,15 @@ class VenueCard extends StatelessWidget {
                   Row(
                     children: [
                       const Icon(Icons.location_on_outlined,
-                          size: 14, color: AppColors.textSecondary),
+                          size: 14, color: Colors.grey),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          venue.city, // Or address if preferred
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                          venue.address, // Use address for more detail
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -124,25 +126,12 @@ class VenueCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        const TextSpan(
-                          text: 'Starts from ',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                        TextSpan(
-                          text: currencyFormat.format(venue.minPrice),
-                          style: const TextStyle(
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    currencyFormat.format(venue.minPrice),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary, // Black Price as requested
                     ),
                   ),
                 ],

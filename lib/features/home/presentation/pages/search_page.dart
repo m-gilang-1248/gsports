@@ -77,10 +77,15 @@ class _SearchPageState extends State<SearchPage> {
           if (state is VenueListLoaded) {
             final filteredVenues = state.venues.where((venue) {
               final queryLower = _query.toLowerCase();
+              if (queryLower.isEmpty) return true; // Show all if empty query (or just category)
+
               final matchName = venue.name.toLowerCase().contains(queryLower);
-              // Simple facility check as a proxy for sport type if not explicit
               final matchCity = venue.city.toLowerCase().contains(queryLower);
-              return matchName || matchCity;
+              final matchAddress = venue.address.toLowerCase().contains(queryLower);
+              // Also check facilities as proxy for sports (e.g. 'badminton' in facilities or desc)
+              final matchFacilities = venue.facilities.any((f) => f.toLowerCase().contains(queryLower));
+              
+              return matchName || matchCity || matchAddress || matchFacilities;
             }).toList();
 
             if (filteredVenues.isEmpty) {
