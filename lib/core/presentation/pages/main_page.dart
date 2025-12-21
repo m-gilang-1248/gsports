@@ -15,20 +15,19 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages =
-        widget.pages ??
-        [const HomePage(), const BookingHistoryPage(), const ProfilePage()];
-  }
 
   @override
   Widget build(BuildContext context) {
+    // Generate pages dynamically to pass state
+    final pages = widget.pages ??
+        [
+          const HomePage(),
+          BookingHistoryPage(isVisible: _currentIndex == 1),
+          const ProfilePage(),
+        ];
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),

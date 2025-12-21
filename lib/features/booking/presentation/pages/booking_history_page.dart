@@ -9,7 +9,9 @@ import 'package:go_router/go_router.dart';
 import 'package:gsports/core/presentation/widgets/custom_button.dart';
 
 class BookingHistoryPage extends StatelessWidget {
-  const BookingHistoryPage({super.key});
+  final bool isVisible;
+
+  const BookingHistoryPage({super.key, this.isVisible = false});
 
   @override
   Widget build(BuildContext context) {
@@ -57,91 +59,124 @@ class BookingHistoryPage extends StatelessWidget {
     return BlocProvider(
       create: (context) =>
           GetIt.I<HistoryBloc>()..add(FetchBookingHistory(userId)),
-      child: BlocConsumer<HistoryBloc, HistoryState>(
-        listener: (context, state) {
-          if (state is HistoryError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is HistoryJoinSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Berhasil bergabung ke booking!')),
-            );
-            GoRouter.of(context).push('/booking-detail/${state.bookingId}');
+      child: _BookingHistoryContent(userId: userId, isVisible: isVisible),
+    );
+  }
+}
+
+class _BookingHistoryContent extends StatefulWidget {
+  final String userId;
+  final bool isVisible;
+
+  const _BookingHistoryContent({required this.userId, required this.isVisible});
+
+  @override
+  State<_BookingHistoryContent> createState() => _BookingHistoryContentState();
+}
+
+class _BookingHistoryContentState extends State<_BookingHistoryContent> {
+  @override
+  void didUpdateWidget(covariant _BookingHistoryContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isVisible && !oldWidget.isVisible) {
+      context.read<HistoryBloc>().add(FetchBookingHistory(widget.userId));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<HistoryBloc, HistoryState>(
+      listener: (context, state) async {
+        if (state is HistoryError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        } else if (state is HistoryJoinSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Berhasil bergabung ke booking!')),
+          );
+          await GoRouter.of(context).push('/booking-detail/${state.bookingId}');
+          if (context.mounted) {
+            context.read<HistoryBloc>().add(FetchBookingHistory(widget.userId));
           }
-        },
-        builder: (context, state) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('My Bookings'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    // Refresh data
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('My Bookings'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  // Refresh data
+                  context.read<HistoryBloc>().add(
+                    FetchBookingHistory(widget.userId),
+                  );
+                },
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => _showJoinDialog(context, widget.userId),
+            icon: const Icon(Icons.group_add),
+            label: const Text('Join Booking'),
+          ),
+          body: Builder(
+            builder: (context) {
+              if (state is HistoryLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is HistoryError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(state.message),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<HistoryBloc>().add(
+                            FetchBookingHistory(widget.userId),
+                          );
+                        },
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (state is HistoryLoaded) {
+                if (state.bookings.isEmpty) {
+                  return _buildEmptyState();
+                }
+                return RefreshIndicator(
+                  onRefresh: () async {
                     context.read<HistoryBloc>().add(
-                      FetchBookingHistory(userId),
+                      FetchBookingHistory(widget.userId),
                     );
                   },
-                ),
-              ],
-            ),
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: () => _showJoinDialog(context, userId),
-              icon: const Icon(Icons.group_add),
-              label: const Text('Join Booking'),
-            ),
-            body: Builder(
-              builder: (context) {
-                if (state is HistoryLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is HistoryError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(state.message),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<HistoryBloc>().add(
-                              FetchBookingHistory(userId),
-                            );
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  );
-                } else if (state is HistoryLoaded) {
-                  if (state.bookings.isEmpty) {
-                    return _buildEmptyState();
-                  }
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<HistoryBloc>().add(
-                        FetchBookingHistory(userId),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: state.bookings.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      return BookingHistoryCard(
+                        booking: state.bookings[index],
+                        onReturn: () {
+                          context.read<HistoryBloc>().add(
+                            FetchBookingHistory(widget.userId),
+                          );
+                        },
                       );
                     },
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: state.bookings.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return BookingHistoryCard(
-                          booking: state.bookings[index],
-                        );
-                      },
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          );
-        },
-      ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -202,8 +237,9 @@ class BookingHistoryPage extends StatelessWidget {
 
 class BookingHistoryCard extends StatelessWidget {
   final Booking booking;
+  final VoidCallback? onReturn;
 
-  const BookingHistoryCard({super.key, required this.booking});
+  const BookingHistoryCard({super.key, required this.booking, this.onReturn});
 
   @override
   Widget build(BuildContext context) {
@@ -216,8 +252,9 @@ class BookingHistoryCard extends StatelessWidget {
         booking.sportType.substring(1).toLowerCase();
 
     return InkWell(
-      onTap: () {
-        GoRouter.of(context).push('/booking-detail/${booking.id}');
+      onTap: () async {
+        await GoRouter.of(context).push('/booking-detail/${booking.id}');
+        onReturn?.call();
       },
       child: Card(
         elevation: 0,
