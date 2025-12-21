@@ -19,6 +19,10 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
     *   **Search Page:** Dedicated search screen with filtering logic.
     *   **Calendar:** Improved date picker with full calendar access and immediate availability refresh.
     *   **Visuals:** Full migration to "Modern Blue" (#1565C0) theme and rounded aesthetics.
+*   **Sprint 8 Polish & Stability:**
+    *   **Payment Stability:** Fixed false-positive success states, implemented robust Midtrans status syncing (`pending`, `not_found`), and fixed booking cancellation logic.
+    *   **Auto-Refresh:** Implemented automatic data refreshing for Booking History when switching tabs or returning from a detail page.
+    *   **Bug Fixes:** Resolved UI crashes in Booking Detail and optimized navigation flows.
 
 ## Phase 1: Foundation & Setup
 - [x] Create Flutter project `gsports` using `create_project`.
@@ -73,8 +77,13 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 - [x] **Booking:** Sticky Bottom Bar & Full Calendar Picker.
 
 ### Phase 3: Booking Logic Upgrade
-- [ ] **Multiple Selection:** Refactor `BookingBloc` to allow selecting multiple consecutive slots.
-- [ ] **Timer:** Add 15-minute countdown/deadline logic for payment.
+- [x] **Multiple Selection:** Refactor `BookingBloc` to allow selecting multiple consecutive slots.
+- [x] **Timer:** Add 15-minute countdown/deadline logic for payment.
+
+### Phase 4: Stability & Polish
+- [x] **Payment Sync:** Implement `SyncBookingStatus` and auto-refresh logic.
+- [x] **History Auto-Refresh:** Refresh list on tab switch and return.
+- [x] **Crash Fixes:** Resolve context issues in `BookingDetailPage`.
 
 ---
 
