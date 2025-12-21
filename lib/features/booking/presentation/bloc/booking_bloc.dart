@@ -179,10 +179,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
             updateInfoResult.fold(
               (failure) => emit(BookingFailure(failure.message)),
               (_) => emit(
-                BookingPaymentPageReady(
-                  paymentInfo.redirectUrl,
-                  bookingId,
-                ),
+                BookingPaymentPageReady(paymentInfo.redirectUrl, bookingId),
               ),
             );
           },
@@ -221,7 +218,8 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
               (failure) => emit(BookingFailure(failure.message)),
               (_) => emit(BookingPaidSuccess(event.bookingId)),
             );
-          } else if (midtransStatus == 'pending' || midtransStatus == 'not_found') {
+          } else if (midtransStatus == 'pending' ||
+              midtransStatus == 'not_found') {
             // Keep slot reserved for 15 mins (handled by custom_expiry).
             // Update status to waiting_payment instead of cancelling.
             final updateResult = await updateBookingStatus(

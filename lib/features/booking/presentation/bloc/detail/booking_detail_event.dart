@@ -34,6 +34,15 @@ class CancelBookingRequested extends BookingDetailEvent {
   List<Object> get props => [bookingId];
 }
 
+class SyncBookingStatus extends BookingDetailEvent {
+  final String bookingId;
+
+  const SyncBookingStatus(this.bookingId);
+
+  @override
+  List<Object> get props => [bookingId];
+}
+
 class UpdateParticipantPaymentStatus extends BookingDetailEvent {
   final String bookingId;
   final String participantUid;

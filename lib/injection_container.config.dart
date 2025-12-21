@@ -172,6 +172,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i698.GenerateSplitCode>(),
         gh<_i416.UpdateParticipantStatus>(),
         gh<_i488.CancelBooking>(),
+        gh<_i326.GetTransactionStatus>(),
+        gh<_i781.UpdateBookingStatus>(),
       ),
     );
     gh.factory<_i363.AuthBloc>(

@@ -19,15 +19,17 @@ class BookingDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => GetIt.I<BookingDetailBloc>()
-        ..add(FetchBookingDetail(bookingId)),
-      child: const _BookingDetailView(),
+      create: (context) =>
+          GetIt.I<BookingDetailBloc>()
+            ..add(SyncBookingStatus(bookingId)), // Sync with Midtrans on open
+      child: _BookingDetailView(bookingId: bookingId),
     );
   }
 }
 
 class _BookingDetailView extends StatefulWidget {
-  const _BookingDetailView();
+  final String bookingId;
+  const _BookingDetailView({required this.bookingId});
 
   @override
   State<_BookingDetailView> createState() => _BookingDetailViewState();
@@ -42,31 +44,13 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
       appBar: AppBar(
         title: const Text('Detail Booking'),
         actions: [
-          // Now this context is UNDER BlocProvider, so it works.
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh Status',
             onPressed: () {
-              // We need to re-fetch. Since we don't store ID in state, 
-              // we can rely on the BLoC to have the ID if we want, or better:
-              // The BLoC state 'BookingDetailLoaded' has the booking object with ID.
-              // But if it's Error or Loading, we might not have it easily accessible unless we stored it.
-              // However, since the Bloc was created with the event in parent, we can just trigger the event again if we knew the ID.
-              // A trick: The Bloc instance in the provider is the same.
-              // Let's verify if we can access the bookingId from the Bloc or State.
-              // For now, let's assume the user only refreshes when data is loaded or error (which might need ID).
-              // To be safe, we should probably pass ID to _BookingDetailView, but let's try to get it from context if possible or modify structure slightly.
-              // Actually, simpler: Pass bookingId to _BookingDetailView constructor.
-              final state = context.read<BookingDetailBloc>().state;
-              if (state is BookingDetailLoaded) {
-                 context.read<BookingDetailBloc>().add(FetchBookingDetail(state.booking.id));
-              } else {
-                // If error or loading, we might not have ID handy unless passed down.
-                // Let's modify the parent to pass it.
-                // Since I can't easily change the parent structure in this single file write without making it complex,
-                // I will assume for now we only refresh when loaded.
-                // WAIT: I can just change _BookingDetailView to accept bookingId.
-              }
+              context.read<BookingDetailBloc>().add(
+                SyncBookingStatus(widget.bookingId),
+              );
             },
           ),
         ],
@@ -74,9 +58,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
       body: BlocConsumer<BookingDetailBloc, BookingDetailState>(
         listener: (context, state) {
           if (state is BookingDetailError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         builder: (context, state) {
@@ -87,148 +71,86 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
             final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
             final bool isHost = booking.userId == currentUserUid;
 
-            // Logic: Expired if status is cancelled OR local timer finished.
-            // Also check if payment deadline is passed? 
-            // The PaymentTimerWidget handles visual countdown.
             final bool actuallyExpired =
                 booking.status == 'cancelled' || _isExpired;
 
             return Column(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ALWAYS show timer if waiting_payment, unless explicitly cancelled/expired
-                        if (booking.status == 'waiting_payment' && !actuallyExpired) ...[
-                          PaymentTimerWidget(
-                            createdAt: booking.createdAt,
-                            onExpired: () {
-                              setState(() {
-                                _isExpired = true;
-                              });
-                              context.read<BookingDetailBloc>().add(
-                                CancelBookingRequested(booking.id),
-                              );
-                            },
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<BookingDetailBloc>().add(
+                        SyncBookingStatus(widget.bookingId),
+                      );
+                    },
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (booking.status == 'waiting_payment' &&
+                              !actuallyExpired) ...[
+                            PaymentTimerWidget(
+                              createdAt: booking.createdAt,
+                              onExpired: () {
+                                setState(() {
+                                  _isExpired = true;
+                                });
+                                context.read<BookingDetailBloc>().add(
+                                  CancelBookingRequested(booking.id),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          _buildBookingInfoCard(
+                            context,
+                            booking,
+                            actuallyExpired,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 24),
+                          _buildSplitBillSection(
+                            context,
+                            booking,
+                            isHost,
+                            currentUserUid,
+                          ),
+                          const SizedBox(height: 24),
+                          _buildParticipantsSection(
+                            context,
+                            booking,
+                            isHost,
+                            currentUserUid,
+                            state.isUpdatingParticipant,
+                          ),
                         ],
-                        _buildBookingInfoCard(context, booking, actuallyExpired),
-                        const SizedBox(height: 24),
-                        _buildSplitBillSection(context, booking, isHost, currentUserUid),
-                        const SizedBox(height: 24),
-                        _buildParticipantsSection(
-                          context,
-                          booking,
-                          isHost,
-                          currentUserUid,
-                          state.isUpdatingParticipant,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-                  if (booking.status == 'waiting_payment' && isHost)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, -4),
-                          ),
-                        ],
-                      ),
-                      child: SafeArea(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  // Show confirmation dialog
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Batalkan Pesanan?'),
-                                      content: const Text(
-                                          'Apakah Anda yakin ingin membatalkan pesanan ini? Slot akan dibuka kembali untuk orang lain.'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context),
-                                          child: const Text('Tidak'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            context.read<BookingDetailBloc>().add(
-                                                  CancelBookingRequested(booking.id),
-                                                );
-                                          },
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: AppColors.error,
-                                          ),
-                                          child: const Text('Ya, Batalkan'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppColors.error,
-                                  side: const BorderSide(color: AppColors.error),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  fixedSize: const Size.fromHeight(50),
-                                ),
-                                child: const Text('Batalkan'),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: FilledButton(
-                                onPressed: actuallyExpired
-                                    ? null
-                                    : () => _onPayPressed(context, booking),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: actuallyExpired
-                                      ? Colors.grey
-                                      : AppColors.secondary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  fixedSize: const Size.fromHeight(50),
-                                ),
-                                child: Text(
-                                  actuallyExpired
-                                      ? 'Expired'
-                                      : 'Bayar',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              );
+                if (booking.status == 'waiting_payment' && isHost)
+                  _buildBottomAction(context, booking, actuallyExpired),
+              ],
+            );
           } else if (state is BookingDetailError) {
-             // In error state, we might want to allow retry which needs ID.
-             // We'll handle this by passing ID to View in next step if needed, 
-             // but strictly for "Refresh" button crash, this fix is enough.
-             // The Retry button in center already works because it uses the closure from the previous build method? 
-             // No, wait. The previous code used widget.bookingId from the stateful widget.
-             // We need to pass bookingId to _BookingDetailView.
             return Center(
-              child: Text(state.message),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    state.message,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.read<BookingDetailBloc>().add(
+                      SyncBookingStatus(widget.bookingId),
+                    ),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
             );
           }
           return const SizedBox.shrink();
@@ -237,18 +159,106 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
     );
   }
 
+  Widget _buildBottomAction(
+    BuildContext context,
+    Booking booking,
+    bool actuallyExpired,
+  ) {
+    // Capture the BLoC before the async gap or dialog
+    final bookingBloc = context.read<BookingDetailBloc>();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Batalkan Pesanan?'),
+                      content: const Text(
+                        'Apakah Anda yakin ingin membatalkan pesanan ini? Slot akan dibuka kembali untuk orang lain.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('Tidak'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(dialogContext);
+                            // Use the captured bloc to avoid context issues
+                            bookingBloc.add(CancelBookingRequested(booking.id));
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.error,
+                          ),
+                          child: const Text('Ya, Batalkan'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  side: const BorderSide(color: AppColors.error),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  fixedSize: const Size.fromHeight(50),
+                ),
+                child: const Text('Batalkan'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: FilledButton(
+                onPressed: actuallyExpired
+                    ? null
+                    : () => _onPayPressed(context, booking),
+                style: FilledButton.styleFrom(
+                  backgroundColor: actuallyExpired
+                      ? Colors.grey
+                      : AppColors.secondary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  fixedSize: const Size.fromHeight(50),
+                ),
+                child: Text(
+                  actuallyExpired ? 'Expired' : 'Bayar Sekarang',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _onPayPressed(BuildContext context, Booking booking) async {
+    final bookingBloc = context.read<BookingDetailBloc>();
     if (booking.midtransPaymentUrl != null) {
-      final result = await context.push<String>(
-        '/payment',
-        extra: booking.midtransPaymentUrl,
-      );
-      if (result == 'success' && context.mounted) {
-        context.read<BookingDetailBloc>().add(FetchBookingDetail(booking.id));
-      }
+      await context.push<String>('/payment', extra: booking.midtransPaymentUrl);
+      // When coming back, always sync status
+      bookingBloc.add(SyncBookingStatus(booking.id));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Link pembayaran tidak tersedia')),
+        const SnackBar(content: Text('Error: Payment URL not found')),
       );
     }
   }
@@ -288,9 +298,15 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
               children: [
                 Text(
                   'ID: #${booking.id}',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: Colors.grey),
                 ),
-                _buildStatusChip(booking.paymentStatus, booking.status, actuallyExpired),
+                _buildStatusChip(
+                  booking.paymentStatus,
+                  booking.status,
+                  actuallyExpired,
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -309,7 +325,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
             const SizedBox(height: 8),
             Text(
               'Dibuat pada: ${dateTimeFormat.format(booking.createdAt)}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             Row(
@@ -371,7 +389,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
           children: [
             Text(
               'Patungan (Split Bill)',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             if (booking.splitCode == null)
@@ -403,7 +423,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                   else
                     Text(
                       'Hanya host yang dapat mengaktifkan patungan.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                     ),
                 ],
               )
@@ -418,7 +440,10 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                   const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       border: Border.all(color: Colors.grey.shade400),
@@ -429,7 +454,8 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                       children: [
                         Text(
                           booking.splitCode!,
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          style: Theme.of(context).textTheme.headlineLarge
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                                 letterSpacing: 2,
@@ -438,10 +464,14 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                         IconButton(
                           icon: const Icon(Icons.copy),
                           onPressed: () {
-                            Clipboard.setData(ClipboardData(text: booking.splitCode!)).then((_) {
+                            Clipboard.setData(
+                              ClipboardData(text: booking.splitCode!),
+                            ).then((_) {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Kode berhasil disalin!')),
+                                const SnackBar(
+                                  content: Text('Kode berhasil disalin!'),
+                                ),
                               );
                             });
                           },
@@ -452,7 +482,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                   const SizedBox(height: 16),
                   Text(
                     'Bagikan kode ini ke temanmu agar bisa bergabung.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                   ),
                 ],
               ),
@@ -482,7 +514,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
           children: [
             Text(
               'Daftar Peserta',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             if (isUpdatingParticipant)
@@ -490,7 +524,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
             else if (booking.participants.isEmpty)
               Text(
                 'Belum ada peserta yang bergabung.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               )
             else
               ListView.builder(
@@ -522,7 +558,6 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
     String? currentUserUid,
   ) {
     final bool canEdit = isHost && (participant.uid != currentUserUid);
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -546,7 +581,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                 ),
                 Text(
                   participant.status == 'host' ? 'Host' : 'Peserta',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
               ],
             ),
@@ -572,66 +609,48 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
     String participantUid,
   ) {
     final bloc = context.read<BookingDetailBloc>();
-
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Update Status Pembayaran'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: const Text('Tandai Lunas'),
-                onTap: () {
-                  bloc.add(
-                    UpdateParticipantPaymentStatus(
-                      bookingId: bookingId,
-                      participantUid: participantUid,
-                      newStatus: 'paid',
-                    ),
-                  );
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: const Text('Tandai Belum Bayar'),
-                onTap: () {
-                  bloc.add(
-                    UpdateParticipantPaymentStatus(
-                      bookingId: bookingId,
-                      participantUid: participantUid,
-                      newStatus: 'pending',
-                    ),
-                  );
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: const Text('Update Status Pembayaran'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Tandai Lunas'),
+              onTap: () {
+                bloc.add(
+                  UpdateParticipantPaymentStatus(
+                    bookingId: bookingId,
+                    participantUid: participantUid,
+                    newStatus: 'paid',
+                  ),
+                );
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Tandai Belum Bayar'),
+              onTap: () {
+                bloc.add(
+                  UpdateParticipantPaymentStatus(
+                    bookingId: bookingId,
+                    participantUid: participantUid,
+                    newStatus: 'pending',
+                  ),
+                );
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildPaymentStatusChip(String status) {
-    Color color;
-    String label;
-
-    switch (status) {
-      case 'paid':
-        color = Colors.green;
-        label = 'Lunas';
-        break;
-      case 'pending':
-        color = Colors.orange;
-        label = 'Pending';
-        break;
-      default:
-        color = Colors.grey;
-        label = 'N/A';
-    }
-
+    Color color = status == 'paid' ? Colors.green : Colors.orange;
+    String label = status == 'paid' ? 'Lunas' : 'Pending';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -657,7 +676,6 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
   ) {
     Color color;
     String label;
-
     if (bookingStatus == 'cancelled' || isTimerExpired) {
       color = AppColors.error;
       label = 'Cancelled';
@@ -666,15 +684,10 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
         paymentStatus == 'capture') {
       color = AppColors.success;
       label = 'Success';
-    } else if (paymentStatus == 'pending' ||
-        bookingStatus == 'waiting_payment') {
+    } else {
       color = Colors.orange;
       label = 'Pending';
-    } else {
-      color = Colors.grey;
-      label = bookingStatus;
     }
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

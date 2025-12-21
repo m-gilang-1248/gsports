@@ -8,6 +8,8 @@ import 'package:gsports/features/booking/domain/usecases/generate_split_code.dar
 import 'package:gsports/features/booking/domain/usecases/get_booking_detail.dart';
 import 'package:gsports/features/booking/domain/usecases/update_participant_status.dart'; // New import
 import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
+import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
+import 'package:gsports/features/booking/domain/usecases/update_booking_status.dart';
 import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
 
 class MockGetBookingDetail extends Mock implements GetBookingDetail {}
@@ -19,6 +21,10 @@ class MockCancelBooking extends Mock implements CancelBooking {}
 class MockUpdateParticipantStatus extends Mock
     implements UpdateParticipantStatus {} // New Mock
 
+class MockGetTransactionStatus extends Mock implements GetTransactionStatus {}
+
+class MockUpdateBookingStatus extends Mock implements UpdateBookingStatus {}
+
 class FakeBooking extends Fake implements Booking {}
 
 void main() {
@@ -27,6 +33,8 @@ void main() {
   late MockGenerateSplitCode mockGenerateSplitCode;
   late MockUpdateParticipantStatus mockUpdateParticipantStatus;
   late MockCancelBooking mockCancelBooking;
+  late MockGetTransactionStatus mockGetTransactionStatus;
+  late MockUpdateBookingStatus mockUpdateBookingStatus;
 
   setUpAll(() {
     registerFallbackValue(FakeBooking());
@@ -38,11 +46,16 @@ void main() {
     mockGenerateSplitCode = MockGenerateSplitCode();
     mockUpdateParticipantStatus = MockUpdateParticipantStatus();
     mockCancelBooking = MockCancelBooking();
+    mockGetTransactionStatus = MockGetTransactionStatus();
+    mockUpdateBookingStatus = MockUpdateBookingStatus();
+
     bookingDetailBloc = BookingDetailBloc(
       mockGetBookingDetail,
       mockGenerateSplitCode,
       mockUpdateParticipantStatus,
       mockCancelBooking,
+      mockGetTransactionStatus,
+      mockUpdateBookingStatus,
     );
   });
 

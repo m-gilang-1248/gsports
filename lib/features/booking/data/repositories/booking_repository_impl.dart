@@ -172,7 +172,10 @@ class BookingRepositoryImpl implements BookingRepository {
 
   @override
   Future<Either<Failure, void>> updatePaymentInfo(
-      String bookingId, String paymentUrl, String orderId) async {
+    String bookingId,
+    String paymentUrl,
+    String orderId,
+  ) async {
     try {
       await remoteDataSource.updatePaymentInfo(bookingId, paymentUrl, orderId);
       return const Right(null);

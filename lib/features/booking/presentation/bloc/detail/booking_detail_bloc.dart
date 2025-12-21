@@ -9,6 +9,9 @@ import 'package:gsports/features/booking/domain/usecases/generate_split_code.dar
 import 'package:gsports/features/booking/domain/usecases/get_booking_detail.dart';
 import 'package:gsports/features/booking/domain/usecases/update_participant_status.dart';
 
+import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
+import 'package:gsports/features/booking/domain/usecases/update_booking_status.dart';
+
 part 'booking_detail_event.dart';
 part 'booking_detail_state.dart';
 
@@ -18,17 +21,57 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
   final GenerateSplitCode _generateSplitCode;
   final UpdateParticipantStatus _updateParticipantStatus;
   final CancelBooking _cancelBooking;
+  final GetTransactionStatus _getTransactionStatus;
+  final UpdateBookingStatus _updateBookingStatus;
 
   BookingDetailBloc(
     this._getBookingDetail,
     this._generateSplitCode,
     this._updateParticipantStatus,
     this._cancelBooking,
+    this._getTransactionStatus,
+    this._updateBookingStatus,
   ) : super(BookingDetailInitial()) {
     on<FetchBookingDetail>(_onFetchBookingDetail);
     on<GenerateCodeRequested>(_onGenerateCodeRequested);
     on<UpdateParticipantPaymentStatus>(_onUpdateParticipantPaymentStatus);
     on<CancelBookingRequested>(_onCancelBookingRequested);
+    on<SyncBookingStatus>(_onSyncBookingStatus);
+  }
+
+  Future<void> _onSyncBookingStatus(
+    SyncBookingStatus event,
+    Emitter<BookingDetailState> emit,
+  ) async {
+    // 1. Get transaction status from Midtrans
+    final statusResult = await _getTransactionStatus(event.bookingId);
+
+    await statusResult.fold(
+      (failure) async => emit(BookingDetailError(failure.message)),
+      (midtransStatus) async {
+        String? newStatus;
+        if (midtransStatus == 'settlement' || midtransStatus == 'capture') {
+          newStatus = 'paid';
+        } else if (midtransStatus == 'expire' ||
+            midtransStatus == 'cancel' ||
+            midtransStatus == 'deny') {
+          newStatus = 'cancelled';
+        }
+
+        if (newStatus != null) {
+          // 2. Update Firestore if status changed
+          await _updateBookingStatus(
+            UpdateBookingStatusParams(
+              bookingId: event.bookingId,
+              status: newStatus,
+            ),
+          );
+        }
+
+        // 3. Refresh data from Firestore
+        add(FetchBookingDetail(event.bookingId));
+      },
+    );
   }
 
   Future<void> _onFetchBookingDetail(

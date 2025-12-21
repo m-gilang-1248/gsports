@@ -78,7 +78,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           } else if (state is BookingWaitingForPayment) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Menunggu pembayaran. Cek riwayat pesanan.'),
+                content: Text(
+                  'Menunggu pembayaran. Silakan cek riwayat pesanan.',
+                ),
                 backgroundColor: AppColors.warning,
               ),
             );

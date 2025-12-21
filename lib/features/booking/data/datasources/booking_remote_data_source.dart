@@ -27,7 +27,10 @@ abstract class BookingRemoteDataSource {
     String newStatus,
   );
   Future<void> updatePaymentInfo(
-      String bookingId, String paymentUrl, String orderId);
+    String bookingId,
+    String paymentUrl,
+    String orderId,
+  );
 }
 
 @LazySingleton(as: BookingRemoteDataSource)
@@ -38,7 +41,10 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
   @override
   Future<void> updatePaymentInfo(
-      String bookingId, String paymentUrl, String orderId) async {
+    String bookingId,
+    String paymentUrl,
+    String orderId,
+  ) async {
     try {
       await firestore.collection('bookings').doc(bookingId).update({
         'midtransPaymentUrl': paymentUrl,

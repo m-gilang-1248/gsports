@@ -29,5 +29,8 @@ abstract class BookingRepository {
     String newStatus,
   );
   Future<Either<Failure, void>> updatePaymentInfo(
-      String bookingId, String paymentUrl, String orderId);
+    String bookingId,
+    String paymentUrl,
+    String orderId,
+  );
 }
