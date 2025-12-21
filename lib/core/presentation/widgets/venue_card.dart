@@ -21,11 +21,18 @@ class VenueCard extends StatelessWidget {
     // Placeholder sport type logic (since Venue entity might not have explicit sport type field for MVP)
     // We infer from name or facilities, or default to 'Sports'
     String sportType = 'Sports';
-    if (venue.name.toLowerCase().contains('badminton')) sportType = 'Badminton';
-    if (venue.name.toLowerCase().contains('futsal')) sportType = 'Futsal';
-    if (venue.name.toLowerCase().contains('tennis')) sportType = 'Tennis';
-    if (venue.name.toLowerCase().contains('basketball'))
+    if (venue.name.toLowerCase().contains('badminton')) {
+      sportType = 'Badminton';
+    }
+    if (venue.name.toLowerCase().contains('futsal')) {
+      sportType = 'Futsal';
+    }
+    if (venue.name.toLowerCase().contains('tennis')) {
+      sportType = 'Tennis';
+    }
+    if (venue.name.toLowerCase().contains('basketball')) {
       sportType = 'Basketball';
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

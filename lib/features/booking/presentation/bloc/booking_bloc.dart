@@ -7,6 +7,7 @@ import 'package:gsports/features/booking/domain/usecases/check_availability.dart
 import 'package:gsports/features/booking/domain/usecases/create_booking.dart';
 import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
 import 'package:gsports/features/booking/domain/usecases/update_booking_status.dart';
+import 'package:gsports/features/booking/domain/usecases/update_payment_info.dart';
 import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
 import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
 
@@ -21,6 +22,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   final CancelBooking cancelBooking;
   final UpdateBookingStatus updateBookingStatus;
   final GetTransactionStatus getTransactionStatus;
+  final UpdatePaymentInfo updatePaymentInfo;
 
   BookingBloc({
     required this.checkAvailability,
@@ -29,6 +31,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     required this.cancelBooking,
     required this.updateBookingStatus,
     required this.getTransactionStatus,
+    required this.updatePaymentInfo,
   }) : super(BookingInitial()) {
     on<BookingAvailabilityChecked>(_onAvailabilityChecked);
     on<BookingSlotSelected>(_onSlotSelected);
@@ -161,14 +164,28 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
           ),
         );
 
-        invoiceResult.fold(
-          (failure) => emit(BookingFailure(failure.message)),
-          (paymentInfo) => emit(
-            BookingPaymentPageReady(
-              paymentInfo.redirectUrl,
-              bookingId, // Pass bookingId here
-            ),
-          ),
+        await invoiceResult.fold(
+          (failure) async => emit(BookingFailure(failure.message)),
+          (paymentInfo) async {
+            // Update Booking with Payment URL & Order ID
+            final updateInfoResult = await updatePaymentInfo(
+              UpdatePaymentInfoParams(
+                bookingId: bookingId,
+                paymentUrl: paymentInfo.redirectUrl,
+                orderId: bookingId,
+              ),
+            );
+
+            updateInfoResult.fold(
+              (failure) => emit(BookingFailure(failure.message)),
+              (_) => emit(
+                BookingPaymentPageReady(
+                  paymentInfo.redirectUrl,
+                  bookingId,
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -204,12 +221,18 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
               (failure) => emit(BookingFailure(failure.message)),
               (_) => emit(BookingPaidSuccess(event.bookingId)),
             );
-          } else if (midtransStatus == 'pending') {
-            // MVP Choice: Treat pending as cancelled to free up the slot immediately.
-            final cancelResult = await cancelBooking(event.bookingId);
-            cancelResult.fold(
+          } else if (midtransStatus == 'pending' || midtransStatus == 'not_found') {
+            // Keep slot reserved for 15 mins (handled by custom_expiry).
+            // Update status to waiting_payment instead of cancelling.
+            final updateResult = await updateBookingStatus(
+              UpdateBookingStatusParams(
+                bookingId: event.bookingId,
+                status: 'waiting_payment',
+              ),
+            );
+            updateResult.fold(
               (failure) => emit(BookingFailure(failure.message)),
-              (_) => emit(BookingCancelledState(event.bookingId)),
+              (_) => emit(BookingWaitingForPayment(event.bookingId)),
             );
           } else if (midtransStatus == 'expire' ||
               midtransStatus == 'cancel' ||

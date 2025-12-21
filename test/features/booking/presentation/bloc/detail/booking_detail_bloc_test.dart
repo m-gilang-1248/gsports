@@ -7,11 +7,14 @@ import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/generate_split_code.dart';
 import 'package:gsports/features/booking/domain/usecases/get_booking_detail.dart';
 import 'package:gsports/features/booking/domain/usecases/update_participant_status.dart'; // New import
+import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
 import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
 
 class MockGetBookingDetail extends Mock implements GetBookingDetail {}
 
 class MockGenerateSplitCode extends Mock implements GenerateSplitCode {}
+
+class MockCancelBooking extends Mock implements CancelBooking {}
 
 class MockUpdateParticipantStatus extends Mock
     implements UpdateParticipantStatus {} // New Mock
@@ -22,24 +25,24 @@ void main() {
   late BookingDetailBloc bookingDetailBloc;
   late MockGetBookingDetail mockGetBookingDetail;
   late MockGenerateSplitCode mockGenerateSplitCode;
-  late MockUpdateParticipantStatus mockUpdateParticipantStatus; // New instance
+  late MockUpdateParticipantStatus mockUpdateParticipantStatus;
+  late MockCancelBooking mockCancelBooking;
 
   setUpAll(() {
     registerFallbackValue(FakeBooking());
-    registerFallbackValue(
-      MockUpdateParticipantStatus(),
-    ); // Register fallback for the use case itself
+    registerFallbackValue(MockUpdateParticipantStatus());
   });
 
   setUp(() {
     mockGetBookingDetail = MockGetBookingDetail();
     mockGenerateSplitCode = MockGenerateSplitCode();
-    mockUpdateParticipantStatus =
-        MockUpdateParticipantStatus(); // Initialize new mock
+    mockUpdateParticipantStatus = MockUpdateParticipantStatus();
+    mockCancelBooking = MockCancelBooking();
     bookingDetailBloc = BookingDetailBloc(
       mockGetBookingDetail,
       mockGenerateSplitCode,
-      mockUpdateParticipantStatus, // Pass new mock
+      mockUpdateParticipantStatus,
+      mockCancelBooking,
     );
   });
 
@@ -163,6 +166,27 @@ void main() {
           ),
         ).called(1);
         verify(() => mockGetBookingDetail(tBookingId)).called(1);
+      },
+    );
+
+    blocTest<BookingDetailBloc, BookingDetailState>(
+      'emits [BookingDetailLoading, BookingDetailLoaded] when CancelBookingRequested is successful',
+      build: () {
+        when(
+          () => mockCancelBooking(any()),
+        ).thenAnswer((_) async => const Right(null));
+        when(
+          () => mockGetBookingDetail(any()),
+        ).thenAnswer((_) async => Right(tBooking)); // for refresh
+        return bookingDetailBloc;
+      },
+      act: (bloc) => bloc.add(const CancelBookingRequested(tBookingId)),
+      expect: () => [BookingDetailLoading(), BookingDetailLoaded(tBooking)],
+      verify: (_) {
+        verify(() => mockCancelBooking(tBookingId)).called(1);
+        verify(
+          () => mockGetBookingDetail(tBookingId),
+        ).called(1); // after refresh
       },
     );
 

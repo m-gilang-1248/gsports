@@ -75,6 +75,14 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               ),
             );
             context.go('/home');
+          } else if (state is BookingWaitingForPayment) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Menunggu pembayaran. Cek riwayat pesanan.'),
+                backgroundColor: AppColors.warning,
+              ),
+            );
+            context.go('/home');
           } else if (state is BookingCancelledState) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -726,8 +734,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
     if (!context.mounted) return;
 
-    // If result is null (back button) or 'cancelled', dispatch cancellation
-    final status = result ?? 'cancelled';
+    // If result is null (back button), treat as pending so we can check status later
+    final status = result ?? 'pending';
     context.read<BookingBloc>().add(
       BookingPaymentCompleted(bookingId: state.bookingId, status: status),
     );

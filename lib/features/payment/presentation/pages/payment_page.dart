@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:developer' as developer;
 
 class PaymentPage extends StatefulWidget {
   final String paymentUrl;
@@ -26,7 +27,7 @@ class _PaymentPageState extends State<PaymentPage> {
             // Update loading bar.
           },
           onPageStarted: (String url) {
-            print('DEBUG WEBVIEW STARTED: $url');
+            developer.log('DEBUG WEBVIEW STARTED: $url');
           },
           onPageFinished: (String url) {},
           onWebResourceError: (WebResourceError error) {
@@ -34,7 +35,7 @@ class _PaymentPageState extends State<PaymentPage> {
             // Example: Navigator.pop(context, 'failed');
           },
           onNavigationRequest: (NavigationRequest request) {
-            print('DEBUG WEBVIEW REQUEST: ${request.url}');
+            developer.log('DEBUG WEBVIEW REQUEST: ${request.url}');
             final uri = Uri.parse(request.url);
 
             // Midtrans success indicators

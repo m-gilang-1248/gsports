@@ -171,6 +171,21 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
+  Future<Either<Failure, void>> updatePaymentInfo(
+      String bookingId, String paymentUrl, String orderId) async {
+    try {
+      await remoteDataSource.updatePaymentInfo(bookingId, paymentUrl, orderId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown Firebase error'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> updateParticipantStatus(
     String bookingId,
     String participantUid,

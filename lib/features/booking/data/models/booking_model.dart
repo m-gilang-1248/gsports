@@ -86,7 +86,6 @@ class BookingModel extends Booking {
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
     final json = _$BookingModelToJson(this);
     // Explicitly handle participants serialization

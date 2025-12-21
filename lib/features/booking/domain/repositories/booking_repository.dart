@@ -28,4 +28,6 @@ abstract class BookingRepository {
     String participantUid,
     String newStatus,
   );
+  Future<Either<Failure, void>> updatePaymentInfo(
+      String bookingId, String paymentUrl, String orderId);
 }

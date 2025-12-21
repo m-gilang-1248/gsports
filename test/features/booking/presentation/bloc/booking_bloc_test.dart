@@ -8,6 +8,7 @@ import 'package:gsports/features/booking/domain/usecases/update_booking_status.d
 import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
 import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
+import 'package:gsports/features/booking/domain/usecases/update_payment_info.dart';
 
 class MockCheckAvailability extends Mock implements CheckAvailability {}
 
@@ -21,6 +22,8 @@ class MockUpdateBookingStatus extends Mock implements UpdateBookingStatus {}
 
 class MockGetTransactionStatus extends Mock implements GetTransactionStatus {}
 
+class MockUpdatePaymentInfo extends Mock implements UpdatePaymentInfo {}
+
 void main() {
   late BookingBloc bookingBloc;
   late MockCheckAvailability mockCheckAvailability;
@@ -29,6 +32,7 @@ void main() {
   late MockCancelBooking mockCancelBooking;
   late MockUpdateBookingStatus mockUpdateBookingStatus;
   late MockGetTransactionStatus mockGetTransactionStatus;
+  late MockUpdatePaymentInfo mockUpdatePaymentInfo;
 
   setUp(() {
     mockCheckAvailability = MockCheckAvailability();
@@ -37,6 +41,7 @@ void main() {
     mockCancelBooking = MockCancelBooking();
     mockUpdateBookingStatus = MockUpdateBookingStatus();
     mockGetTransactionStatus = MockGetTransactionStatus();
+    mockUpdatePaymentInfo = MockUpdatePaymentInfo();
 
     bookingBloc = BookingBloc(
       checkAvailability: mockCheckAvailability,
@@ -45,6 +50,7 @@ void main() {
       cancelBooking: mockCancelBooking,
       updateBookingStatus: mockUpdateBookingStatus,
       getTransactionStatus: mockGetTransactionStatus,
+      updatePaymentInfo: mockUpdatePaymentInfo,
     );
   });
 

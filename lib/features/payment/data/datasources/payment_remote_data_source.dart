@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 import 'package:injectable/injectable.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/payment_info_model.dart';
 
@@ -47,6 +48,17 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
       body: jsonEncode({
         'transaction_details': {'order_id': orderId, 'gross_amount': amount},
         'credit_card': {'secure': true},
+        'custom_expiry': {
+          'order_time': DateTime.now()
+              .toUtc()
+              .add(const Duration(hours: 7)) // WIB Time
+              .toString()
+              .split('.')
+              .first
+              .trim(), // Format: yyyy-MM-dd HH:mm:ss
+          'expiry_duration': 15,
+          'unit': 'minute',
+        },
       }),
     );
 
@@ -87,18 +99,18 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         return jsonResponse['transaction_status'] as String;
       } else if (response.statusCode == 404) {
-        // Transaction not found, treat as cancelled
-        return 'cancelled';
+        // Transaction not found, likely user hasn't selected payment method yet.
+        return 'not_found';
       } else {
         // Other API errors, treat as cancelled
-        print(
+        developer.log(
           'DEBUG: Midtrans API Error for orderId $orderId: ${response.statusCode} ${response.body}',
         );
         return 'cancelled';
       }
     } catch (e) {
       // General network or parsing errors, treat as cancelled
-      print(
+      developer.log(
         'DEBUG: General Error getting Midtrans status for orderId $orderId: $e',
       );
       return 'cancelled';

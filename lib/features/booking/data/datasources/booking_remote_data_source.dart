@@ -1,10 +1,11 @@
 import 'dart:math';
-import 'package:gsports/features/booking/data/models/payment_participant_model.dart';
-import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
-import '../../../../core/error/exceptions.dart';
-import '../models/booking_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
+import 'dart:developer' as developer;
+import '../../../../core/error/exceptions.dart';
+import '../models/booking_model.dart';
+import '../models/payment_participant_model.dart';
+import '../../domain/entities/payment_participant.dart';
 
 abstract class BookingRemoteDataSource {
   Future<String> createBooking(BookingModel booking);
@@ -25,6 +26,8 @@ abstract class BookingRemoteDataSource {
     String participantUid,
     String newStatus,
   );
+  Future<void> updatePaymentInfo(
+      String bookingId, String paymentUrl, String orderId);
 }
 
 @LazySingleton(as: BookingRemoteDataSource)
@@ -32,6 +35,22 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   final FirebaseFirestore firestore;
 
   BookingRemoteDataSourceImpl(this.firestore);
+
+  @override
+  Future<void> updatePaymentInfo(
+      String bookingId, String paymentUrl, String orderId) async {
+    try {
+      await firestore.collection('bookings').doc(bookingId).update({
+        'midtransPaymentUrl': paymentUrl,
+        'midtransOrderId': orderId,
+        'status': 'waiting_payment', // Ensure status is waiting_payment
+      });
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Failed to update payment info');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
 
   @override
   Future<List<BookingModel>> getMyBookings(String userId) async {
@@ -90,9 +109,11 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   @override
   Future<void> updateBookingStatus(String bookingId, String status) async {
     try {
-      await firestore.collection('bookings').doc(bookingId).update({
-        'status': status,
-      });
+      final Map<String, dynamic> data = {'status': status};
+      if (status == 'paid') {
+        data['paymentStatus'] = 'paid';
+      }
+      await firestore.collection('bookings').doc(bookingId).update(data);
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Failed to update booking status');
     } catch (e) {
@@ -165,7 +186,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   ) async {
     try {
       final cleanCode = splitCode.trim().toUpperCase();
-      print(
+      developer.log(
         'DEBUG JOIN: Searching for code [$cleanCode] in collection bookings',
       );
 

@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 
 import 'package:gsports/core/error/failures.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
+import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
 import 'package:gsports/features/booking/domain/usecases/generate_split_code.dart';
 import 'package:gsports/features/booking/domain/usecases/get_booking_detail.dart';
 import 'package:gsports/features/booking/domain/usecases/update_participant_status.dart';
@@ -16,15 +17,18 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
   final GetBookingDetail _getBookingDetail;
   final GenerateSplitCode _generateSplitCode;
   final UpdateParticipantStatus _updateParticipantStatus;
+  final CancelBooking _cancelBooking;
 
   BookingDetailBloc(
     this._getBookingDetail,
     this._generateSplitCode,
     this._updateParticipantStatus,
+    this._cancelBooking,
   ) : super(BookingDetailInitial()) {
     on<FetchBookingDetail>(_onFetchBookingDetail);
     on<GenerateCodeRequested>(_onGenerateCodeRequested);
     on<UpdateParticipantPaymentStatus>(_onUpdateParticipantPaymentStatus);
+    on<CancelBookingRequested>(_onCancelBookingRequested);
   }
 
   Future<void> _onFetchBookingDetail(
@@ -49,6 +53,19 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
       (failure) => emit(BookingDetailError(_mapFailureToMessage(failure))),
       (_) =>
           add(FetchBookingDetail(event.bookingId)), // Refresh booking details
+    );
+  }
+
+  Future<void> _onCancelBookingRequested(
+    CancelBookingRequested event,
+    Emitter<BookingDetailState> emit,
+  ) async {
+    // Optimistically update UI or show loading?
+    // For now, let's just call the usecase and refresh.
+    final result = await _cancelBooking(event.bookingId);
+    result.fold(
+      (failure) => emit(BookingDetailError(_mapFailureToMessage(failure))),
+      (_) => add(FetchBookingDetail(event.bookingId)),
     );
   }
 
