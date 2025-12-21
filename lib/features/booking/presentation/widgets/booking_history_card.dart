@@ -29,12 +29,13 @@ class BookingHistoryCard extends StatelessWidget {
     // Status & Color Logic
     Color statusColor;
     String statusLabel;
-    
+
     // Check cancellation/expiry first
     if (booking.status == 'cancelled' || booking.status == 'expired') {
       statusColor = AppColors.error;
       statusLabel = 'Cancelled';
-    } else if (booking.status == 'waiting_payment' || booking.paymentStatus == 'pending') {
+    } else if (booking.status == 'waiting_payment' ||
+        booking.paymentStatus == 'pending') {
       statusColor = AppColors.warning; // Orange
       statusLabel = 'Pending';
     } else if (booking.paymentStatus == 'paid' ||
@@ -91,9 +92,7 @@ class BookingHistoryCard extends StatelessWidget {
                             const SizedBox(width: 8),
                             Text(
                               sportName,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
+                              style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             const Spacer(),
@@ -136,9 +135,8 @@ class BookingHistoryCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               '${dateFormat.format(booking.date)} • ${timeFormat.format(booking.startTime)}',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.grey),
                             ),
                           ],
                         ),
@@ -150,9 +148,7 @@ class BookingHistoryCard extends StatelessWidget {
                           children: [
                             Text(
                               currencyFormat.format(booking.totalPrice),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
+                              style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.bold,

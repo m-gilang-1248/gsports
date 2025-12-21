@@ -19,7 +19,8 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     // Generate pages dynamically to pass state
-    final pages = widget.pages ??
+    final pages =
+        widget.pages ??
         [
           const HomePage(),
           BookingHistoryPage(isVisible: _currentIndex == 1),

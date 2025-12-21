@@ -96,9 +96,13 @@ class _BookingHistoryContentState extends State<_BookingHistoryContent> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Berhasil bergabung ke booking!')),
             );
-            await GoRouter.of(context).push('/booking-detail/${state.bookingId}');
+            await GoRouter.of(
+              context,
+            ).push('/booking-detail/${state.bookingId}');
             if (context.mounted) {
-              context.read<HistoryBloc>().add(FetchBookingHistory(widget.userId));
+              context.read<HistoryBloc>().add(
+                FetchBookingHistory(widget.userId),
+              );
             }
           }
         },
@@ -166,7 +170,7 @@ class _BookingHistoryContentState extends State<_BookingHistoryContent> {
           b.date.isAfter(now);
       return isWaiting || isPaidFuture;
     }).toList();
-    
+
     // Sort Ascending (Soonest first)
     active.sort((a, b) => a.date.compareTo(b.date));
     return active;
@@ -187,7 +191,10 @@ class _BookingHistoryContentState extends State<_BookingHistoryContent> {
     return history;
   }
 
-  Widget _buildBookingList(List<Booking> bookings, {required bool isHistoryTab}) {
+  Widget _buildBookingList(
+    List<Booking> bookings, {
+    required bool isHistoryTab,
+  }) {
     if (bookings.isEmpty) {
       return _buildEmptyState(
         isHistoryTab

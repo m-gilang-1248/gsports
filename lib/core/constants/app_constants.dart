@@ -15,7 +15,8 @@ class AppConstants {
       case 'golf':
         return Icons.sports_golf;
       case 'tennis':
-        return Icons.sports_tennis; // Using same icon as badminton for now if dedicated not available, or specific one
+        return Icons
+            .sports_tennis; // Using same icon as badminton for now if dedicated not available, or specific one
       default:
         return Icons.sports;
     }
