@@ -161,37 +161,35 @@ class _BookingHistoryContentState extends State<_BookingHistoryContent> {
     );
   }
 
-  List<Booking> _filterActiveBookings(List<Booking> bookings) {
-    final now = DateTime.now();
-    final active = bookings.where((b) {
-      final isWaiting = b.status == 'waiting_payment';
-      final isPaidFuture =
-          (b.status == 'confirmed' || b.status == 'paid') &&
-          b.date.isAfter(now);
-      return isWaiting || isPaidFuture;
-    }).toList();
-
-    // Sort Ascending (Soonest first)
-    active.sort((a, b) => a.date.compareTo(b.date));
-    return active;
-  }
-
-  List<Booking> _filterHistoryBookings(List<Booking> bookings) {
-    final now = DateTime.now();
-    final history = bookings.where((b) {
-      final isCancelled = b.status == 'cancelled' || b.status == 'expired';
-      final isPaidPast =
-          (b.status == 'confirmed' || b.status == 'paid') &&
-          (b.date.isBefore(now) || b.date.isAtSameMomentAs(now));
-      return isCancelled || isPaidPast;
-    }).toList();
-
-    // Sort Descending (Newest past first)
-    history.sort((a, b) => b.date.compareTo(a.date));
-    return history;
-  }
-
-  Widget _buildBookingList(
+    List<Booking> _filterActiveBookings(List<Booking> bookings) {
+      final now = DateTime.now();
+      final active = bookings.where((b) {
+        final isWaiting = b.status == 'waiting_payment';
+        final isPaidActive =
+            (b.status == 'confirmed' || b.status == 'paid') &&
+            b.endTime.isAfter(now);
+        return isWaiting || isPaidActive;
+      }).toList();
+  
+      // Sort Ascending (Terdekat paling atas)
+      active.sort((a, b) => a.date.compareTo(b.date));
+      return active;
+    }
+  
+    List<Booking> _filterHistoryBookings(List<Booking> bookings) {
+      final now = DateTime.now();
+      final history = bookings.where((b) {
+        final isCancelled = b.status == 'cancelled' || b.status == 'expired';
+        final isPaidFinished =
+            (b.status == 'confirmed' || b.status == 'paid') &&
+            (b.endTime.isBefore(now) || b.endTime.isAtSameMomentAs(now));
+        return isCancelled || isPaidFinished;
+      }).toList();
+  
+          // Sort Descending (Terbaru paling atas)
+          history.sort((a, b) => b.date.compareTo(a.date));
+          return history;
+        }  Widget _buildBookingList(
     List<Booking> bookings, {
     required bool isHistoryTab,
   }) {
