@@ -7,8 +7,29 @@ import 'package:gsports/features/auth/presentation/bloc/auth_event.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
 import 'package:gsports/features/scoreboard/presentation/widgets/match_history_widget.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  // Key to force rebuild of MatchHistoryWidget on refresh
+  Key _historyKey = UniqueKey();
+
+  Future<void> _onRefresh() async {
+    // 1. Refresh User Data via AuthBloc
+    context.read<AuthBloc>().add(AuthCheckRequested());
+
+    // 2. Refresh Match History by updating the key
+    setState(() {
+      _historyKey = UniqueKey();
+    });
+
+    // Small delay for better UX feel
+    await Future.delayed(const Duration(milliseconds: 800));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,77 +45,81 @@ class ProfilePage extends StatelessWidget {
           builder: (context, state) {
             if (state is AuthAuthenticated) {
               final user = state.user;
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 24),
-                    // Avatar
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.grey.shade200,
-                      backgroundImage: user.photoUrl != null
-                          ? NetworkImage(user.photoUrl!)
-                          : null,
-                      child: user.photoUrl == null
-                          ? Text(
-                              user.displayName.isNotEmpty
-                                  ? user.displayName[0].toUpperCase()
-                                  : 'U',
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    // Name
-                    Text(
-                      user.displayName,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
+                      // Avatar
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.grey.shade200,
+                        backgroundImage: user.photoUrl != null
+                            ? NetworkImage(user.photoUrl!)
+                            : null,
+                        child: user.photoUrl == null
+                            ? Text(
+                                user.displayName.isNotEmpty
+                                    ? user.displayName[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : null,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Email
-                    Text(
-                      user.email,
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-                    // Member Status
-                    const Chip(
-                      label: Text('Free Member'),
-                      backgroundColor: Colors.white,
-                      side: BorderSide(color: Colors.grey),
-                    ),
-
-                    const SizedBox(height: 32),
-                    MatchHistoryWidget(userId: user.uid),
-                    const SizedBox(height: 32),
-
-                    // Logout Button
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ListTile(
-                        leading: const Icon(Icons.logout, color: Colors.red),
-                        title: const Text(
-                          'Logout',
-                          style: TextStyle(color: Colors.red),
+                      const SizedBox(height: 16),
+                      // Name
+                      Text(
+                        user.displayName,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(color: Colors.red.shade100),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        onTap: () {
-                          context.read<AuthBloc>().add(LogoutRequested());
-                        },
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                      const SizedBox(height: 8),
+                      // Email
+                      Text(
+                        user.email,
+                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 16),
+                      // Member Status
+                      const Chip(
+                        label: Text('Free Member'),
+                        backgroundColor: Colors.white,
+                        side: BorderSide(color: Colors.grey),
+                      ),
+
+                      const SizedBox(height: 32),
+                      MatchHistoryWidget(key: _historyKey, userId: user.uid),
+                      const SizedBox(height: 32),
+
+                      // Logout Button
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ListTile(
+                          leading: const Icon(Icons.logout, color: Colors.red),
+                          title: const Text(
+                            'Logout',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(color: Colors.red.shade100),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          onTap: () {
+                            context.read<AuthBloc>().add(LogoutRequested());
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               );
             } else if (state is AuthLoading) {
