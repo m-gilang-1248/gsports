@@ -131,6 +131,8 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                 ),
                 if (booking.status == 'waiting_payment' && isHost)
                   _buildBottomAction(context, booking, actuallyExpired),
+                if (_shouldShowScoreboard(booking))
+                  _buildScoreboardAction(context, booking),
               ],
             );
           } else if (state is BookingDetailError) {
@@ -155,6 +157,60 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
           }
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  bool _shouldShowScoreboard(Booking booking) {
+    final isPaid =
+        booking.paymentStatus == 'paid' ||
+        booking.paymentStatus == 'settlement' ||
+        booking.paymentStatus == 'capture';
+    final now = DateTime.now();
+    final isToday =
+        booking.date.year == now.year &&
+        booking.date.month == now.month &&
+        booking.date.day == now.day;
+    return isPaid && isToday;
+  }
+
+  Widget _buildScoreboardAction(BuildContext context, Booking booking) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: () {
+              context.push(
+                '/scoreboard',
+                extra: {
+                  'bookingId': booking.id,
+                  'sportType': booking.sportType,
+                },
+              );
+            },
+            icon: const Icon(Icons.scoreboard),
+            label: const Text('Buka Scoreboard'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              fixedSize: const Size.fromHeight(50),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -346,9 +402,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                   Expanded(
                     child: Text(
                       booking.venueLocation!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[700],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -409,12 +465,11 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                           const SizedBox(width: 8),
                           Text(
                             '${timeFormat.format(booking.startTime)} - ${timeFormat.format(booking.endTime)}',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
                           ),
                         ],
                       ),

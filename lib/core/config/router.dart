@@ -13,6 +13,8 @@ import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_detail_page.dart';
 import 'package:gsports/features/partner/presentation/pages/owner_dashboard_page.dart';
 
+import 'package:gsports/features/scoreboard/presentation/pages/scoreboard_page.dart';
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppRouter {
@@ -81,6 +83,16 @@ class AppRouter {
         path: '/booking-detail/:id',
         builder: (context, state) =>
             BookingDetailPage(bookingId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/scoreboard',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return ScoreboardPage(
+            bookingId: extra['bookingId'] as String,
+            sportType: extra['sportType'] as String,
+          );
+        },
       ),
     ],
   );

@@ -42,7 +42,7 @@ import 'features/booking/domain/usecases/join_booking.dart' as _i1015;
 import 'features/booking/domain/usecases/update_booking_status.dart' as _i781;
 import 'features/booking/domain/usecases/update_participant_status.dart'
     as _i416;
-import 'features/booking/domain/usecases/update_payment_info.dart' as _i999;
+import 'features/booking/domain/usecases/update_payment_info.dart' as _i486;
 import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
 import 'features/booking/presentation/bloc/detail/booking_detail_bloc.dart'
     as _i176;
@@ -54,6 +54,12 @@ import 'features/payment/data/repositories/payment_repository_impl.dart'
 import 'features/payment/domain/repositories/payment_repository.dart' as _i376;
 import 'features/payment/domain/usecases/create_invoice.dart' as _i206;
 import 'features/payment/domain/usecases/get_transaction_status.dart' as _i326;
+import 'features/scoreboard/data/datasources/scoreboard_remote_data_source.dart'
+    as _i104;
+import 'features/scoreboard/data/repositories/scoreboard_repository_impl.dart'
+    as _i107;
+import 'features/scoreboard/domain/repositories/scoreboard_repository.dart'
+    as _i556;
 import 'features/venue/data/datasources/venue_remote_data_source.dart'
     as _i1039;
 import 'features/venue/data/repositories/venue_repository_impl.dart' as _i346;
@@ -84,11 +90,19 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i97.BookingRemoteDataSource>(
       () => _i97.BookingRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
     );
+    gh.lazySingleton<_i104.ScoreboardRemoteDataSource>(
+      () => _i104.ScoreboardRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
     gh.factory<_i997.VenueRepository>(
       () => _i346.VenueRepositoryImpl(gh<_i1039.VenueRemoteDataSource>()),
     );
     gh.factory<_i829.BookingRepository>(
       () => _i703.BookingRepositoryImpl(gh<_i97.BookingRemoteDataSource>()),
+    );
+    gh.factory<_i556.ScoreboardRepository>(
+      () => _i107.ScoreboardRepositoryImpl(
+        gh<_i104.ScoreboardRemoteDataSource>(),
+      ),
     );
     gh.lazySingleton<_i692.PaymentRemoteDataSource>(
       () => _i692.PaymentRemoteDataSourceImpl(gh<_i519.Client>()),
@@ -120,11 +134,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i781.UpdateBookingStatus>(
       () => _i781.UpdateBookingStatus(gh<_i829.BookingRepository>()),
     );
-    gh.lazySingleton<_i999.UpdatePaymentInfo>(
-      () => _i999.UpdatePaymentInfo(gh<_i829.BookingRepository>()),
-    );
     gh.lazySingleton<_i416.UpdateParticipantStatus>(
       () => _i416.UpdateParticipantStatus(gh<_i829.BookingRepository>()),
+    );
+    gh.lazySingleton<_i486.UpdatePaymentInfo>(
+      () => _i486.UpdatePaymentInfo(gh<_i829.BookingRepository>()),
     );
     gh.factory<_i698.GenerateSplitCode>(
       () => _i698.GenerateSplitCode(gh<_i829.BookingRepository>()),
@@ -166,16 +180,6 @@ extension GetItInjectableX on _i174.GetIt {
         getVenueCourts: gh<_i606.GetVenueCourts>(),
       ),
     );
-    gh.factory<_i176.BookingDetailBloc>(
-      () => _i176.BookingDetailBloc(
-        gh<_i548.GetBookingDetail>(),
-        gh<_i698.GenerateSplitCode>(),
-        gh<_i416.UpdateParticipantStatus>(),
-        gh<_i488.CancelBooking>(),
-        gh<_i326.GetTransactionStatus>(),
-        gh<_i781.UpdateBookingStatus>(),
-      ),
-    );
     gh.factory<_i363.AuthBloc>(
       () => _i363.AuthBloc(
         gh<_i818.CheckAuthStatus>(),
@@ -209,7 +213,17 @@ extension GetItInjectableX on _i174.GetIt {
         cancelBooking: gh<_i488.CancelBooking>(),
         updateBookingStatus: gh<_i781.UpdateBookingStatus>(),
         getTransactionStatus: gh<_i326.GetTransactionStatus>(),
-        updatePaymentInfo: gh<_i999.UpdatePaymentInfo>(),
+        updatePaymentInfo: gh<_i486.UpdatePaymentInfo>(),
+      ),
+    );
+    gh.factory<_i176.BookingDetailBloc>(
+      () => _i176.BookingDetailBloc(
+        gh<_i548.GetBookingDetail>(),
+        gh<_i698.GenerateSplitCode>(),
+        gh<_i416.UpdateParticipantStatus>(),
+        gh<_i488.CancelBooking>(),
+        gh<_i326.GetTransactionStatus>(),
+        gh<_i781.UpdateBookingStatus>(),
       ),
     );
     return this;
