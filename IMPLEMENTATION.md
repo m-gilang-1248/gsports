@@ -23,6 +23,11 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
     *   **Payment Stability:** Fixed false-positive success states, implemented robust Midtrans status syncing (`pending`, `not_found`), and fixed booking cancellation logic.
     *   **Auto-Refresh:** Implemented automatic data refreshing for Booking History when switching tabs or returning from a detail page.
     *   **Bug Fixes:** Resolved UI crashes in Booking Detail and optimized navigation flows.
+*   **Sprint 9 Phase 1 Completed:** My Bookings UI & Schema Polish.
+    *   **Card Redesign:** Implemented color-coded strips (Orange/Green/Red) and prominent sport icons.
+    *   **Information Density:** Denormalized `venueName`, `courtName`, and `venueLocation` into Booking documents for instant display without extra queries.
+    *   **Visual Hierarchy:** Highlighted booking time (Bold/Primary Color) in both History Card and Detail Page.
+    *   **Tab Logic:** Refined "Berlangsung" (Active) vs "Riwayat" (History) filtering using `endTime` to correctly handle ongoing matches.
 
 ## Phase 1: Foundation & Setup
 - [x] Create Flutter project `gsports` using `create_project`.
@@ -91,8 +96,9 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 *Goal: Gamification and retention features.*
 
 ### Phase 1: My Bookings UI Polish
-- [ ] **Card Redesign:** Use Color Coding (Yellow/Green/Red) strips. Show Sport Type as main title.
-- [ ] **Tabs:** Separate "Active" vs "History" bookings.
+- [x] **Card Redesign:** Use Color Coding (Yellow/Green/Red) strips. Show Sport Type as main title. Highlight Venue/Court/Time info.
+- [x] **Tabs:** Separate "Active" vs "History" bookings using `endTime` logic.
+- [x] **Schema Polish:** Denormalize Venue/Court names for performance.
 
 ### Phase 2: Scoreboard Feature (New)
 - [ ] **Logic:** Create `ScoreboardBloc` (In-memory counter). Support Badminton rules (21 points).
