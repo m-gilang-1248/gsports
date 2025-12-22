@@ -15,6 +15,11 @@ class Booking extends Equatable {
   final String status; // 'waiting_payment', 'confirmed', etc.
   final String paymentStatus; // 'unpaid', 'paid', 'refunded'
 
+  // Denormalized fields for UI performance
+  final String? venueName;
+  final String? courtName;
+  final String? venueLocation;
+
   // Optional fields for Midtrans and Split Bill
   final String? midtransOrderId;
   final String? midtransPaymentUrl;
@@ -37,6 +42,9 @@ class Booking extends Equatable {
     required this.totalPrice,
     required this.status,
     required this.paymentStatus,
+    this.venueName,
+    this.courtName,
+    this.venueLocation,
     this.midtransOrderId,
     this.midtransPaymentUrl,
     this.isSplitBill = false,
@@ -60,6 +68,9 @@ class Booking extends Equatable {
     totalPrice,
     status,
     paymentStatus,
+    venueName,
+    courtName,
+    venueLocation,
     midtransOrderId,
     midtransPaymentUrl,
     isSplitBill,

@@ -121,22 +121,46 @@ class BookingHistoryCard extends StatelessWidget {
 
                         // Body: Venue Name + Date/Time
                         Text(
-                          'Venue #${booking.venueId.substring(0, 5)}...', // Ideally use venueName if available in Entity
+                          booking.venueName ??
+                              'Venue #${booking.venueId.substring(0, 5)}...',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
-                        const SizedBox(height: 4),
+                        if (booking.courtName != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            booking.courtName!,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: Colors.grey[600]),
+                          ),
+                        ],
+                        const SizedBox(height: 8),
                         Row(
                           children: [
                             const Icon(
                               Icons.calendar_today,
-                              size: 12,
+                              size: 14,
                               color: Colors.grey,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${dateFormat.format(booking.date)} • ${timeFormat.format(booking.startTime)}',
+                              dateFormat.format(booking.date),
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(color: Colors.grey),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${timeFormat.format(booking.startTime)} - ${timeFormat.format(booking.endTime)}',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                           ],
                         ),
