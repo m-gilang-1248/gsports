@@ -11,6 +11,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
 import 'package:firebase_auth/firebase_auth.dart' as _i59;
+import 'package:firebase_storage/firebase_storage.dart' as _i457;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:google_sign_in/google_sign_in.dart' as _i116;
 import 'package:http/http.dart' as _i519;
@@ -54,6 +55,16 @@ import 'features/payment/data/repositories/payment_repository_impl.dart'
 import 'features/payment/domain/repositories/payment_repository.dart' as _i376;
 import 'features/payment/domain/usecases/create_invoice.dart' as _i206;
 import 'features/payment/domain/usecases/get_transaction_status.dart' as _i326;
+import 'features/profile/data/datasources/profile_remote_data_source.dart'
+    as _i336;
+import 'features/profile/data/datasources/profile_remote_data_source_impl.dart'
+    as _i864;
+import 'features/profile/data/repositories/profile_repository_impl.dart'
+    as _i277;
+import 'features/profile/domain/repositories/profile_repository.dart' as _i626;
+import 'features/profile/domain/usecases/get_user_stats.dart' as _i810;
+import 'features/profile/domain/usecases/update_profile.dart' as _i759;
+import 'features/profile/presentation/bloc/profile_bloc.dart' as _i284;
 import 'features/scoreboard/data/datasources/scoreboard_remote_data_source.dart'
     as _i104;
 import 'features/scoreboard/data/repositories/scoreboard_repository_impl.dart'
@@ -82,6 +93,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i59.FirebaseAuth>(() => firebaseModule.firebaseAuth);
     gh.lazySingleton<_i974.FirebaseFirestore>(
       () => firebaseModule.firebaseFirestore,
+    );
+    gh.lazySingleton<_i457.FirebaseStorage>(
+      () => firebaseModule.firebaseStorage,
     );
     gh.lazySingleton<_i116.GoogleSignIn>(() => firebaseModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => networkModule.httpClient);
@@ -153,6 +167,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1015.JoinBooking>(
       () => _i1015.JoinBooking(gh<_i829.BookingRepository>()),
     );
+    gh.lazySingleton<_i336.ProfileRemoteDataSource>(
+      () => _i864.ProfileRemoteDataSourceImpl(
+        firestore: gh<_i974.FirebaseFirestore>(),
+        storage: gh<_i457.FirebaseStorage>(),
+        firebaseAuth: gh<_i59.FirebaseAuth>(),
+      ),
+    );
     gh.lazySingleton<_i606.GetVenueCourts>(
       () => _i606.GetVenueCourts(gh<_i997.VenueRepository>()),
     );
@@ -161,6 +182,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i578.GetVenues>(
       () => _i578.GetVenues(gh<_i997.VenueRepository>()),
+    );
+    gh.factory<_i626.ProfileRepository>(
+      () => _i277.ProfileRepositoryImpl(gh<_i336.ProfileRemoteDataSource>()),
+    );
+    gh.factory<_i810.GetUserStats>(
+      () => _i810.GetUserStats(gh<_i626.ProfileRepository>()),
+    );
+    gh.factory<_i759.UpdateProfile>(
+      () => _i759.UpdateProfile(gh<_i626.ProfileRepository>()),
     );
     gh.factory<_i648.SignInWithGoogle>(
       () => _i648.SignInWithGoogle(gh<_i1015.AuthRepository>()),
@@ -202,6 +232,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i376.PaymentRepository>(
       () => _i210.PaymentRepositoryImpl(gh<_i692.PaymentRemoteDataSource>()),
+    );
+    gh.factory<_i284.ProfileBloc>(
+      () => _i284.ProfileBloc(
+        authRepository: gh<_i1015.AuthRepository>(),
+        getUserStats: gh<_i810.GetUserStats>(),
+        updateProfile: gh<_i759.UpdateProfile>(),
+      ),
     );
     gh.lazySingleton<_i206.CreateInvoice>(
       () => _i206.CreateInvoice(gh<_i376.PaymentRepository>()),

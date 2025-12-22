@@ -34,62 +34,46 @@ class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
 class MatchResultModel extends MatchResult {
   final List<MatchSetModel> setsModel;
 
-      const MatchResultModel({
+  const MatchResultModel({
+    required super.id,
 
-        required super.id,
+    required super.bookingId,
 
-        required super.bookingId,
+    required super.sportType,
 
-        required super.sportType,
+    required super.playedAt,
 
-        required super.playedAt,
+    required super.durationSeconds,
 
-        required super.durationSeconds,
+    required super.players,
 
-        required super.players,
+    required this.setsModel,
 
-        required this.setsModel,
+    required super.winner,
+  }) : super(sets: setsModel);
 
-        required super.winner,
+  factory MatchResultModel.fromJson(Map<String, dynamic> json) =>
+      _$MatchResultModelFromJson(json);
 
-      }) : super(sets: setsModel);
+  Map<String, dynamic> toJson() => _$MatchResultModelToJson(this);
 
-    
+  factory MatchResultModel.fromEntity(MatchResult entity) {
+    return MatchResultModel(
+      id: entity.id,
 
-      factory MatchResultModel.fromJson(Map<String, dynamic> json) =>
+      bookingId: entity.bookingId,
 
-          _$MatchResultModelFromJson(json);
+      sportType: entity.sportType,
 
-    
+      playedAt: entity.playedAt,
 
-      Map<String, dynamic> toJson() => _$MatchResultModelToJson(this);
+      durationSeconds: entity.durationSeconds,
 
-    
+      players: entity.players,
 
-      factory MatchResultModel.fromEntity(MatchResult entity) {
+      setsModel: entity.sets.map((e) => MatchSetModel.fromEntity(e)).toList(),
 
-        return MatchResultModel(
-
-          id: entity.id,
-
-          bookingId: entity.bookingId,
-
-          sportType: entity.sportType,
-
-          playedAt: entity.playedAt,
-
-          durationSeconds: entity.durationSeconds,
-
-          players: entity.players,
-
-          setsModel:
-
-              entity.sets.map((e) => MatchSetModel.fromEntity(e)).toList(),
-
-          winner: entity.winner,
-
-        );
-
-      }
-
-    }
+      winner: entity.winner,
+    );
+  }
+}

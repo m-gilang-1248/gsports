@@ -171,7 +171,10 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
     return '$minutes:$secs';
   }
 
-  Widget _buildMatchHistorySection(BuildContext context, List<MatchResult> matches) {
+  Widget _buildMatchHistorySection(
+    BuildContext context,
+    List<MatchResult> matches,
+  ) {
     if (matches.isEmpty) return const SizedBox.shrink();
 
     return Card(
@@ -187,10 +190,9 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
           children: [
             Text(
               'Riwayat Pertandingan',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ListView.separated(
@@ -223,10 +225,14 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                           children: [
                             Text(
                               'Winner: ${match.winner}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
-                              match.sets.map((s) => '${s.scoreA}-${s.scoreB}').join(', '),
+                              match.sets
+                                  .map((s) => '${s.scoreA}-${s.scoreB}')
+                                  .join(', '),
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
@@ -237,9 +243,8 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                         children: [
                           Text(
                             _formatDuration(match.durationSeconds),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           Text(
                             'Duration',

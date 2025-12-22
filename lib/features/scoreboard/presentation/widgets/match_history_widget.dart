@@ -26,48 +26,50 @@ class MatchHistoryWidget extends StatelessWidget {
         final result = snapshot.data;
         if (result == null) return const SizedBox.shrink();
 
-        return result.fold(
-          (failure) => Center(child: Text(failure.message)),
-          (matches) {
-            if (matches.isEmpty) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('No matches played yet', style: TextStyle(color: Colors.grey)),
+        return result.fold((failure) => Center(child: Text(failure.message)), (
+          matches,
+        ) {
+          if (matches.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'No matches played yet',
+                  style: TextStyle(color: Colors.grey),
                 ),
-              );
-            }
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text(
-                    'Riwayat Pertandingan',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: matches.length,
-                  itemBuilder: (context, index) {
-                    final match = matches[index];
-                    return _buildMatchCard(context, match);
-                  },
-                ),
-              ],
+              ),
             );
-          },
-        );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  'Riwayat Pertandingan',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: matches.length,
+                itemBuilder: (context, index) {
+                  final match = matches[index];
+                  return _buildMatchCard(context, match);
+                },
+              ),
+            ],
+          );
+        });
       },
     );
   }
 
   Widget _buildMatchCard(BuildContext context, MatchResult match) {
     final dateFormat = DateFormat('d MMM yyyy');
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 0,
@@ -96,7 +98,10 @@ class MatchHistoryWidget extends StatelessWidget {
               _formatDuration(match.durationSeconds),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
-            const Text('Duration', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const Text(
+              'Duration',
+              style: TextStyle(fontSize: 10, color: Colors.grey),
+            ),
           ],
         ),
       ),

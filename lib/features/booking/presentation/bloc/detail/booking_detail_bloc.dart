@@ -84,14 +84,17 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
   ) async {
     emit(BookingDetailLoading());
     final result = await _getBookingDetail(event.bookingId);
-    final matchesResult =
-        await _scoreboardRepository.getMatchesByBooking(event.bookingId);
+    final matchesResult = await _scoreboardRepository.getMatchesByBooking(
+      event.bookingId,
+    );
 
     result.fold(
       (failure) => emit(BookingDetailError(_mapFailureToMessage(failure))),
       (booking) {
         matchesResult.fold(
-          (failure) => emit(BookingDetailLoaded(booking)), // Load without matches if error
+          (failure) => emit(
+            BookingDetailLoaded(booking),
+          ), // Load without matches if error
           (matches) => emit(BookingDetailLoaded(booking, matches: matches)),
         );
       },

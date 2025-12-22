@@ -48,24 +48,18 @@ class _ScoreboardView extends StatefulWidget {
 }
 
 class _ScoreboardViewState extends State<_ScoreboardView> {
-
   int _secondsElapsed = 0;
 
   late Stream<int> _timerStream;
 
-
-
   @override
-
   void initState() {
-
     super.initState();
 
-    _timerStream =
-
-        Stream.periodic(const Duration(seconds: 1), (i) => i + 1)
-
-            .asBroadcastStream();
+    _timerStream = Stream.periodic(
+      const Duration(seconds: 1),
+      (i) => i + 1,
+    ).asBroadcastStream();
 
     // Enable Wakelock to keep screen on
     WakelockPlus.enable();
@@ -240,7 +234,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                       }).toList(),
                     ),
                   ),
-                
+
                 if (state.isSaving)
                   const Center(child: CircularProgressIndicator()),
               ],
@@ -300,7 +294,10 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text('Match Finished!', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Match Finished!',
+          style: TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

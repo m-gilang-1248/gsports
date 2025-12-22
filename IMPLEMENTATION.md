@@ -28,6 +28,15 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
     *   **Information Density:** Denormalized `venueName`, `courtName`, and `venueLocation` into Booking documents for instant display without extra queries.
     *   **Visual Hierarchy:** Highlighted booking time (Bold/Primary Color) in both History Card and Detail Page.
     *   **Tab Logic:** Refined "Berlangsung" (Active) vs "Riwayat" (History) filtering using `endTime` to correctly handle ongoing matches.
+*   **Sprint 9 Phase 2 Completed:** Scoreboard Feature.
+    *   **Logic:** Implemented ScoreboardBloc with BWF rules (21 pts, Deuce, Max 30, Best of 3).
+    *   **UI:** Digital scoreboard with high contrast, Orbitron font, and wakelock integration.
+    *   **Persistence:** Saving match results to Firestore.
+*   **Sprint 9 Phase 3 Completed:** Profile, Stats & Settings.
+    *   **Architecture:** Created dedicated `features/profile` module.
+    *   **Stats:** Client-side aggregation logic for Matches Played, Won, and Win Rate.
+    *   **Edit Profile:** Profile editing with image upload to Firebase Storage and sync with Auth.
+    *   **UI:** Redesigned Profile page with Gamification Card and Settings menu.
 
 ## Phase 1: Foundation & Setup
 - [x] Create Flutter project `gsports` using `create_project`.
@@ -108,8 +117,9 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 - [x] **Integration:** Add "Open Scoreboard" button in `BookingDetail` (Only if Paid & Today).
 
 ### Phase 3: Profile & Stats
-- [ ] **Gamification:** Display "Strike" (Relationship frequency) and Win/Loss stats.
-- [ ] **Settings:** Add "Edit Profile" and "App Settings" menu.
+- [x] **Gamification:** Display "Strike" (Relationship frequency) and Win/Loss stats.
+- [x] **Settings:** Add "Edit Profile" and "App Settings" menu.
+- [x] **Module:** Created standalone `profile` feature.
 
 ---
 

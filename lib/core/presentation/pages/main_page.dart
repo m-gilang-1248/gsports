@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../features/auth/presentation/pages/profile_page.dart';
+import '../../../features/profile/presentation/pages/profile_page.dart';
 import '../../../features/booking/presentation/pages/booking_history_page.dart';
 import '../../../features/home/presentation/pages/home_page.dart';
 // import '../../../features/venue/presentation/bloc/venue_bloc.dart'; // Removed
