@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read access to venues
+    // Venues: Public read, Auth write
     match /venues/{venueId} {
       allow read: if true;
       allow write: if request.auth != null;
@@ -12,15 +12,31 @@ service cloud.firestore {
       }
     }
     
-    // Allow public read access to bookings for availability checks
-    // This allows collection queries (list) and individual document gets
+    // Bookings: Public read (for availability), Auth create/update
     match /bookings/{bookingId} {
       allow read: if true;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null;
     }
 
-    // Default rule for other collections (users, transactions, etc)
+    // Matches: Auth read/create
+    match /matches/{matchId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null; // Allow update just in case
+    }
+
+    // Users: Auth read/write (Self only preferred, but for now generic auth)
+    match /users/{userId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Transactions: Auth read/write
+    match /transactions/{transactionId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Default catch-all (Keep as fallback)
     match /{document=**} {
       allow read, write: if request.auth != null;
     }
