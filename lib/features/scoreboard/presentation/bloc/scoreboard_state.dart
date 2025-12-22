@@ -9,6 +9,11 @@ class ScoreboardState extends Equatable {
   final String? winner; // 'Team A' or 'Team B'
   final List<ScoreboardState> undoStack; // For undo functionality
 
+  // Save states
+  final bool isSaving;
+  final bool saveSuccess;
+  final String? errorMessage;
+
   const ScoreboardState({
     this.scoreA = 0,
     this.scoreB = 0,
@@ -17,6 +22,9 @@ class ScoreboardState extends Equatable {
     this.isMatchFinished = false,
     this.winner,
     this.undoStack = const [],
+    this.isSaving = false,
+    this.saveSuccess = false,
+    this.errorMessage,
   });
 
   ScoreboardState copyWith({
@@ -27,6 +35,9 @@ class ScoreboardState extends Equatable {
     bool? isMatchFinished,
     String? winner,
     List<ScoreboardState>? undoStack,
+    bool? isSaving,
+    bool? saveSuccess,
+    String? errorMessage,
   }) {
     return ScoreboardState(
       scoreA: scoreA ?? this.scoreA,
@@ -36,6 +47,9 @@ class ScoreboardState extends Equatable {
       isMatchFinished: isMatchFinished ?? this.isMatchFinished,
       winner: winner ?? this.winner,
       undoStack: undoStack ?? this.undoStack,
+      isSaving: isSaving ?? this.isSaving,
+      saveSuccess: saveSuccess ?? this.saveSuccess,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
@@ -47,6 +61,9 @@ class ScoreboardState extends Equatable {
     historySets,
     isMatchFinished,
     winner,
+    isSaving,
+    saveSuccess,
+    errorMessage,
     // undoStack excluded from props to avoid circular dependency/performance issues in equality check
   ];
 }

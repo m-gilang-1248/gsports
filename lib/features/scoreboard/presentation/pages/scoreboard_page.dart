@@ -10,18 +10,24 @@ import 'package:go_router/go_router.dart';
 class ScoreboardPage extends StatelessWidget {
   final String bookingId;
   final String sportType;
+  final List<String> players;
 
   const ScoreboardPage({
     super.key,
     required this.bookingId,
     required this.sportType,
+    required this.players,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => GetIt.I<ScoreboardBloc>(),
-      child: _ScoreboardView(bookingId: bookingId, sportType: sportType),
+      child: _ScoreboardView(
+        bookingId: bookingId,
+        sportType: sportType,
+        players: players,
+      ),
     );
   }
 }
@@ -29,17 +35,38 @@ class ScoreboardPage extends StatelessWidget {
 class _ScoreboardView extends StatefulWidget {
   final String bookingId;
   final String sportType;
+  final List<String> players;
 
-  const _ScoreboardView({required this.bookingId, required this.sportType});
+  const _ScoreboardView({
+    required this.bookingId,
+    required this.sportType,
+    required this.players,
+  });
 
   @override
   State<_ScoreboardView> createState() => _ScoreboardViewState();
 }
 
 class _ScoreboardViewState extends State<_ScoreboardView> {
+
+  int _secondsElapsed = 0;
+
+  late Stream<int> _timerStream;
+
+
+
   @override
+
   void initState() {
+
     super.initState();
+
+    _timerStream =
+
+        Stream.periodic(const Duration(seconds: 1), (i) => i + 1)
+
+            .asBroadcastStream();
+
     // Enable Wakelock to keep screen on
     WakelockPlus.enable();
     // Force Landscape for better experience (optional but recommended for scoreboard)
@@ -47,6 +74,13 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+  }
+
+  String _formatDuration(int seconds) {
+    final duration = Duration(seconds: seconds);
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final secs = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$secs';
   }
 
   @override
@@ -65,6 +99,23 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
         listener: (context, state) {
           if (state.isMatchFinished) {
             _showFinishDialog(context, state);
+          }
+          if (state.saveSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Match result saved!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            context.pop(); // Go back
+          }
+          if (state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${state.errorMessage}'),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         },
         builder: (context, state) {
@@ -107,23 +158,42 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                   alignment: Alignment.topCenter,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'SET ${state.currentSet}',
-                        style: GoogleFonts.orbitron(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'SET ${state.currentSet}',
+                            style: GoogleFonts.orbitron(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 4),
+                        StreamBuilder<int>(
+                          stream: _timerStream,
+                          builder: (context, snapshot) {
+                            _secondsElapsed = snapshot.data ?? 0;
+                            return Text(
+                              _formatDuration(_secondsElapsed),
+                              style: GoogleFonts.orbitron(
+                                color: Colors.white70,
+                                fontSize: 16,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -170,6 +240,9 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                       }).toList(),
                     ),
                   ),
+                
+                if (state.isSaving)
+                  const Center(child: CircularProgressIndicator()),
               ],
             ),
           );
@@ -219,57 +292,63 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
   }
 
   void _showFinishDialog(BuildContext context, ScoreboardState state) {
+    // Capture dependencies before dialog
+    final bloc = context.read<ScoreboardBloc>();
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: Text('Match Finished!', style: TextStyle(color: Colors.white)),
+        title: const Text('Match Finished!', style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Winner: ${state.winner}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.greenAccent,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
-            Text('Final Score:', style: TextStyle(color: Colors.white70)),
+            Text('Final Score:', style: const TextStyle(color: Colors.white70)),
             ...state.historySets.map(
               (s) => Text(
                 '${s.scoreA} - ${s.scoreB}',
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Duration: ${_formatDuration(_secondsElapsed)}',
+              style: const TextStyle(color: Colors.white60, fontSize: 12),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () {
-              context.pop(); // Close dialog
+              Navigator.pop(dialogContext); // Close dialog
               context.pop(); // Close page
             },
             child: const Text('Discard'),
           ),
           FilledButton(
             onPressed: () {
-              context.read<ScoreboardBloc>().add(
+              bloc.add(
                 SaveMatchRequested(
                   bookingId: widget.bookingId,
                   sportType: widget.sportType,
+                  players: widget.players,
+                  durationSeconds: _secondsElapsed,
                 ),
               );
               Navigator.pop(dialogContext); // Close dialog
-              context.pop(); // Close page
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Match result saved!')),
-              );
             },
             child: const Text('Save Result'),
           ),

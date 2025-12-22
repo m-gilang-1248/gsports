@@ -84,16 +84,16 @@ class AppRouter {
         builder: (context, state) =>
             BookingDetailPage(bookingId: state.pathParameters['id']!),
       ),
-      GoRoute(
-        path: '/scoreboard',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>;
-          return ScoreboardPage(
-            bookingId: extra['bookingId'] as String,
-            sportType: extra['sportType'] as String,
-          );
-        },
-      ),
-    ],
+            GoRoute(
+              path: '/scoreboard',
+              builder: (context, state) {
+                final extra = state.extra as Map<String, dynamic>;
+                return ScoreboardPage(
+                  bookingId: extra['bookingId'] as String,
+                  sportType: extra['sportType'] as String,
+                  players: extra['players'] as List<String>,
+                );
+              },
+            ),    ],
   );
 }

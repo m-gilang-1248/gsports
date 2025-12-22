@@ -13,19 +13,26 @@ class BookingDetailLoading extends BookingDetailState {}
 
 class BookingDetailLoaded extends BookingDetailState {
   final Booking booking;
+  final List<MatchResult> matches;
   final bool isUpdatingParticipant;
 
-  const BookingDetailLoaded(this.booking, {this.isUpdatingParticipant = false});
+  const BookingDetailLoaded(
+    this.booking, {
+    this.matches = const [],
+    this.isUpdatingParticipant = false,
+  });
 
   @override
-  List<Object> get props => [booking, isUpdatingParticipant];
+  List<Object> get props => [booking, matches, isUpdatingParticipant];
 
   BookingDetailLoaded copyWith({
     Booking? booking,
+    List<MatchResult>? matches,
     bool? isUpdatingParticipant,
   }) {
     return BookingDetailLoaded(
       booking ?? this.booking,
+      matches: matches ?? this.matches,
       isUpdatingParticipant:
           isUpdatingParticipant ?? this.isUpdatingParticipant,
     );

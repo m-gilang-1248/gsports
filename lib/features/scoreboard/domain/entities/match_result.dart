@@ -6,6 +6,8 @@ class MatchResult extends Equatable {
   final String bookingId;
   final String sportType;
   final DateTime playedAt;
+  final int durationSeconds; // Added duration
+  final List<String> players; // Added players UIDs
   final List<MatchSet> sets;
   final String winner; // 'Team A' or 'Team B'
 
@@ -14,10 +16,21 @@ class MatchResult extends Equatable {
     required this.bookingId,
     required this.sportType,
     required this.playedAt,
+    required this.durationSeconds,
+    required this.players,
     required this.sets,
     required this.winner,
   });
 
   @override
-  List<Object?> get props => [id, bookingId, sportType, playedAt, sets, winner];
+  List<Object?> get props => [
+    id,
+    bookingId,
+    sportType,
+    playedAt,
+    durationSeconds,
+    players,
+    sets,
+    winner,
+  ];
 }

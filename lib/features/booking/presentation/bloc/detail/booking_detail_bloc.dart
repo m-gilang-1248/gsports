@@ -11,6 +11,8 @@ import 'package:gsports/features/booking/domain/usecases/update_participant_stat
 
 import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
 import 'package:gsports/features/booking/domain/usecases/update_booking_status.dart';
+import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
+import 'package:gsports/features/scoreboard/domain/repositories/scoreboard_repository.dart';
 
 part 'booking_detail_event.dart';
 part 'booking_detail_state.dart';
@@ -23,6 +25,7 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
   final CancelBooking _cancelBooking;
   final GetTransactionStatus _getTransactionStatus;
   final UpdateBookingStatus _updateBookingStatus;
+  final ScoreboardRepository _scoreboardRepository;
 
   BookingDetailBloc(
     this._getBookingDetail,
@@ -31,6 +34,7 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
     this._cancelBooking,
     this._getTransactionStatus,
     this._updateBookingStatus,
+    this._scoreboardRepository,
   ) : super(BookingDetailInitial()) {
     on<FetchBookingDetail>(_onFetchBookingDetail);
     on<GenerateCodeRequested>(_onGenerateCodeRequested);
@@ -80,9 +84,17 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
   ) async {
     emit(BookingDetailLoading());
     final result = await _getBookingDetail(event.bookingId);
+    final matchesResult =
+        await _scoreboardRepository.getMatchesByBooking(event.bookingId);
+
     result.fold(
       (failure) => emit(BookingDetailError(_mapFailureToMessage(failure))),
-      (booking) => emit(BookingDetailLoaded(booking)),
+      (booking) {
+        matchesResult.fold(
+          (failure) => emit(BookingDetailLoaded(booking)), // Load without matches if error
+          (matches) => emit(BookingDetailLoaded(booking, matches: matches)),
+        );
+      },
     );
   }
 

@@ -34,28 +34,62 @@ class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
 class MatchResultModel extends MatchResult {
   final List<MatchSetModel> setsModel;
 
-  const MatchResultModel({
-    required super.id,
-    required super.bookingId,
-    required super.sportType,
-    required super.playedAt,
-    required this.setsModel,
-    required super.winner,
-  }) : super(sets: setsModel);
+      const MatchResultModel({
 
-  factory MatchResultModel.fromJson(Map<String, dynamic> json) =>
-      _$MatchResultModelFromJson(json);
+        required super.id,
 
-  Map<String, dynamic> toJson() => _$MatchResultModelToJson(this);
+        required super.bookingId,
 
-  factory MatchResultModel.fromEntity(MatchResult entity) {
-    return MatchResultModel(
-      id: entity.id,
-      bookingId: entity.bookingId,
-      sportType: entity.sportType,
-      playedAt: entity.playedAt,
-      setsModel: entity.sets.map((e) => MatchSetModel.fromEntity(e)).toList(),
-      winner: entity.winner,
-    );
-  }
-}
+        required super.sportType,
+
+        required super.playedAt,
+
+        required super.durationSeconds,
+
+        required super.players,
+
+        required this.setsModel,
+
+        required super.winner,
+
+      }) : super(sets: setsModel);
+
+    
+
+      factory MatchResultModel.fromJson(Map<String, dynamic> json) =>
+
+          _$MatchResultModelFromJson(json);
+
+    
+
+      Map<String, dynamic> toJson() => _$MatchResultModelToJson(this);
+
+    
+
+      factory MatchResultModel.fromEntity(MatchResult entity) {
+
+        return MatchResultModel(
+
+          id: entity.id,
+
+          bookingId: entity.bookingId,
+
+          sportType: entity.sportType,
+
+          playedAt: entity.playedAt,
+
+          durationSeconds: entity.durationSeconds,
+
+          players: entity.players,
+
+          setsModel:
+
+              entity.sets.map((e) => MatchSetModel.fromEntity(e)).toList(),
+
+          winner: entity.winner,
+
+        );
+
+      }
+
+    }

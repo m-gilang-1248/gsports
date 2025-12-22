@@ -5,6 +5,7 @@ import 'package:gsports/core/presentation/widgets/custom_button.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_event.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
+import 'package:gsports/features/scoreboard/presentation/widgets/match_history_widget.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -23,8 +24,8 @@ class ProfilePage extends StatelessWidget {
           builder: (context, state) {
             if (state is AuthAuthenticated) {
               final user = state.user;
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
@@ -70,22 +71,27 @@ class ProfilePage extends StatelessWidget {
                       side: BorderSide(color: Colors.grey),
                     ),
 
-                    const Spacer(),
+                    const SizedBox(height: 32),
+                    MatchHistoryWidget(userId: user.uid),
+                    const SizedBox(height: 32),
 
                     // Logout Button
-                    ListTile(
-                      leading: const Icon(Icons.logout, color: Colors.red),
-                      title: const Text(
-                        'Logout',
-                        style: TextStyle(color: Colors.red),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ListTile(
+                        leading: const Icon(Icons.logout, color: Colors.red),
+                        title: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Colors.red.shade100),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        onTap: () {
+                          context.read<AuthBloc>().add(LogoutRequested());
+                        },
                       ),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.red.shade100),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      onTap: () {
-                        context.read<AuthBloc>().add(LogoutRequested());
-                      },
                     ),
                     const SizedBox(height: 24),
                   ],

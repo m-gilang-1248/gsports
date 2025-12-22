@@ -209,6 +209,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i326.GetTransactionStatus>(
       () => _i326.GetTransactionStatus(gh<_i376.PaymentRepository>()),
     );
+    gh.factory<_i176.BookingDetailBloc>(
+      () => _i176.BookingDetailBloc(
+        gh<_i548.GetBookingDetail>(),
+        gh<_i698.GenerateSplitCode>(),
+        gh<_i416.UpdateParticipantStatus>(),
+        gh<_i488.CancelBooking>(),
+        gh<_i326.GetTransactionStatus>(),
+        gh<_i781.UpdateBookingStatus>(),
+        gh<_i556.ScoreboardRepository>(),
+      ),
+    );
     gh.factory<_i393.BookingBloc>(
       () => _i393.BookingBloc(
         checkAvailability: gh<_i549.CheckAvailability>(),
@@ -218,16 +229,6 @@ extension GetItInjectableX on _i174.GetIt {
         updateBookingStatus: gh<_i781.UpdateBookingStatus>(),
         getTransactionStatus: gh<_i326.GetTransactionStatus>(),
         updatePaymentInfo: gh<_i486.UpdatePaymentInfo>(),
-      ),
-    );
-    gh.factory<_i176.BookingDetailBloc>(
-      () => _i176.BookingDetailBloc(
-        gh<_i548.GetBookingDetail>(),
-        gh<_i698.GenerateSplitCode>(),
-        gh<_i416.UpdateParticipantStatus>(),
-        gh<_i488.CancelBooking>(),
-        gh<_i326.GetTransactionStatus>(),
-        gh<_i781.UpdateBookingStatus>(),
       ),
     );
     return this;

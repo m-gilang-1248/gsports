@@ -101,9 +101,11 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 - [x] **Schema Polish:** Denormalize Venue/Court names for performance.
 
 ### Phase 2: Scoreboard Feature (New)
-- [ ] **Logic:** Create `ScoreboardBloc` (In-memory counter). Support Badminton rules (21 points).
-- [ ] **UI:** Create `ScoreboardPage` (Digital Clock Font, High Contrast).
-- [ ] **Integration:** Add "Open Scoreboard" button in `BookingDetail` (Only if Paid & Today).
+- [x] **Logic:** Create `ScoreboardBloc` (In-memory counter). Support Badminton rules (21 points, Deuce, Best of 3).
+- [x] **UI:** Create `ScoreboardPage` (Digital Clock Font, High Contrast, Wakelock).
+- [x] **Duration:** Track match duration in real-time.
+- [x] **History:** Display match history in `BookingDetailPage` and `ProfilePage`.
+- [x] **Integration:** Add "Open Scoreboard" button in `BookingDetail` (Only if Paid & Today).
 
 ### Phase 3: Profile & Stats
 - [ ] **Gamification:** Display "Strike" (Relationship frequency) and Win/Loss stats.

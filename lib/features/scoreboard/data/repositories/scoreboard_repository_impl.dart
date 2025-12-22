@@ -25,4 +25,32 @@ class ScoreboardRepositoryImpl implements ScoreboardRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<MatchResult>>> getMatchesByBooking(
+    String bookingId,
+  ) async {
+    try {
+      final matchModels = await remoteDataSource.getMatchesByBooking(bookingId);
+      return Right(matchModels);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<MatchResult>>> getMatchesByUser(
+    String userId,
+  ) async {
+    try {
+      final matchModels = await remoteDataSource.getMatchesByUser(userId);
+      return Right(matchModels);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

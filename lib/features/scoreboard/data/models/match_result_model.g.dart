@@ -15,19 +15,20 @@ MatchSetModel _$MatchSetModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$MatchSetModelToJson(MatchSetModel instance) =>
     <String, dynamic>{'scoreA': instance.scoreA, 'scoreB': instance.scoreB};
 
-MatchResultModel _$MatchResultModelFromJson(Map<String, dynamic> json) =>
-    MatchResultModel(
-      id: json['id'] as String,
-      bookingId: json['bookingId'] as String,
-      sportType: json['sportType'] as String,
-      playedAt: const TimestampConverter().fromJson(
-        json['playedAt'] as Timestamp,
-      ),
-      setsModel: (json['setsModel'] as List<dynamic>)
-          .map((e) => MatchSetModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      winner: json['winner'] as String,
-    );
+MatchResultModel _$MatchResultModelFromJson(
+  Map<String, dynamic> json,
+) => MatchResultModel(
+  id: json['id'] as String,
+  bookingId: json['bookingId'] as String,
+  sportType: json['sportType'] as String,
+  playedAt: const TimestampConverter().fromJson(json['playedAt'] as Timestamp),
+  durationSeconds: (json['durationSeconds'] as num).toInt(),
+  players: (json['players'] as List<dynamic>).map((e) => e as String).toList(),
+  setsModel: (json['setsModel'] as List<dynamic>)
+      .map((e) => MatchSetModel.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  winner: json['winner'] as String,
+);
 
 Map<String, dynamic> _$MatchResultModelToJson(MatchResultModel instance) =>
     <String, dynamic>{
@@ -35,6 +36,8 @@ Map<String, dynamic> _$MatchResultModelToJson(MatchResultModel instance) =>
       'bookingId': instance.bookingId,
       'sportType': instance.sportType,
       'playedAt': const TimestampConverter().toJson(instance.playedAt),
+      'durationSeconds': instance.durationSeconds,
+      'players': instance.players,
       'winner': instance.winner,
       'setsModel': instance.setsModel.map((e) => e.toJson()).toList(),
     };

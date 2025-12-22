@@ -11,6 +11,7 @@ import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
 import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
 import 'package:gsports/features/booking/domain/usecases/update_booking_status.dart';
 import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
+import 'package:gsports/features/scoreboard/domain/repositories/scoreboard_repository.dart';
 
 class MockGetBookingDetail extends Mock implements GetBookingDetail {}
 
@@ -25,6 +26,8 @@ class MockGetTransactionStatus extends Mock implements GetTransactionStatus {}
 
 class MockUpdateBookingStatus extends Mock implements UpdateBookingStatus {}
 
+class MockScoreboardRepository extends Mock implements ScoreboardRepository {}
+
 class FakeBooking extends Fake implements Booking {}
 
 void main() {
@@ -35,6 +38,7 @@ void main() {
   late MockCancelBooking mockCancelBooking;
   late MockGetTransactionStatus mockGetTransactionStatus;
   late MockUpdateBookingStatus mockUpdateBookingStatus;
+  late MockScoreboardRepository mockScoreboardRepository;
 
   setUpAll(() {
     registerFallbackValue(FakeBooking());
@@ -48,6 +52,7 @@ void main() {
     mockCancelBooking = MockCancelBooking();
     mockGetTransactionStatus = MockGetTransactionStatus();
     mockUpdateBookingStatus = MockUpdateBookingStatus();
+    mockScoreboardRepository = MockScoreboardRepository();
 
     bookingDetailBloc = BookingDetailBloc(
       mockGetBookingDetail,
@@ -56,6 +61,7 @@ void main() {
       mockCancelBooking,
       mockGetTransactionStatus,
       mockUpdateBookingStatus,
+      mockScoreboardRepository,
     );
   });
 
@@ -94,12 +100,18 @@ void main() {
         when(
           () => mockGetBookingDetail(any()),
         ).thenAnswer((_) async => Right(tBooking));
+        when(
+          () => mockScoreboardRepository.getMatchesByBooking(any()),
+        ).thenAnswer((_) async => const Right([]));
         return bookingDetailBloc;
       },
       act: (bloc) => bloc.add(const FetchBookingDetail(tBookingId)),
       expect: () => [BookingDetailLoading(), BookingDetailLoaded(tBooking)],
       verify: (_) {
         verify(() => mockGetBookingDetail(tBookingId)).called(1);
+        verify(
+          () => mockScoreboardRepository.getMatchesByBooking(tBookingId),
+        ).called(1);
       },
     );
 
@@ -109,6 +121,9 @@ void main() {
         when(
           () => mockGetBookingDetail(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
+        when(
+          () => mockScoreboardRepository.getMatchesByBooking(any()),
+        ).thenAnswer((_) async => const Right([]));
         return bookingDetailBloc;
       },
       act: (bloc) => bloc.add(const FetchBookingDetail(tBookingId)),
@@ -130,6 +145,9 @@ void main() {
         when(
           () => mockGetBookingDetail(any()),
         ).thenAnswer((_) async => Right(tBooking)); // for refresh
+        when(
+          () => mockScoreboardRepository.getMatchesByBooking(any()),
+        ).thenAnswer((_) async => const Right([]));
         return bookingDetailBloc;
       },
       act: (bloc) => bloc.add(const GenerateCodeRequested(tBookingId)),
@@ -155,6 +173,9 @@ void main() {
         when(
           () => mockGetBookingDetail(any()),
         ).thenAnswer((_) async => Right(tBooking)); // for refresh
+        when(
+          () => mockScoreboardRepository.getMatchesByBooking(any()),
+        ).thenAnswer((_) async => const Right([]));
         return bookingDetailBloc;
       },
       seed: () => BookingDetailLoaded(tBooking), // Start with a loaded state
@@ -191,6 +212,9 @@ void main() {
         when(
           () => mockGetBookingDetail(any()),
         ).thenAnswer((_) async => Right(tBooking)); // for refresh
+        when(
+          () => mockScoreboardRepository.getMatchesByBooking(any()),
+        ).thenAnswer((_) async => const Right([]));
         return bookingDetailBloc;
       },
       act: (bloc) => bloc.add(const CancelBookingRequested(tBookingId)),
