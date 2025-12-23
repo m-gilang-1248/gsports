@@ -96,6 +96,8 @@ class AppRouter {
             bookingId: extra['bookingId'] as String,
             sportType: extra['sportType'] as String,
             players: extra['players'] as List<String>,
+            teamA: extra['teamA'] as List<String>,
+            teamB: extra['teamB'] as List<String>,
           );
         },
       ),

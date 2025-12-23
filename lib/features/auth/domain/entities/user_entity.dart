@@ -4,6 +4,7 @@ class UserEntity extends Equatable {
   final String uid;
   final String email;
   final String displayName;
+  final String? phoneNumber;
   final String? photoUrl;
   final String role; // e.g., 'user', 'mitra', 'admin'
   final String tier; // e.g., 'free', 'premium'
@@ -14,6 +15,7 @@ class UserEntity extends Equatable {
     required this.uid,
     required this.email,
     required this.displayName,
+    this.phoneNumber,
     this.photoUrl,
     required this.role,
     required this.tier,
@@ -26,6 +28,7 @@ class UserEntity extends Equatable {
     uid,
     email,
     displayName,
+    phoneNumber,
     photoUrl,
     role,
     tier,

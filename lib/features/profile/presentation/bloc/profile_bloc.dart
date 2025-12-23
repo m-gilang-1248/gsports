@@ -45,6 +45,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     UpdateProfileRequested event,
     Emitter<ProfileState> emit,
   ) async {
+    final currentState = state; // Capture current state (stats)
     final userResult = await authRepository.checkAuthStatus();
 
     await userResult.fold(
@@ -61,10 +62,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           ),
         );
 
-        updateResult.fold(
-          (failure) => emit(ProfileError(failure.message)),
-          (updatedUser) => emit(ProfileUpdateSuccess(updatedUser)),
-        );
+        updateResult.fold((failure) => emit(ProfileError(failure.message)), (
+          updatedUser,
+        ) {
+          emit(ProfileUpdateSuccess(updatedUser));
+          // Restore Loaded state with updated user and existing stats
+          if (currentState is ProfileLoaded) {
+            emit(ProfileLoaded(user: updatedUser, stats: (currentState).stats));
+          } else {
+            // Should not happen, but re-fetch if needed
+            add(FetchProfile());
+          }
+        });
       },
     );
   }

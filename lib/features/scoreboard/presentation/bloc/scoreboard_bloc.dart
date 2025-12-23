@@ -129,6 +129,8 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
       playedAt: DateTime.now(),
       durationSeconds: event.durationSeconds,
       players: event.players,
+      teamAIds: event.teamAIds,
+      teamBIds: event.teamBIds,
       sets: state.historySets,
       winner: state.winner!,
     );

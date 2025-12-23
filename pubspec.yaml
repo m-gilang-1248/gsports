@@ -33,6 +33,7 @@ dependencies:
   bloc: ^9.1.0
   wakelock_plus: ^1.4.0
   image_picker: ^1.2.1
+  cloudinary_public: ^0.23.1
 
 dev_dependencies:
   flutter_test:

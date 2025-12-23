@@ -23,19 +23,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
       int wins = 0;
 
       for (final match in matches) {
-        final players = match.players;
         final winner = match.winner;
+        final teamA = match.teamAIds;
+        final teamB = match.teamBIds;
 
-        if (players.length >= 2) {
-          if ((uid == players[0] && winner == 'Team A') ||
-              (uid == players[1] && winner == 'Team B')) {
-            wins++;
-          }
-        } else if (players.length == 1) {
-          // Special case for solo? Or assume players[0] is Team A
-          if (uid == players[0] && winner == 'Team A') {
-            wins++;
-          }
+        if (teamA.contains(uid) && winner == 'Team A') {
+          wins++;
+        } else if (teamB.contains(uid) && winner == 'Team B') {
+          wins++;
         }
       }
 

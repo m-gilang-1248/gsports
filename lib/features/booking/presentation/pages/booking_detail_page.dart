@@ -12,6 +12,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:gsports/features/scoreboard/presentation/pages/scoreboard_setup_dialog.dart';
+
 class BookingDetailPage extends StatelessWidget {
   final String bookingId;
 
@@ -293,15 +295,25 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
         child: SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            onPressed: () {
-              context.push(
-                '/scoreboard',
-                extra: {
-                  'bookingId': booking.id,
-                  'sportType': booking.sportType,
-                  'players': booking.participantIds,
-                },
+            onPressed: () async {
+              final result = await showDialog<Map<String, List<String>>>(
+                context: context,
+                builder: (context) =>
+                    ScoreboardSetupDialog(participants: booking.participants),
               );
+
+              if (result != null && context.mounted) {
+                context.push(
+                  '/scoreboard',
+                  extra: {
+                    'bookingId': booking.id,
+                    'sportType': booking.sportType,
+                    'players': booking.participantIds,
+                    'teamA': result['teamA'],
+                    'teamB': result['teamB'],
+                  },
+                );
+              }
             },
             icon: const Icon(Icons.scoreboard),
             label: const Text('Buka Scoreboard'),

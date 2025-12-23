@@ -8,6 +8,8 @@ class MatchResult extends Equatable {
   final DateTime playedAt;
   final int durationSeconds; // Added duration
   final List<String> players; // Added players UIDs
+  final List<String> teamAIds;
+  final List<String> teamBIds;
   final List<MatchSet> sets;
   final String winner; // 'Team A' or 'Team B'
 
@@ -18,6 +20,8 @@ class MatchResult extends Equatable {
     required this.playedAt,
     required this.durationSeconds,
     required this.players,
+    required this.teamAIds,
+    required this.teamBIds,
     required this.sets,
     required this.winner,
   });
@@ -30,6 +34,8 @@ class MatchResult extends Equatable {
     playedAt,
     durationSeconds,
     players,
+    teamAIds,
+    teamBIds,
     sets,
     winner,
   ];

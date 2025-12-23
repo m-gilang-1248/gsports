@@ -11,7 +11,6 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
 import 'package:firebase_auth/firebase_auth.dart' as _i59;
-import 'package:firebase_storage/firebase_storage.dart' as _i457;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:google_sign_in/google_sign_in.dart' as _i116;
 import 'package:http/http.dart' as _i519;
@@ -94,9 +93,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i974.FirebaseFirestore>(
       () => firebaseModule.firebaseFirestore,
     );
-    gh.lazySingleton<_i457.FirebaseStorage>(
-      () => firebaseModule.firebaseStorage,
-    );
     gh.lazySingleton<_i116.GoogleSignIn>(() => firebaseModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => networkModule.httpClient);
     gh.lazySingleton<_i1039.VenueRemoteDataSource>(
@@ -110,6 +106,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i997.VenueRepository>(
       () => _i346.VenueRepositoryImpl(gh<_i1039.VenueRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i336.ProfileRemoteDataSource>(
+      () => _i864.ProfileRemoteDataSourceImpl(
+        firestore: gh<_i974.FirebaseFirestore>(),
+        firebaseAuth: gh<_i59.FirebaseAuth>(),
+      ),
     );
     gh.factory<_i829.BookingRepository>(
       () => _i703.BookingRepositoryImpl(gh<_i97.BookingRemoteDataSource>()),
@@ -166,13 +168,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i1015.JoinBooking>(
       () => _i1015.JoinBooking(gh<_i829.BookingRepository>()),
-    );
-    gh.lazySingleton<_i336.ProfileRemoteDataSource>(
-      () => _i864.ProfileRemoteDataSourceImpl(
-        firestore: gh<_i974.FirebaseFirestore>(),
-        storage: gh<_i457.FirebaseStorage>(),
-        firebaseAuth: gh<_i59.FirebaseAuth>(),
-      ),
     );
     gh.lazySingleton<_i606.GetVenueCourts>(
       () => _i606.GetVenueCourts(gh<_i997.VenueRepository>()),

@@ -11,12 +11,16 @@ class ScoreboardPage extends StatelessWidget {
   final String bookingId;
   final String sportType;
   final List<String> players;
+  final List<String> teamA;
+  final List<String> teamB;
 
   const ScoreboardPage({
     super.key,
     required this.bookingId,
     required this.sportType,
     required this.players,
+    required this.teamA,
+    required this.teamB,
   });
 
   @override
@@ -27,6 +31,8 @@ class ScoreboardPage extends StatelessWidget {
         bookingId: bookingId,
         sportType: sportType,
         players: players,
+        teamA: teamA,
+        teamB: teamB,
       ),
     );
   }
@@ -36,11 +42,15 @@ class _ScoreboardView extends StatefulWidget {
   final String bookingId;
   final String sportType;
   final List<String> players;
+  final List<String> teamA;
+  final List<String> teamB;
 
   const _ScoreboardView({
     required this.bookingId,
     required this.sportType,
     required this.players,
+    required this.teamA,
+    required this.teamB,
   });
 
   @override
@@ -342,6 +352,8 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                   bookingId: widget.bookingId,
                   sportType: widget.sportType,
                   players: widget.players,
+                  teamAIds: widget.teamA,
+                  teamBIds: widget.teamB,
                   durationSeconds: _secondsElapsed,
                 ),
               );

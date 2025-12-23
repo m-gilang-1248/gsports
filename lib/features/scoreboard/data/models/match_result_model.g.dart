@@ -23,7 +23,15 @@ MatchResultModel _$MatchResultModelFromJson(
   sportType: json['sportType'] as String,
   playedAt: const TimestampConverter().fromJson(json['playedAt'] as Timestamp),
   durationSeconds: (json['durationSeconds'] as num).toInt(),
-  players: (json['players'] as List<dynamic>).map((e) => e as String).toList(),
+  players:
+      (json['players'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      [],
+  teamAIds:
+      (json['teamAIds'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      [],
+  teamBIds:
+      (json['teamBIds'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      [],
   setsModel: (json['setsModel'] as List<dynamic>)
       .map((e) => MatchSetModel.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -37,7 +45,9 @@ Map<String, dynamic> _$MatchResultModelToJson(MatchResultModel instance) =>
       'sportType': instance.sportType,
       'playedAt': const TimestampConverter().toJson(instance.playedAt),
       'durationSeconds': instance.durationSeconds,
-      'players': instance.players,
       'winner': instance.winner,
       'setsModel': instance.setsModel.map((e) => e.toJson()).toList(),
+      'teamAIds': instance.teamAIds,
+      'teamBIds': instance.teamBIds,
+      'players': instance.players,
     };

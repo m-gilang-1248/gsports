@@ -59,7 +59,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           listener: (context, state) {
             if (state is ProfileLoaded) {
               _nameController.text = state.user.displayName;
-              // PhoneNumber is not in UserEntity yet, might need to add or handle null
+              _phoneController.text = state.user.phoneNumber ?? '';
             }
             if (state is ProfileUpdateSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
