@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
+import 'package:gsports/core/config/app_colors.dart';
 
 class ScoreboardSetupDialog extends StatefulWidget {
   final List<PaymentParticipant> participants;
@@ -46,38 +47,51 @@ class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Persiapan Pertandingan'),
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      title: Text(
+        'Match Setup',
+        style: TextStyle(
+          color: AppColors.primary,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Nama Tim',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Text(
+              'Team Names',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.grey[700],
+              ),
             ),
             const SizedBox(height: 12),
-            TextField(
+            _buildTextField(
               controller: _teamAController,
-              decoration: const InputDecoration(
-                labelText: 'Nama Tim A',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.group, color: Colors.cyanAccent),
-              ),
+              label: 'Team A Name',
+              icon: Icons.shield_outlined,
+              color: Colors.cyan,
             ),
             const SizedBox(height: 12),
-            TextField(
+            _buildTextField(
               controller: _teamBController,
-              decoration: const InputDecoration(
-                labelText: 'Nama Tim B',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.group, color: Colors.deepOrangeAccent),
-              ),
+              label: 'Team B Name',
+              icon: Icons.shield_outlined,
+              color: Colors.deepOrange,
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Siapa yang bermain?',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Text(
+              'Who is playing?',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.grey[700],
+              ),
             ),
             const SizedBox(height: 12),
             ...widget.participants.map((p) {
@@ -87,24 +101,27 @@ class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
               final isTeamB = _teamB.contains(uid);
 
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Row(
                   children: [
-                    Expanded(child: Text(p.name)),
-                    ChoiceChip(
-                      label: const Text('A'),
-                      selected: isTeamA,
-                      onSelected: (_) => _toggleSelection(uid, true),
-                      selectedColor: Colors.cyanAccent.withValues(alpha: 0.3),
+                    Expanded(
+                      child: Text(
+                        p.name,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    _buildSelectionChip(
+                      'A',
+                      isTeamA,
+                      Colors.cyan,
+                      () => _toggleSelection(uid, true),
                     ),
                     const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('B'),
-                      selected: isTeamB,
-                      onSelected: (_) => _toggleSelection(uid, false),
-                      selectedColor: Colors.deepOrangeAccent.withValues(
-                        alpha: 0.3,
-                      ),
+                    _buildSelectionChip(
+                      'B',
+                      isTeamB,
+                      Colors.deepOrange,
+                      () => _toggleSelection(uid, false),
                     ),
                   ],
                 ),
@@ -116,7 +133,8 @@ class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Batal'),
+          style: TextButton.styleFrom(foregroundColor: Colors.grey),
+          child: const Text('Cancel'),
         ),
         FilledButton(
           onPressed: (_teamA.isNotEmpty && _teamB.isNotEmpty)
@@ -133,9 +151,69 @@ class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
                   });
                 }
               : null,
-          child: const Text('Mulai'),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Text('Start Match'),
         ),
       ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.grey[600]),
+        prefixIcon: Icon(icon, color: color),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: color, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectionChip(
+    String label,
+    bool isSelected,
+    MaterialColor color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? color : Colors.grey[300]!),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[600],
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }

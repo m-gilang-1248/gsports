@@ -88,16 +88,19 @@ class MatchHistoryWidget extends StatelessWidget {
       ),
       child: ListTile(
         onTap: () => context.push('/match-recap', extra: match),
-        leading: winnerUid != null
-            ? _UserAvatar(uid: winnerUid)
-            : CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: Icon(
-                  Icons.sports_tennis,
-                  color: AppColors.primary,
-                  size: 20,
+        leading: SizedBox(
+          width: 50,
+          child: winnerIds.isNotEmpty
+              ? _StackedAvatars(uids: winnerIds.take(2).toList())
+              : CircleAvatar(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  child: Icon(
+                    Icons.sports_tennis,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                 ),
-              ),
+        ),
         title: Text(
           'Winner: $winnerName',
           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -132,9 +135,33 @@ class MatchHistoryWidget extends StatelessWidget {
   }
 }
 
+class _StackedAvatars extends StatelessWidget {
+  final List<String> uids;
+  const _StackedAvatars({required this.uids});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: List.generate(uids.length, (index) {
+        return Positioned(
+          left: index * 15.0,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: _UserAvatar(uid: uids[index], radius: 14),
+          ),
+        );
+      }),
+    );
+  }
+}
+
 class _UserAvatar extends StatelessWidget {
   final String uid;
-  const _UserAvatar({required this.uid});
+  final double radius;
+  const _UserAvatar({required this.uid, this.radius = 20});
 
   @override
   Widget build(BuildContext context) {
@@ -147,22 +174,28 @@ class _UserAvatar extends StatelessWidget {
           final name = data?['displayName'] as String? ?? 'U';
 
           if (photoUrl != null && photoUrl.isNotEmpty) {
-            return CircleAvatar(backgroundImage: NetworkImage(photoUrl));
+            return CircleAvatar(
+              radius: radius,
+              backgroundImage: NetworkImage(photoUrl),
+            );
           }
           return CircleAvatar(
+            radius: radius,
             backgroundColor: AppColors.primary.withValues(alpha: 0.1),
             child: Text(
               name[0].toUpperCase(),
               style: TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
+                fontSize: radius * 0.8,
               ),
             ),
           );
         }
         return CircleAvatar(
+          radius: radius,
           backgroundColor: Colors.grey[200],
-          child: const Icon(Icons.person, color: Colors.grey),
+          child: Icon(Icons.person, color: Colors.grey, size: radius),
         );
       },
     );

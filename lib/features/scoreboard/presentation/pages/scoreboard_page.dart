@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gsports/features/scoreboard/presentation/bloc/scoreboard_bloc.dart';
+import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:go_router/go_router.dart';
 
@@ -146,7 +147,31 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                 backgroundColor: Colors.green,
               ),
             );
-            context.pop(); // Go back
+
+            // Create match object to pass to recap
+            // Note: We recreate it here because the state doesn't hold the full MatchResult object
+            // ideally the Bloc should emit it, but for now we reconstruct with available data
+            final matchResult = MatchResult(
+              id: '', // Placeholder, ideally from backend response
+              bookingId: widget.bookingId,
+              sportType: widget.sportType,
+              playedAt: DateTime.now(),
+              durationSeconds: _secondsElapsed,
+              players: widget.players,
+              teamAIds: widget.teamA,
+              teamBIds: widget.teamB,
+              teamAName: widget.teamAName,
+              teamBName: widget.teamBName,
+              playerNames: widget.playerNames,
+              venueName: widget.venueName,
+              courtName: widget.courtName,
+              startTime: widget.startTime,
+              endTime: widget.endTime,
+              sets: state.historySets,
+              winner: state.winner!,
+            );
+
+            context.pushReplacement('/match-recap', extra: matchResult);
           }
           if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
