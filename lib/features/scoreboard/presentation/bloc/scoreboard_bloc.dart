@@ -131,6 +131,13 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
       players: event.players,
       teamAIds: event.teamAIds,
       teamBIds: event.teamBIds,
+      teamAName: event.teamAName,
+      teamBName: event.teamBName,
+      playerNames: event.playerNames,
+      venueName: event.venueName,
+      courtName: event.courtName,
+      startTime: event.startTime,
+      endTime: event.endTime,
       sets: state.historySets,
       winner: state.winner!,
     );

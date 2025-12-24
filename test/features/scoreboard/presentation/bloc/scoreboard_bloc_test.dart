@@ -7,6 +7,7 @@ import 'package:gsports/features/scoreboard/presentation/bloc/scoreboard_bloc.da
 import 'package:mocktail/mocktail.dart';
 
 class MockScoreboardRepository extends Mock implements ScoreboardRepository {}
+
 class FakeMatchResult extends Fake implements MatchResult {}
 
 void main() {
@@ -58,7 +59,11 @@ void main() {
             .having((s) => s.scoreA, 'scoreA', 0)
             .having((s) => s.currentSet, 'currentSet', 2)
             .having((s) => s.historySets.length, 'historySets', 1)
-            .having((s) => s.historySets.first, 'first set', const MatchSet(scoreA: 21, scoreB: 10)),
+            .having(
+              (s) => s.historySets.first,
+              'first set',
+              const MatchSet(scoreA: 21, scoreB: 10),
+            ),
       ],
     );
 
@@ -71,7 +76,9 @@ void main() {
       },
       expect: () => [
         // Undo save swallowed
-        isA<ScoreboardState>().having((s) => s.scoreA, 'scoreA', 21).having((s) => s.currentSet, 'currentSet', 1),
+        isA<ScoreboardState>()
+            .having((s) => s.scoreA, 'scoreA', 21)
+            .having((s) => s.currentSet, 'currentSet', 1),
       ],
     );
 
@@ -100,7 +107,11 @@ void main() {
     blocTest<ScoreboardBloc, ScoreboardState>(
       'undo restores previous state',
       build: () => bloc,
-      seed: () => const ScoreboardState(scoreA: 1, scoreB: 0, undoStack: [ScoreboardState()]),
+      seed: () => const ScoreboardState(
+        scoreA: 1,
+        scoreB: 0,
+        undoStack: [ScoreboardState()],
+      ),
       act: (bloc) => bloc.add(UndoLastAction()),
       expect: () => [
         // Undo does NOT save state, so only 1 emission

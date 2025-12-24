@@ -50,16 +50,25 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
         final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'];
 
-        if (cloudName == null || uploadPreset == null || cloudName.isEmpty || uploadPreset.isEmpty) {
+        if (cloudName == null ||
+            uploadPreset == null ||
+            cloudName.isEmpty ||
+            uploadPreset.isEmpty) {
           throw ServerException("Cloudinary configuration missing in .env");
         }
 
-        final cloudinary = CloudinaryPublic(cloudName, uploadPreset, cache: false);
+        final cloudinary = CloudinaryPublic(
+          cloudName,
+          uploadPreset,
+          cache: false,
+        );
 
         try {
           final response = await cloudinary.uploadFile(
-            CloudinaryFile.fromFile(imageFile.path,
-                resourceType: CloudinaryResourceType.Image),
+            CloudinaryFile.fromFile(
+              imageFile.path,
+              resourceType: CloudinaryResourceType.Image,
+            ),
           );
           imageUrl = response.secureUrl;
         } catch (e) {

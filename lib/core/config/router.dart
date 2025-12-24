@@ -15,6 +15,9 @@ import 'package:gsports/features/partner/presentation/pages/owner_dashboard_page
 import 'package:gsports/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:gsports/features/scoreboard/presentation/pages/scoreboard_page.dart';
 
+import 'package:gsports/features/scoreboard/presentation/pages/match_recap_page.dart';
+import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppRouter {
@@ -98,7 +101,21 @@ class AppRouter {
             players: extra['players'] as List<String>,
             teamA: extra['teamA'] as List<String>,
             teamB: extra['teamB'] as List<String>,
+            teamAName: extra['teamAName'] as String,
+            teamBName: extra['teamBName'] as String,
+            playerNames: extra['playerNames'] as Map<String, String>,
+            venueName: extra['venueName'] as String?,
+            courtName: extra['courtName'] as String?,
+            startTime: extra['startTime'] as DateTime?,
+            endTime: extra['endTime'] as DateTime?,
           );
+        },
+      ),
+      GoRoute(
+        path: '/match-recap',
+        builder: (context, state) {
+          final match = state.extra as MatchResult;
+          return MatchRecapPage(match: match);
         },
       ),
     ],

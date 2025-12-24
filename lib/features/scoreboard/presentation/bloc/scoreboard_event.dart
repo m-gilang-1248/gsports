@@ -21,6 +21,13 @@ class SaveMatchRequested extends ScoreboardEvent {
   final List<String> players;
   final List<String> teamAIds;
   final List<String> teamBIds;
+  final String teamAName;
+  final String teamBName;
+  final Map<String, String> playerNames;
+  final String? venueName;
+  final String? courtName;
+  final DateTime? startTime;
+  final DateTime? endTime;
   final int durationSeconds;
 
   const SaveMatchRequested({
@@ -29,6 +36,13 @@ class SaveMatchRequested extends ScoreboardEvent {
     required this.players,
     required this.teamAIds,
     required this.teamBIds,
+    required this.teamAName,
+    required this.teamBName,
+    required this.playerNames,
+    this.venueName,
+    this.courtName,
+    this.startTime,
+    this.endTime,
     required this.durationSeconds,
   });
 
@@ -39,6 +53,9 @@ class SaveMatchRequested extends ScoreboardEvent {
     players,
     teamAIds,
     teamBIds,
+    teamAName,
+    teamBName,
+    playerNames,
     durationSeconds,
   ];
 }

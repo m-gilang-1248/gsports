@@ -13,6 +13,13 @@ class ScoreboardPage extends StatelessWidget {
   final List<String> players;
   final List<String> teamA;
   final List<String> teamB;
+  final String teamAName;
+  final String teamBName;
+  final Map<String, String> playerNames;
+  final String? venueName;
+  final String? courtName;
+  final DateTime? startTime;
+  final DateTime? endTime;
 
   const ScoreboardPage({
     super.key,
@@ -21,6 +28,13 @@ class ScoreboardPage extends StatelessWidget {
     required this.players,
     required this.teamA,
     required this.teamB,
+    required this.teamAName,
+    required this.teamBName,
+    required this.playerNames,
+    this.venueName,
+    this.courtName,
+    this.startTime,
+    this.endTime,
   });
 
   @override
@@ -33,6 +47,13 @@ class ScoreboardPage extends StatelessWidget {
         players: players,
         teamA: teamA,
         teamB: teamB,
+        teamAName: teamAName,
+        teamBName: teamBName,
+        playerNames: playerNames,
+        venueName: venueName,
+        courtName: courtName,
+        startTime: startTime,
+        endTime: endTime,
       ),
     );
   }
@@ -44,6 +65,13 @@ class _ScoreboardView extends StatefulWidget {
   final List<String> players;
   final List<String> teamA;
   final List<String> teamB;
+  final String teamAName;
+  final String teamBName;
+  final Map<String, String> playerNames;
+  final String? venueName;
+  final String? courtName;
+  final DateTime? startTime;
+  final DateTime? endTime;
 
   const _ScoreboardView({
     required this.bookingId,
@@ -51,6 +79,13 @@ class _ScoreboardView extends StatefulWidget {
     required this.players,
     required this.teamA,
     required this.teamB,
+    required this.teamAName,
+    required this.teamBName,
+    required this.playerNames,
+    this.venueName,
+    this.courtName,
+    this.startTime,
+    this.endTime,
   });
 
   @override
@@ -132,8 +167,11 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                     Expanded(
                       child: _buildScorePanel(
                         context,
-                        label: 'Team A',
+                        label: widget.teamAName,
                         score: state.scoreA,
+                        playerNames: widget.teamA
+                            .map((id) => widget.playerNames[id] ?? 'Unknown')
+                            .join(', '),
                         color: Colors.cyanAccent,
                         onTap: () => context.read<ScoreboardBloc>().add(
                           IncrementScoreA(),
@@ -146,8 +184,11 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                     Expanded(
                       child: _buildScorePanel(
                         context,
-                        label: 'Team B',
+                        label: widget.teamBName,
                         score: state.scoreB,
+                        playerNames: widget.teamB
+                            .map((id) => widget.playerNames[id] ?? 'Unknown')
+                            .join(', '),
                         color: Colors.deepOrangeAccent,
                         onTap: () => context.read<ScoreboardBloc>().add(
                           IncrementScoreB(),
@@ -259,6 +300,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
     BuildContext context, {
     required String label,
     required int score,
+    required String playerNames,
     required Color color,
     required VoidCallback onTap,
   }) {
@@ -266,6 +308,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
       onTap: onTap,
       child: Container(
         color: Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -276,18 +319,29 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 '$score',
                 style: GoogleFonts.orbitron(
                   color: color,
-                  fontSize: 160,
+                  fontSize: 140,
                   fontWeight: FontWeight.w900,
                 ),
               ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              playerNames,
+              style: const TextStyle(color: Colors.white54, fontSize: 14),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -312,7 +366,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Winner: ${state.winner}',
+              'Winner: ${state.winner == 'Team A' ? widget.teamAName : widget.teamBName}',
               style: const TextStyle(
                 color: Colors.greenAccent,
                 fontSize: 20,
@@ -354,6 +408,13 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                   players: widget.players,
                   teamAIds: widget.teamA,
                   teamBIds: widget.teamB,
+                  teamAName: widget.teamAName,
+                  teamBName: widget.teamBName,
+                  playerNames: widget.playerNames,
+                  venueName: widget.venueName,
+                  courtName: widget.courtName,
+                  startTime: widget.startTime,
+                  endTime: widget.endTime,
                   durationSeconds: _secondsElapsed,
                 ),
               );

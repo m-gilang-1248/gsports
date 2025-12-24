@@ -93,9 +93,9 @@ void main() {
     );
     const stats = UserStats(matchesPlayed: 10, matchesWon: 5, winRate: 50);
 
-    when(() => mockProfileBloc.state).thenReturn(
-      ProfileLoaded(user: user, stats: stats),
-    );
+    when(
+      () => mockProfileBloc.state,
+    ).thenReturn(ProfileLoaded(user: user, stats: stats));
     when(() => mockAuthBloc.state).thenReturn(AuthAuthenticated(user));
 
     await tester.pumpWidget(createWidgetUnderTest());
@@ -121,9 +121,9 @@ void main() {
     );
     const stats = UserStats(matchesPlayed: 0, matchesWon: 0, winRate: 0);
 
-    when(() => mockProfileBloc.state).thenReturn(
-      ProfileLoaded(user: user, stats: stats),
-    );
+    when(
+      () => mockProfileBloc.state,
+    ).thenReturn(ProfileLoaded(user: user, stats: stats));
     when(() => mockAuthBloc.state).thenReturn(AuthAuthenticated(user));
     when(() => mockAuthBloc.add(any())).thenReturn(null);
 

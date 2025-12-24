@@ -10,6 +10,13 @@ class MatchResult extends Equatable {
   final List<String> players; // Added players UIDs
   final List<String> teamAIds;
   final List<String> teamBIds;
+  final String teamAName;
+  final String teamBName;
+  final Map<String, String> playerNames; // UID -> Name
+  final String? venueName;
+  final String? courtName;
+  final DateTime? startTime;
+  final DateTime? endTime;
   final List<MatchSet> sets;
   final String winner; // 'Team A' or 'Team B'
 
@@ -22,6 +29,13 @@ class MatchResult extends Equatable {
     required this.players,
     required this.teamAIds,
     required this.teamBIds,
+    required this.teamAName,
+    required this.teamBName,
+    required this.playerNames,
+    this.venueName,
+    this.courtName,
+    this.startTime,
+    this.endTime,
     required this.sets,
     required this.winner,
   });
@@ -36,6 +50,13 @@ class MatchResult extends Equatable {
     players,
     teamAIds,
     teamBIds,
+    teamAName,
+    teamBName,
+    playerNames,
+    venueName,
+    courtName,
+    startTime,
+    endTime,
     sets,
     winner,
   ];

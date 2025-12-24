@@ -296,13 +296,20 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
           width: double.infinity,
           child: FilledButton.icon(
             onPressed: () async {
-              final result = await showDialog<Map<String, List<String>>>(
+              final result = await showDialog<Map<String, dynamic>>(
                 context: context,
                 builder: (context) =>
                     ScoreboardSetupDialog(participants: booking.participants),
               );
 
               if (result != null && context.mounted) {
+                final playerNames = <String, String>{};
+                for (final p in booking.participants) {
+                  if (p.uid != null) {
+                    playerNames[p.uid!] = p.name;
+                  }
+                }
+
                 context.push(
                   '/scoreboard',
                   extra: {
@@ -311,6 +318,13 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                     'players': booking.participantIds,
                     'teamA': result['teamA'],
                     'teamB': result['teamB'],
+                    'teamAName': result['teamAName'],
+                    'teamBName': result['teamBName'],
+                    'playerNames': playerNames,
+                    'venueName': booking.venueName,
+                    'courtName': booking.courtName,
+                    'startTime': booking.startTime,
+                    'endTime': booking.endTime,
                   },
                 );
               }

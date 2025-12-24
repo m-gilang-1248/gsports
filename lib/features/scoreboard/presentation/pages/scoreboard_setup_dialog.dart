@@ -13,6 +13,15 @@ class ScoreboardSetupDialog extends StatefulWidget {
 class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
   final List<String> _teamA = [];
   final List<String> _teamB = [];
+  final _teamAController = TextEditingController(text: 'Team A');
+  final _teamBController = TextEditingController(text: 'Team B');
+
+  @override
+  void dispose() {
+    _teamAController.dispose();
+    _teamBController.dispose();
+    super.dispose();
+  }
 
   void _toggleSelection(String uid, bool isTeamA) {
     setState(() {
@@ -37,13 +46,40 @@ class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Pilih Tim'),
+      title: const Text('Persiapan Pertandingan'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Siapa yang bermain?'),
-            const SizedBox(height: 16),
+            const Text(
+              'Nama Tim',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _teamAController,
+              decoration: const InputDecoration(
+                labelText: 'Nama Tim A',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.group, color: Colors.cyanAccent),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _teamBController,
+              decoration: const InputDecoration(
+                labelText: 'Nama Tim B',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.group, color: Colors.deepOrangeAccent),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Siapa yang bermain?',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
             ...widget.participants.map((p) {
               if (p.uid == null) return const SizedBox.shrink();
               final uid = p.uid!;
@@ -85,7 +121,16 @@ class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
         FilledButton(
           onPressed: (_teamA.isNotEmpty && _teamB.isNotEmpty)
               ? () {
-                  Navigator.pop(context, {'teamA': _teamA, 'teamB': _teamB});
+                  Navigator.pop(context, {
+                    'teamA': _teamA,
+                    'teamB': _teamB,
+                    'teamAName': _teamAController.text.isEmpty
+                        ? 'Team A'
+                        : _teamAController.text,
+                    'teamBName': _teamBController.text.isEmpty
+                        ? 'Team B'
+                        : _teamBController.text,
+                  });
                 }
               : null,
           child: const Text('Mulai'),

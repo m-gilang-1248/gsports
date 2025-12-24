@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
 import 'package:gsports/features/scoreboard/domain/repositories/scoreboard_repository.dart';
@@ -20,7 +22,7 @@ class MatchHistoryWidget extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return Center(child: Text('Error loading matches'));
+          return const Center(child: Text('Error loading matches'));
         }
 
         final result = snapshot.data;
@@ -69,6 +71,13 @@ class MatchHistoryWidget extends StatelessWidget {
 
   Widget _buildMatchCard(BuildContext context, MatchResult match) {
     final dateFormat = DateFormat('d MMM yyyy');
+    final winnerIds = match.winner == 'Team A'
+        ? match.teamAIds
+        : match.teamBIds;
+    final winnerName = match.winner == 'Team A'
+        ? match.teamAName
+        : match.teamBName;
+    final winnerUid = winnerIds.isNotEmpty ? winnerIds.first : null;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -78,12 +87,19 @@ class MatchHistoryWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-          child: Icon(Icons.sports_tennis, color: AppColors.primary, size: 20),
-        ),
+        onTap: () => context.push('/match-recap', extra: match),
+        leading: winnerUid != null
+            ? _UserAvatar(uid: winnerUid)
+            : CircleAvatar(
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                child: Icon(
+                  Icons.sports_tennis,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
         title: Text(
-          'Winner: ${match.winner}',
+          'Winner: $winnerName',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
@@ -113,5 +129,42 @@ class MatchHistoryWidget extends StatelessWidget {
     final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
     final secs = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$minutes:$secs';
+  }
+}
+
+class _UserAvatar extends StatelessWidget {
+  final String uid;
+  const _UserAvatar({required this.uid});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data!.exists) {
+          final data = snapshot.data!.data();
+          final photoUrl = data?['photoUrl'] as String?;
+          final name = data?['displayName'] as String? ?? 'U';
+
+          if (photoUrl != null && photoUrl.isNotEmpty) {
+            return CircleAvatar(backgroundImage: NetworkImage(photoUrl));
+          }
+          return CircleAvatar(
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            child: Text(
+              name[0].toUpperCase(),
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          );
+        }
+        return CircleAvatar(
+          backgroundColor: Colors.grey[200],
+          child: const Icon(Icons.person, color: Colors.grey),
+        );
+      },
+    );
   }
 }
