@@ -8,6 +8,10 @@ class ScoreboardState extends Equatable {
   final bool isMatchFinished;
   final String? winner; // 'Team A' or 'Team B'
   final List<ScoreboardState> undoStack; // For undo functionality
+  final bool isTimerPaused;
+  final bool usesSets;
+  final bool isTimed;
+  final int targetDurationMinutes;
 
   // Save states
   final bool isSaving;
@@ -22,6 +26,10 @@ class ScoreboardState extends Equatable {
     this.isMatchFinished = false,
     this.winner,
     this.undoStack = const [],
+    this.isTimerPaused = false,
+    this.usesSets = true,
+    this.isTimed = false,
+    this.targetDurationMinutes = 0,
     this.isSaving = false,
     this.saveSuccess = false,
     this.errorMessage,
@@ -35,6 +43,10 @@ class ScoreboardState extends Equatable {
     bool? isMatchFinished,
     String? winner,
     List<ScoreboardState>? undoStack,
+    bool? isTimerPaused,
+    bool? usesSets,
+    bool? isTimed,
+    int? targetDurationMinutes,
     bool? isSaving,
     bool? saveSuccess,
     String? errorMessage,
@@ -47,6 +59,10 @@ class ScoreboardState extends Equatable {
       isMatchFinished: isMatchFinished ?? this.isMatchFinished,
       winner: winner ?? this.winner,
       undoStack: undoStack ?? this.undoStack,
+      isTimerPaused: isTimerPaused ?? this.isTimerPaused,
+      usesSets: usesSets ?? this.usesSets,
+      isTimed: isTimed ?? this.isTimed,
+      targetDurationMinutes: targetDurationMinutes ?? this.targetDurationMinutes,
       isSaving: isSaving ?? this.isSaving,
       saveSuccess: saveSuccess ?? this.saveSuccess,
       errorMessage: errorMessage ?? this.errorMessage,
@@ -61,6 +77,10 @@ class ScoreboardState extends Equatable {
     historySets,
     isMatchFinished,
     winner,
+    isTimerPaused,
+    usesSets,
+    isTimed,
+    targetDurationMinutes,
     isSaving,
     saveSuccess,
     errorMessage,

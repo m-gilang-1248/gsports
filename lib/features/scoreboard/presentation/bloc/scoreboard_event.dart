@@ -11,9 +11,24 @@ class IncrementScoreA extends ScoreboardEvent {}
 
 class IncrementScoreB extends ScoreboardEvent {}
 
+class DecrementScoreA extends ScoreboardEvent {}
+
+class DecrementScoreB extends ScoreboardEvent {}
+
 class UndoLastAction extends ScoreboardEvent {}
 
 class ResetMatch extends ScoreboardEvent {}
+
+class ToggleTimer extends ScoreboardEvent {}
+
+class InitializeScoreboard extends ScoreboardEvent {
+  final String sportType;
+
+  const InitializeScoreboard(this.sportType);
+
+  @override
+  List<Object> get props => [sportType];
+}
 
 class SaveMatchRequested extends ScoreboardEvent {
   final String bookingId;
