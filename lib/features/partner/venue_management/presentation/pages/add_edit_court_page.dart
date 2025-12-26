@@ -107,7 +107,7 @@ class _AddEditCourtPageState extends State<AddEditCourtPage> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  initialValue: _selectedSport,
+                  value: _selectedSport,
                   decoration: const InputDecoration(
                     labelText: 'Sport Type',
                     border: OutlineInputBorder(),

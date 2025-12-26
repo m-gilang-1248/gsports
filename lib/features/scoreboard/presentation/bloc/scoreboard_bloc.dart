@@ -44,11 +44,13 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
     } else {
       _scoringLogic = GenericScoringLogic();
     }
-    emit(state.copyWith(
-      usesSets: _scoringLogic.usesSets,
-      isTimed: _scoringLogic.isTimed,
-      targetDurationMinutes: _scoringLogic.defaultDurationMinutes,
-    ));
+    emit(
+      state.copyWith(
+        usesSets: _scoringLogic.usesSets,
+        isTimed: _scoringLogic.isTimed,
+        targetDurationMinutes: _scoringLogic.defaultDurationMinutes,
+      ),
+    );
   }
 
   void _onIncrementScoreA(
@@ -137,7 +139,8 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
   void _onUndoLastAction(UndoLastAction event, Emitter<ScoreboardState> emit) {
     if (state.undoStack.isNotEmpty) {
       final previousState = state.undoStack.last;
-      final newStack = List<ScoreboardState>.from(state.undoStack)..removeLast();
+      final newStack = List<ScoreboardState>.from(state.undoStack)
+        ..removeLast();
 
       // Restore state but update the stack
       emit(previousState.copyWith(undoStack: newStack));
@@ -145,11 +148,13 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
   }
 
   void _onResetMatch(ResetMatch event, Emitter<ScoreboardState> emit) {
-    emit(ScoreboardState(
-      usesSets: _scoringLogic.usesSets,
-      isTimed: _scoringLogic.isTimed,
-      targetDurationMinutes: _scoringLogic.defaultDurationMinutes,
-    ));
+    emit(
+      ScoreboardState(
+        usesSets: _scoringLogic.usesSets,
+        isTimed: _scoringLogic.isTimed,
+        targetDurationMinutes: _scoringLogic.defaultDurationMinutes,
+      ),
+    );
   }
 
   Future<void> _onSaveMatchRequested(
@@ -191,5 +196,3 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
     );
   }
 }
-
-

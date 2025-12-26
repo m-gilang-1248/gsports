@@ -231,11 +231,11 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                               .join(', '),
                           color: Colors.cyanAccent,
                           onTap: () => context.read<ScoreboardBloc>().add(
-                                IncrementScoreA(),
-                              ),
+                            IncrementScoreA(),
+                          ),
                           onDecrement: () => context.read<ScoreboardBloc>().add(
-                                DecrementScoreA(),
-                              ),
+                            DecrementScoreA(),
+                          ),
                         ),
                       ),
                       // Divider & Info (Center)
@@ -251,11 +251,11 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                               .join(', '),
                           color: Colors.deepOrangeAccent,
                           onTap: () => context.read<ScoreboardBloc>().add(
-                                IncrementScoreB(),
-                              ),
+                            IncrementScoreB(),
+                          ),
                           onDecrement: () => context.read<ScoreboardBloc>().add(
-                                DecrementScoreB(),
-                              ),
+                            DecrementScoreB(),
+                          ),
                         ),
                       ),
                     ],
@@ -332,8 +332,9 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              final shouldExit =
-                                  await _showExitConfirmation(context);
+                              final shouldExit = await _showExitConfirmation(
+                                context,
+                              );
                               if (shouldExit && context.mounted) {
                                 context.pop();
                               }
@@ -344,16 +345,18 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                           const SizedBox(width: 32),
                           IconButton(
                             onPressed: () => context.read<ScoreboardBloc>().add(
-                                  UndoLastAction(),
-                                ),
+                              UndoLastAction(),
+                            ),
                             icon: const Icon(Icons.undo, color: Colors.white),
                             tooltip: 'Undo',
                           ),
                           const SizedBox(width: 32),
                           IconButton(
                             onPressed: () => _showResetConfirmation(context),
-                            icon:
-                                const Icon(Icons.refresh, color: Colors.white),
+                            icon: const Icon(
+                              Icons.refresh,
+                              color: Colors.white,
+                            ),
                             tooltip: 'Reset',
                           ),
                         ],
@@ -494,11 +497,14 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
           context: context,
           builder: (dialogContext) => AlertDialog(
             backgroundColor: Colors.grey[900],
-            title: const Text('Keluar dari Scoreboard?',
-                style: TextStyle(color: Colors.white)),
+            title: const Text(
+              'Keluar dari Scoreboard?',
+              style: TextStyle(color: Colors.white),
+            ),
             content: const Text(
-                'Data pertandingan saat ini akan hilang jika Anda keluar sekarang.',
-                style: TextStyle(color: Colors.white70)),
+              'Data pertandingan saat ini akan hilang jika Anda keluar sekarang.',
+              style: TextStyle(color: Colors.white70),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
@@ -506,7 +512,10 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
               ),
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Keluar', style: TextStyle(color: Colors.red)),
+                child: const Text(
+                  'Keluar',
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ],
           ),
@@ -519,10 +528,14 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text('Reset Scoreboard?',
-            style: TextStyle(color: Colors.white)),
-        content: const Text('Semua skor dan riwayat set akan dikosongkan.',
-            style: TextStyle(color: Colors.white70)),
+        title: const Text(
+          'Reset Scoreboard?',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Semua skor dan riwayat set akan dikosongkan.',
+          style: TextStyle(color: Colors.white70),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),

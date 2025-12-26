@@ -21,12 +21,12 @@ class Court extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        sportType,
-        hourlyPrice,
-        isActive,
-        surfaceType,
-        isIndoor,
-      ];
+    id,
+    name,
+    sportType,
+    hourlyPrice,
+    isActive,
+    surfaceType,
+    isIndoor,
+  ];
 }

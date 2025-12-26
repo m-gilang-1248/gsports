@@ -4,7 +4,7 @@ abstract class ScoringLogic {
   bool get usesSets;
   int get maxSets;
   int get pointsToWinSet;
-  
+
   // Time-based rules
   bool get isTimed;
   int get defaultDurationMinutes;
@@ -13,8 +13,16 @@ abstract class ScoringLogic {
   bool shouldFinishSet(int scoreA, int scoreB);
 
   /// Returns true if the entire match should finish.
-  bool shouldFinishMatch(List<MatchSet> history, int currentScoreA, int currentScoreB);
+  bool shouldFinishMatch(
+    List<MatchSet> history,
+    int currentScoreA,
+    int currentScoreB,
+  );
 
   /// Returns the winner name ('Team A' or 'Team B') or null if not finished.
-  String? getWinner(List<MatchSet> history, int currentScoreA, int currentScoreB);
+  String? getWinner(
+    List<MatchSet> history,
+    int currentScoreA,
+    int currentScoreB,
+  );
 }

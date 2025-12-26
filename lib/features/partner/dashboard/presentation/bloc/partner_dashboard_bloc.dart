@@ -9,12 +9,13 @@ part 'partner_dashboard_event.dart';
 part 'partner_dashboard_state.dart';
 
 @injectable
-class PartnerDashboardBloc extends Bloc<PartnerDashboardEvent, PartnerDashboardState> {
+class PartnerDashboardBloc
+    extends Bloc<PartnerDashboardEvent, PartnerDashboardState> {
   final GetPartnerStats getPartnerStats;
   final FirebaseAuth firebaseAuth;
 
   PartnerDashboardBloc(this.getPartnerStats, this.firebaseAuth)
-      : super(PartnerDashboardInitial()) {
+    : super(PartnerDashboardInitial()) {
     on<FetchPartnerDashboardStats>(_onFetchStats);
   }
 

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:gsports/features/auth/presentation/pages/login_page.dart';
@@ -17,6 +19,8 @@ import 'package:gsports/features/partner/venue_management/presentation/pages/man
 import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_venue_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/venue_courts_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_court_page.dart';
+import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
+import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
 import 'package:gsports/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
@@ -59,11 +63,10 @@ class AppRouter {
 
       if (isLoggedIn && isPartnerRoute) {
         try {
-          final doc =
-              await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(user.uid)
-                  .get();
+          final doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
           final role = doc.data()?['role'] as String?;
           if (role != 'mitra') {
             return '/home';
@@ -93,13 +96,19 @@ class AppRouter {
       ),
       GoRoute(
         path: '/add-venue',
-        builder: (context, state) => const AddEditVenuePage(),
+        builder: (context, state) => BlocProvider(
+          create: (context) => GetIt.I<VenueManagementBloc>(),
+          child: const AddEditVenuePage(),
+        ),
       ),
       GoRoute(
         path: '/edit-venue',
         builder: (context, state) {
           final venue = state.extra as Venue;
-          return AddEditVenuePage(venue: venue);
+          return BlocProvider(
+            create: (context) => GetIt.I<VenueManagementBloc>(),
+            child: AddEditVenuePage(venue: venue),
+          );
         },
       ),
       GoRoute(
@@ -114,17 +123,23 @@ class AppRouter {
         routes: [
           GoRoute(
             path: 'add',
-            builder: (context, state) => AddEditCourtPage(
-              venueId: state.pathParameters['venueId']!,
+            builder: (context, state) => BlocProvider(
+              create: (context) => GetIt.I<CourtManagementBloc>(),
+              child: AddEditCourtPage(
+                venueId: state.pathParameters['venueId']!,
+              ),
             ),
           ),
           GoRoute(
             path: 'edit',
             builder: (context, state) {
               final court = state.extra as Court;
-              return AddEditCourtPage(
-                venueId: state.pathParameters['venueId']!,
-                court: court,
+              return BlocProvider(
+                create: (context) => GetIt.I<CourtManagementBloc>(),
+                child: AddEditCourtPage(
+                  venueId: state.pathParameters['venueId']!,
+                  court: court,
+                ),
               );
             },
           ),

@@ -34,11 +34,10 @@ class VenueManagementRemoteDataSourceImpl
   @override
   Future<List<VenueModel>> getMyVenues(String ownerId) async {
     try {
-      final snapshot =
-          await firestore
-              .collection('venues')
-              .where('ownerId', isEqualTo: ownerId)
-              .get();
+      final snapshot = await firestore
+          .collection('venues')
+          .where('ownerId', isEqualTo: ownerId)
+          .get();
 
       return snapshot.docs.map((doc) => VenueModel.fromFirestore(doc)).toList();
     } catch (e) {
@@ -123,12 +122,11 @@ class VenueManagementRemoteDataSourceImpl
   @override
   Future<List<CourtModel>> getVenueCourts(String venueId) async {
     try {
-      final snapshot =
-          await firestore
-              .collection('venues')
-              .doc(venueId)
-              .collection('courts')
-              .get();
+      final snapshot = await firestore
+          .collection('venues')
+          .doc(venueId)
+          .collection('courts')
+          .get();
 
       return snapshot.docs.map((doc) => CourtModel.fromFirestore(doc)).toList();
     } catch (e) {
@@ -194,12 +192,11 @@ class VenueManagementRemoteDataSourceImpl
 
   /// Private helper to calculate and update the minimum price of a venue based on its courts
   Future<void> _updateVenueMinPrice(String venueId) async {
-    final courtsSnapshot =
-        await firestore
-            .collection('venues')
-            .doc(venueId)
-            .collection('courts')
-            .get();
+    final courtsSnapshot = await firestore
+        .collection('venues')
+        .doc(venueId)
+        .collection('courts')
+        .get();
 
     if (courtsSnapshot.docs.isEmpty) {
       await firestore.collection('venues').doc(venueId).update({'minPrice': 0});

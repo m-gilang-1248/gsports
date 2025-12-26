@@ -515,5 +515,5 @@ const List<String> kIndonesianCities = [
   "Kota Tidore Kepulauan",
   "Kota Tomohon",
   "Kota Tual",
-  "Kota Yogyakarta"
+  "Kota Yogyakarta",
 ];

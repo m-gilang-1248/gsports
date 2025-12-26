@@ -27,7 +27,11 @@ class BadmintonScoringLogic implements ScoringLogic {
   }
 
   @override
-  bool shouldFinishMatch(List<MatchSet> history, int currentScoreA, int currentScoreB) {
+  bool shouldFinishMatch(
+    List<MatchSet> history,
+    int currentScoreA,
+    int currentScoreB,
+  ) {
     int winsA = history.where((s) => s.scoreA > s.scoreB).length;
     int winsB = history.where((s) => s.scoreB > s.scoreA).length;
 
@@ -37,7 +41,11 @@ class BadmintonScoringLogic implements ScoringLogic {
   }
 
   @override
-  String? getWinner(List<MatchSet> history, int currentScoreA, int currentScoreB) {
+  String? getWinner(
+    List<MatchSet> history,
+    int currentScoreA,
+    int currentScoreB,
+  ) {
     int winsA = history.where((s) => s.scoreA > s.scoreB).length;
     int winsB = history.where((s) => s.scoreB > s.scoreA).length;
 

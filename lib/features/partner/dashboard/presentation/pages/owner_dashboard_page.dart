@@ -18,13 +18,13 @@ class OwnerDashboardPage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create:
-              (context) =>
-                  GetIt.I<PartnerDashboardBloc>()..add(FetchPartnerDashboardStats()),
+          create: (context) =>
+              GetIt.I<PartnerDashboardBloc>()
+                ..add(FetchPartnerDashboardStats()),
         ),
         BlocProvider(
-          create:
-              (context) => GetIt.I<VenueManagementBloc>()..add(FetchMyVenues()),
+          create: (context) =>
+              GetIt.I<VenueManagementBloc>()..add(FetchMyVenues()),
         ),
       ],
       child: const _OwnerDashboardView(),
@@ -57,7 +57,9 @@ class _OwnerDashboardView extends StatelessWidget {
         onPressed: () async {
           final result = await context.push('/add-venue');
           if (result == true && context.mounted) {
-            context.read<PartnerDashboardBloc>().add(FetchPartnerDashboardStats());
+            context.read<PartnerDashboardBloc>().add(
+              FetchPartnerDashboardStats(),
+            );
             context.read<VenueManagementBloc>().add(FetchMyVenues());
           }
         },
@@ -67,7 +69,9 @@ class _OwnerDashboardView extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          context.read<PartnerDashboardBloc>().add(FetchPartnerDashboardStats());
+          context.read<PartnerDashboardBloc>().add(
+            FetchPartnerDashboardStats(),
+          );
           context.read<VenueManagementBloc>().add(FetchMyVenues());
         },
         child: SingleChildScrollView(
@@ -122,9 +126,13 @@ class _OwnerDashboardView extends StatelessWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: state.venues.take(3).length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
                       itemBuilder: (context, index) {
-                        return _buildVenueCompactCard(context, state.venues[index]);
+                        return _buildVenueCompactCard(
+                          context,
+                          state.venues[index],
+                        );
                       },
                     );
                   }
@@ -143,7 +151,9 @@ class _OwnerDashboardView extends StatelessWidget {
               BlocBuilder<PartnerDashboardBloc, PartnerDashboardState>(
                 builder: (context, state) {
                   if (state is PartnerDashboardLoaded) {
-                    return _buildRecentTransactions(state.stats.recentTransactions);
+                    return _buildRecentTransactions(
+                      state.stats.recentTransactions,
+                    );
                   }
                   return const Center(child: CircularProgressIndicator());
                 },
@@ -226,7 +236,10 @@ class _OwnerDashboardView extends StatelessWidget {
               ),
               Text(
                 title,
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -243,10 +256,14 @@ class _OwnerDashboardView extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: InkWell(
-        onTap: () => context.push('/venue-courts/${venue.id}', extra: venue.name),
+        onTap: () =>
+            context.push('/venue-courts/${venue.id}', extra: venue.name),
         borderRadius: BorderRadius.circular(12),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: SizedBox(
@@ -297,7 +314,11 @@ class _OwnerDashboardView extends StatelessWidget {
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: const Icon(Icons.receipt, color: AppColors.primary, size: 20),
+              child: const Icon(
+                Icons.receipt,
+                color: AppColors.primary,
+                size: 20,
+              ),
             ),
             title: Text(
               booking.venueName ?? 'Unknown Venue',
@@ -317,17 +338,19 @@ class _OwnerDashboardView extends StatelessWidget {
                     symbol: 'Rp ',
                     decimalDigits: 0,
                   ).format(booking.totalPrice),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   booking.paymentStatus.toUpperCase(),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color:
-                        booking.paymentStatus == 'paid'
-                            ? AppColors.success
-                            : AppColors.warning,
+                    color: booking.paymentStatus == 'paid'
+                        ? AppColors.success
+                        : AppColors.warning,
                   ),
                 ),
               ],

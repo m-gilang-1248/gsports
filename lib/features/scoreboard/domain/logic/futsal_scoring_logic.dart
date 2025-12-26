@@ -21,10 +21,18 @@ class FutsalScoringLogic implements ScoringLogic {
   bool shouldFinishSet(int scoreA, int scoreB) => false;
 
   @override
-  bool shouldFinishMatch(List<MatchSet> history, int currentScoreA, int currentScoreB) => false;
+  bool shouldFinishMatch(
+    List<MatchSet> history,
+    int currentScoreA,
+    int currentScoreB,
+  ) => false;
 
   @override
-  String? getWinner(List<MatchSet> history, int currentScoreA, int currentScoreB) {
+  String? getWinner(
+    List<MatchSet> history,
+    int currentScoreA,
+    int currentScoreB,
+  ) {
     if (currentScoreA > currentScoreB) return 'Team A';
     if (currentScoreB > currentScoreA) return 'Team B';
     return 'Draw';

@@ -62,7 +62,8 @@ class ScoreboardState extends Equatable {
       isTimerPaused: isTimerPaused ?? this.isTimerPaused,
       usesSets: usesSets ?? this.usesSets,
       isTimed: isTimed ?? this.isTimed,
-      targetDurationMinutes: targetDurationMinutes ?? this.targetDurationMinutes,
+      targetDurationMinutes:
+          targetDurationMinutes ?? this.targetDurationMinutes,
       isSaving: isSaving ?? this.isSaving,
       saveSuccess: saveSuccess ?? this.saveSuccess,
       errorMessage: errorMessage ?? this.errorMessage,

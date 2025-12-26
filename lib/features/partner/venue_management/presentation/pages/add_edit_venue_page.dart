@@ -438,7 +438,7 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
     required Function(Map<String, dynamic>?)? onChanged,
   }) {
     return DropdownButtonFormField<Map<String, dynamic>>(
-      initialValue: value,
+      value: value,
       isExpanded: true,
       decoration: _dropdownDecoration(label).copyWith(
         suffixIcon: isLoading

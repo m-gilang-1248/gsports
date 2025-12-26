@@ -14,7 +14,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Pasar Minggu",
       "Pesanggrahan",
       "Setiabudi",
-      "Tebet"
+      "Tebet",
     ],
     "Jakarta Pusat": [
       "Cempaka Putih",
@@ -24,7 +24,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Menteng",
       "Sawah Besar",
       "Senen",
-      "Tanah Abang"
+      "Tanah Abang",
     ],
     "Jakarta Barat": [
       "Cengkareng",
@@ -34,7 +34,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Kebon Jeruk",
       "Kalideres",
       "Palmerah",
-      "Kembangan"
+      "Kembangan",
     ],
     "Jakarta Timur": [
       "Matraman",
@@ -46,7 +46,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Pasar Rebo",
       "Ciracas",
       "Cipayung",
-      "Cakung"
+      "Cakung",
     ],
     "Jakarta Utara": [
       "Cilincing",
@@ -54,7 +54,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Koja",
       "Pademangan",
       "Penjaringan",
-      "Tanjung Priok"
+      "Tanjung Priok",
     ],
   },
   "Jawa Barat": {
@@ -85,7 +85,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Sukajadi",
       "Sukasari",
       "Sumur Bandung",
-      "Ujung Berung"
+      "Ujung Berung",
     ],
     "Kota Depok": [
       "Beji",
@@ -98,7 +98,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Pancoran Mas",
       "Sawangan",
       "Sukmajaya",
-      "Tapos"
+      "Tapos",
     ],
     "Kota Bekasi": [
       "Bantar Gebang",
@@ -112,7 +112,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Mustika Jaya",
       "Pondok Gede",
       "Pondok Melati",
-      "Rawalumbu"
+      "Rawalumbu",
     ],
     "Kota Bogor": [
       "Bogor Barat",
@@ -120,7 +120,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Bogor Tengah",
       "Bogor Timur",
       "Bogor Utara",
-      "Tanah Sareal"
+      "Tanah Sareal",
     ],
     "Kab. Bogor": [
       "Babakan Madang",
@@ -134,10 +134,18 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Gunung Putri",
       "Jonggol",
       "Parung",
-      "Sentul"
+      "Sentul",
     ],
     "Kota Cimahi": ["Cimahi Selatan", "Cimahi Tengah", "Cimahi Utara"],
-    "Kab. Bandung": ["Balleendah", "Banjaran", "Boongsoang", "Cileunyi", "Dayeuhkolot", "Margahayu", "Soreang"],
+    "Kab. Bandung": [
+      "Balleendah",
+      "Banjaran",
+      "Boongsoang",
+      "Cileunyi",
+      "Dayeuhkolot",
+      "Margahayu",
+      "Soreang",
+    ],
   },
   "Banten": {
     "Kota Tangerang Selatan": [
@@ -147,7 +155,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Pondok Aren",
       "Serpong",
       "Serpong Utara",
-      "Setu"
+      "Setu",
     ],
     "Kota Tangerang": [
       "Batuceper",
@@ -162,7 +170,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Neglasari",
       "Periuk",
       "Pinang",
-      "Tangerang"
+      "Tangerang",
     ],
     "Kab. Tangerang": [
       "Balaraja",
@@ -171,7 +179,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Kelapa Dua",
       "Kosambi",
       "Pasar Kemis",
-      "Sepatan"
+      "Sepatan",
     ],
   },
   "Jawa Tengah": {
@@ -191,14 +199,14 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Semarang Timur",
       "Semarang Utara",
       "Tembalang",
-      "Tugu"
+      "Tugu",
     ],
     "Kota Surakarta (Solo)": [
       "Banjarsari",
       "Jebres",
       "Laweyan",
       "Pasar Kliwon",
-      "Serengan"
+      "Serengan",
     ],
     "Kota Yogyakarta": [
       "Danurejan",
@@ -214,10 +222,16 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Pakualaman",
       "Tegalrejo",
       "Umbulharjo",
-      "Wirobrajan"
+      "Wirobrajan",
     ],
-     "Kab. Sleman": [
-      "Depok", "Gamping", "Godean", "Kalasan", "Mlati", "Ngaglik", "Prambanan"
+    "Kab. Sleman": [
+      "Depok",
+      "Gamping",
+      "Godean",
+      "Kalasan",
+      "Mlati",
+      "Ngaglik",
+      "Prambanan",
     ],
   },
   "Jawa Timur": {
@@ -252,14 +266,14 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Tenggilis Mejoyo",
       "Wiyung",
       "Wonocolo",
-      "Wonokromo"
+      "Wonokromo",
     ],
     "Kota Malang": [
       "Blimbing",
       "Kedungkandang",
       "Klojen",
       "Lowokwaru",
-      "Sukun"
+      "Sukun",
     ],
     "Kab. Sidoarjo": ["Waru", "Sedati", "Taman", "Krian", "Sidoarjo"],
   },
@@ -268,7 +282,7 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Denpasar Barat",
       "Denpasar Selatan",
       "Denpasar Timur",
-      "Denpasar Utara"
+      "Denpasar Utara",
     ],
     "Kab. Badung": [
       "Abiansemal",
@@ -276,18 +290,51 @@ const Map<String, Map<String, List<String>>> kIndonesianLocations = {
       "Kuta Selatan",
       "Kuta Utara",
       "Mengwi",
-      "Petang"
+      "Petang",
     ],
-     "Kab. Gianyar": ["Ubud", "Gianyar", "Sukawati"],
+    "Kab. Gianyar": ["Ubud", "Gianyar", "Sukawati"],
   },
   "Sumatera Utara": {
     "Kota Medan": [
-      "Medan Amplas", "Medan Area", "Medan Barat", "Medan Baru", "Medan Belawan", "Medan Deli", "Medan Denai", "Medan Helvetia", "Medan Johor", "Medan Kota", "Medan Labuhan", "Medan Maimun", "Medan Marelan", "Medan Perjuangan", "Medan Petisah", "Medan Polonia", "Medan Selayang", "Medan Sunggal", "Medan Tembung", "Medan Timur", "Medan Tuntungan"
-    ]
+      "Medan Amplas",
+      "Medan Area",
+      "Medan Barat",
+      "Medan Baru",
+      "Medan Belawan",
+      "Medan Deli",
+      "Medan Denai",
+      "Medan Helvetia",
+      "Medan Johor",
+      "Medan Kota",
+      "Medan Labuhan",
+      "Medan Maimun",
+      "Medan Marelan",
+      "Medan Perjuangan",
+      "Medan Petisah",
+      "Medan Polonia",
+      "Medan Selayang",
+      "Medan Sunggal",
+      "Medan Tembung",
+      "Medan Timur",
+      "Medan Tuntungan",
+    ],
   },
   "Sulawesi Selatan": {
     "Kota Makassar": [
-      "Biringkanaya", "Bontoala", "Makassar", "Mamajang", "Manggala", "Mariso", "Panakkukang", "Rappocini", "Tallo", "Tamalanrea", "Tamalate", "Ujung Pandang", "Ujung Tanah", "Wajo"
-    ]
-  }
+      "Biringkanaya",
+      "Bontoala",
+      "Makassar",
+      "Mamajang",
+      "Manggala",
+      "Mariso",
+      "Panakkukang",
+      "Rappocini",
+      "Tallo",
+      "Tamalanrea",
+      "Tamalate",
+      "Ujung Pandang",
+      "Ujung Tanah",
+      "Wajo",
+    ],
+  },
 };

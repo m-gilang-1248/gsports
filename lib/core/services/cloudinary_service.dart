@@ -17,11 +17,7 @@ class CloudinaryService {
       throw ServerException("Cloudinary configuration missing in .env");
     }
 
-    final cloudinary = CloudinaryPublic(
-      cloudName,
-      uploadPreset,
-      cache: false,
-    );
+    final cloudinary = CloudinaryPublic(cloudName, uploadPreset, cache: false);
 
     try {
       final response = await cloudinary.uploadFile(

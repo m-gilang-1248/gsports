@@ -184,16 +184,24 @@ class _ManageVenuesView extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                        IconButton(
-                          onPressed: () async {
-                            final result = await context.push('/edit-venue', extra: venue);
-                            if (result == true && context.mounted) {
-                              context.read<VenueManagementBloc>().add(FetchMyVenues());
-                            }
-                          },
-                          icon: const Icon(Icons.edit_outlined, color: Colors.blue),
-                          tooltip: 'Edit Venue Details',
-                        ),
+                          IconButton(
+                            onPressed: () async {
+                              final result = await context.push(
+                                '/edit-venue',
+                                extra: venue,
+                              );
+                              if (result == true && context.mounted) {
+                                context.read<VenueManagementBloc>().add(
+                                  FetchMyVenues(),
+                                );
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Colors.blue,
+                            ),
+                            tooltip: 'Edit Venue Details',
+                          ),
                           IconButton(
                             onPressed: () =>
                                 _showDeleteConfirmation(context, venue.id),

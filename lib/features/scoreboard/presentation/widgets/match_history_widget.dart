@@ -75,9 +75,12 @@ class MatchHistoryWidget extends StatelessWidget {
 
   Widget _buildMatchCard(BuildContext context, MatchResult match) {
     final dateFormat = DateFormat('d MMM yyyy');
-    final winnerIds = match.winner == 'Team A' ? match.teamAIds : match.teamBIds;
-    final winnerName =
-        match.winner == 'Team A' ? match.teamAName : match.teamBName;
+    final winnerIds = match.winner == 'Team A'
+        ? match.teamAIds
+        : match.teamBIds;
+    final winnerName = match.winner == 'Team A'
+        ? match.teamAName
+        : match.teamBName;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -132,10 +135,7 @@ class MatchHistoryWidget extends StatelessWidget {
                     // Baris Bawah: Tanggal & Poin
                     Text(
                       '${dateFormat.format(match.playedAt)} • ${_getScoreSummary(match)}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -206,7 +206,9 @@ class _StackedAvatars extends StatelessWidget {
       child: Stack(
         children: List.generate(uids.length, (index) {
           return Positioned(
-            left: index * 16.0, // Distance overlap (approx -5 from original circle size)
+            left:
+                index *
+                16.0, // Distance overlap (approx -5 from original circle size)
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
