@@ -23,6 +23,7 @@ VenueModel _$VenueModelFromJson(Map<String, dynamic> json) => VenueModel(
   rating: (json['rating'] as num).toDouble(),
   minPrice: (json['minPrice'] as num).toInt(),
   isVerified: json['isVerified'] as bool? ?? false,
+  operatingHours: json['operatingHours'] as Map<String, dynamic>?,
 );
 
 Map<String, dynamic> _$VenueModelToJson(VenueModel instance) =>
@@ -38,5 +39,6 @@ Map<String, dynamic> _$VenueModelToJson(VenueModel instance) =>
       'rating': instance.rating,
       'minPrice': instance.minPrice,
       'isVerified': instance.isVerified,
+      'operatingHours': instance.operatingHours,
       'location': VenueModel._locationToJson(instance.location),
     };

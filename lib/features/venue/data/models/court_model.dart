@@ -12,6 +12,8 @@ class CourtModel extends Court {
     required super.sportType,
     required super.hourlyPrice,
     super.isActive = true,
+    super.surfaceType = 'Standard',
+    super.isIndoor = true,
   });
 
   factory CourtModel.fromJson(Map<String, dynamic> json) =>
@@ -27,6 +29,8 @@ class CourtModel extends Court {
       sportType: data['sportType'] as String? ?? '',
       hourlyPrice: (data['hourlyPrice'] as num? ?? 0).toInt(),
       isActive: data['isActive'] as bool? ?? true,
+      surfaceType: data['surfaceType'] as String? ?? 'Standard',
+      isIndoor: data['isIndoor'] as bool? ?? true,
     );
   }
 }

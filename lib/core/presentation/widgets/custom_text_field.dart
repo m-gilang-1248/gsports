@@ -12,6 +12,7 @@ class CustomTextField extends StatefulWidget {
   final Function(String)? onFieldSubmitted;
   final bool enabled;
   final Widget? prefixIcon;
+  final int maxLines;
 
   const CustomTextField({
     super.key,
@@ -25,6 +26,7 @@ class CustomTextField extends StatefulWidget {
     this.onFieldSubmitted,
     this.enabled = true,
     this.prefixIcon,
+    this.maxLines = 1,
   });
 
   @override
@@ -50,6 +52,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       textInputAction: widget.textInputAction,
       onFieldSubmitted: widget.onFieldSubmitted,
       enabled: widget.enabled,
+      maxLines: widget.maxLines,
       style: const TextStyle(color: AppColors.textPrimary),
       decoration: InputDecoration(
         labelText: widget.label,

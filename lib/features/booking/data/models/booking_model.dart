@@ -29,6 +29,7 @@ class BookingModel extends Booking {
     required super.id,
     required super.userId,
     required super.venueId,
+    super.ownerId,
     required super.courtId,
     required super.sportType,
     required super.date,
@@ -59,6 +60,7 @@ class BookingModel extends Booking {
       id: doc.id,
       userId: data['userId'] as String,
       venueId: data['venueId'] as String,
+      ownerId: data['ownerId'] as String?,
       courtId: data['courtId'] as String,
       sportType: data['sportType'] as String,
       date: (data['date'] as Timestamp).toDate(),
@@ -98,6 +100,7 @@ class BookingModel extends Booking {
     json['participants'] = participants.map((p) => p.toJson()).toList();
     json['participantIds'] = participantIds;
     json['createdAt'] = Timestamp.fromDate(createdAt);
+    if (ownerId != null) json['ownerId'] = ownerId;
     return json;
   }
 }

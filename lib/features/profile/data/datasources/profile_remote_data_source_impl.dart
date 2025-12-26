@@ -1,22 +1,23 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloudinary_public/cloudinary_public.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:injectable/injectable.dart';
 import 'package:gsports/core/error/exceptions.dart';
 import 'package:gsports/features/auth/data/models/user_model.dart';
 import 'package:gsports/features/scoreboard/data/models/match_result_model.dart';
+import 'package:gsports/core/services/cloudinary_service.dart';
 import 'profile_remote_data_source.dart';
 
 @LazySingleton(as: ProfileRemoteDataSource)
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final FirebaseFirestore firestore;
   final FirebaseAuth firebaseAuth;
+  final CloudinaryService cloudinaryService;
 
   ProfileRemoteDataSourceImpl({
     required this.firestore,
     required this.firebaseAuth,
+    required this.cloudinaryService,
   });
 
   @override
@@ -47,33 +48,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
       // 1. Upload image if present (Using Cloudinary)
       if (imageFile != null) {
-        final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
-        final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'];
-
-        if (cloudName == null ||
-            uploadPreset == null ||
-            cloudName.isEmpty ||
-            uploadPreset.isEmpty) {
-          throw ServerException("Cloudinary configuration missing in .env");
-        }
-
-        final cloudinary = CloudinaryPublic(
-          cloudName,
-          uploadPreset,
-          cache: false,
+        imageUrl = await cloudinaryService.uploadImage(
+          imageFile,
+          folder: 'profile_pics',
         );
-
-        try {
-          final response = await cloudinary.uploadFile(
-            CloudinaryFile.fromFile(
-              imageFile.path,
-              resourceType: CloudinaryResourceType.Image,
-            ),
-          );
-          imageUrl = response.secureUrl;
-        } catch (e) {
-          throw ServerException("Cloudinary Upload Failed: $e");
-        }
       }
 
       // 2. Prepare update data for Firestore

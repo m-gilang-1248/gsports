@@ -24,6 +24,7 @@ class VenueModel extends Venue {
     required super.rating,
     required super.minPrice,
     super.isVerified = false,
+    super.operatingHours,
   }) : super(location: location);
 
   factory VenueModel.fromJson(Map<String, dynamic> json) =>
@@ -46,6 +47,7 @@ class VenueModel extends Venue {
       rating: (data['rating'] as num? ?? 0.0).toDouble(),
       minPrice: (data['minPrice'] as num? ?? 0).toInt(),
       isVerified: data['isVerified'] as bool? ?? false,
+      operatingHours: data['operatingHours'] as Map<String, dynamic>?,
     );
   }
 

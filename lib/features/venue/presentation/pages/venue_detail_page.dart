@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/facility_data.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:gsports/features/booking/presentation/widgets/booking_bottom_sheet.dart';
 import 'package:gsports/features/booking/presentation/widgets/booking_time_slot_grid.dart';
@@ -378,9 +379,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         children: venue.facilities.map((facility) {
                           return Chip(
                             label: Text(facility),
-                            avatar: const Icon(
-                              Icons.check_circle,
-                              size: 16,
+                            avatar: Icon(
+                              kFacilityIcons[facility] ?? Icons.check_circle,
+                              size: 18,
                               color: AppColors.primary,
                             ),
                             backgroundColor: AppColors.surface,

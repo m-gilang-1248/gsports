@@ -23,6 +23,7 @@ class BookingRepositoryImpl implements BookingRepository {
         id: '', // Firestore will assign an ID, so pass empty string
         userId: booking.userId,
         venueId: booking.venueId,
+        ownerId: booking.ownerId,
         courtId: booking.courtId,
         venueName: booking.venueName,
         courtName: booking.courtName,

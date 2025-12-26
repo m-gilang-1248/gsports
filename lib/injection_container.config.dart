@@ -18,6 +18,7 @@ import 'package:injectable/injectable.dart' as _i526;
 
 import 'core/injection_modules/firebase_module.dart' as _i896;
 import 'core/injection_modules/network_module.dart' as _i559;
+import 'core/services/cloudinary_service.dart' as _i586;
 import 'features/auth/data/datasources/auth_remote_data_source.dart' as _i767;
 import 'features/auth/data/repositories/auth_repository_impl.dart' as _i111;
 import 'features/auth/domain/repositories/auth_repository.dart' as _i1015;
@@ -47,6 +48,36 @@ import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
 import 'features/booking/presentation/bloc/detail/booking_detail_bloc.dart'
     as _i176;
 import 'features/booking/presentation/bloc/history/history_bloc.dart' as _i1064;
+import 'features/partner/dashboard/data/datasources/partner_remote_data_source.dart'
+    as _i266;
+import 'features/partner/dashboard/data/repositories/partner_repository_impl.dart'
+    as _i18;
+import 'features/partner/dashboard/domain/repositories/partner_repository.dart'
+    as _i848;
+import 'features/partner/dashboard/domain/usecases/get_partner_stats.dart'
+    as _i506;
+import 'features/partner/dashboard/presentation/bloc/partner_dashboard_bloc.dart'
+    as _i453;
+import 'features/partner/venue_management/data/datasources/venue_management_remote_data_source.dart'
+    as _i257;
+import 'features/partner/venue_management/data/repositories/venue_management_repository_impl.dart'
+    as _i327;
+import 'features/partner/venue_management/domain/repositories/venue_management_repository.dart'
+    as _i164;
+import 'features/partner/venue_management/domain/usecases/create_venue.dart'
+    as _i963;
+import 'features/partner/venue_management/domain/usecases/delete_venue.dart'
+    as _i231;
+import 'features/partner/venue_management/domain/usecases/get_my_venues.dart'
+    as _i829;
+import 'features/partner/venue_management/domain/usecases/manage_courts_usecases.dart'
+    as _i340;
+import 'features/partner/venue_management/domain/usecases/update_venue.dart'
+    as _i600;
+import 'features/partner/venue_management/presentation/bloc/court_management_bloc.dart'
+    as _i152;
+import 'features/partner/venue_management/presentation/bloc/venue_management_bloc.dart'
+    as _i155;
 import 'features/payment/data/datasources/payment_remote_data_source.dart'
     as _i692;
 import 'features/payment/data/repositories/payment_repository_impl.dart'
@@ -95,26 +126,37 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i116.GoogleSignIn>(() => firebaseModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => networkModule.httpClient);
+    gh.lazySingleton<_i586.CloudinaryService>(() => _i586.CloudinaryService());
     gh.lazySingleton<_i1039.VenueRemoteDataSource>(
       () => _i1039.VenueRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
     );
     gh.lazySingleton<_i97.BookingRemoteDataSource>(
       () => _i97.BookingRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
     );
-    gh.lazySingleton<_i104.ScoreboardRemoteDataSource>(
-      () => _i104.ScoreboardRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
-    );
-    gh.factory<_i997.VenueRepository>(
-      () => _i346.VenueRepositoryImpl(gh<_i1039.VenueRemoteDataSource>()),
-    );
     gh.lazySingleton<_i336.ProfileRemoteDataSource>(
       () => _i864.ProfileRemoteDataSourceImpl(
         firestore: gh<_i974.FirebaseFirestore>(),
         firebaseAuth: gh<_i59.FirebaseAuth>(),
+        cloudinaryService: gh<_i586.CloudinaryService>(),
       ),
+    );
+    gh.lazySingleton<_i104.ScoreboardRemoteDataSource>(
+      () => _i104.ScoreboardRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
+    gh.lazySingleton<_i266.PartnerRemoteDataSource>(
+      () => _i266.PartnerRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
+    gh.factory<_i997.VenueRepository>(
+      () => _i346.VenueRepositoryImpl(gh<_i1039.VenueRemoteDataSource>()),
     );
     gh.factory<_i829.BookingRepository>(
       () => _i703.BookingRepositoryImpl(gh<_i97.BookingRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i257.VenueManagementRemoteDataSource>(
+      () => _i257.VenueManagementRemoteDataSourceImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i586.CloudinaryService>(),
+      ),
     );
     gh.factory<_i556.ScoreboardRepository>(
       () => _i107.ScoreboardRepositoryImpl(
@@ -169,6 +211,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1015.JoinBooking>(
       () => _i1015.JoinBooking(gh<_i829.BookingRepository>()),
     );
+    gh.factory<_i164.VenueManagementRepository>(
+      () => _i327.VenueManagementRepositoryImpl(
+        gh<_i257.VenueManagementRemoteDataSource>(),
+      ),
+    );
     gh.lazySingleton<_i606.GetVenueCourts>(
       () => _i606.GetVenueCourts(gh<_i997.VenueRepository>()),
     );
@@ -181,11 +228,38 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i626.ProfileRepository>(
       () => _i277.ProfileRepositoryImpl(gh<_i336.ProfileRemoteDataSource>()),
     );
+    gh.factory<_i848.PartnerRepository>(
+      () => _i18.PartnerRepositoryImpl(gh<_i266.PartnerRemoteDataSource>()),
+    );
     gh.factory<_i810.GetUserStats>(
       () => _i810.GetUserStats(gh<_i626.ProfileRepository>()),
     );
     gh.factory<_i759.UpdateProfile>(
       () => _i759.UpdateProfile(gh<_i626.ProfileRepository>()),
+    );
+    gh.lazySingleton<_i963.CreateVenue>(
+      () => _i963.CreateVenue(gh<_i164.VenueManagementRepository>()),
+    );
+    gh.lazySingleton<_i231.DeleteVenue>(
+      () => _i231.DeleteVenue(gh<_i164.VenueManagementRepository>()),
+    );
+    gh.lazySingleton<_i829.GetMyVenues>(
+      () => _i829.GetMyVenues(gh<_i164.VenueManagementRepository>()),
+    );
+    gh.lazySingleton<_i340.GetManagedVenueCourts>(
+      () => _i340.GetManagedVenueCourts(gh<_i164.VenueManagementRepository>()),
+    );
+    gh.lazySingleton<_i340.AddCourt>(
+      () => _i340.AddCourt(gh<_i164.VenueManagementRepository>()),
+    );
+    gh.lazySingleton<_i340.UpdateCourt>(
+      () => _i340.UpdateCourt(gh<_i164.VenueManagementRepository>()),
+    );
+    gh.lazySingleton<_i340.DeleteCourt>(
+      () => _i340.DeleteCourt(gh<_i164.VenueManagementRepository>()),
+    );
+    gh.lazySingleton<_i600.UpdateVenue>(
+      () => _i600.UpdateVenue(gh<_i164.VenueManagementRepository>()),
     );
     gh.factory<_i648.SignInWithGoogle>(
       () => _i648.SignInWithGoogle(gh<_i1015.AuthRepository>()),
@@ -209,6 +283,9 @@ extension GetItInjectableX on _i174.GetIt {
         getVenueCourts: gh<_i606.GetVenueCourts>(),
       ),
     );
+    gh.lazySingleton<_i506.GetPartnerStats>(
+      () => _i506.GetPartnerStats(gh<_i848.PartnerRepository>()),
+    );
     gh.factory<_i363.AuthBloc>(
       () => _i363.AuthBloc(
         gh<_i818.CheckAuthStatus>(),
@@ -228,6 +305,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i376.PaymentRepository>(
       () => _i210.PaymentRepositoryImpl(gh<_i692.PaymentRemoteDataSource>()),
     );
+    gh.factory<_i453.PartnerDashboardBloc>(
+      () => _i453.PartnerDashboardBloc(
+        gh<_i506.GetPartnerStats>(),
+        gh<_i59.FirebaseAuth>(),
+      ),
+    );
+    gh.factory<_i152.CourtManagementBloc>(
+      () => _i152.CourtManagementBloc(
+        gh<_i340.GetManagedVenueCourts>(),
+        gh<_i340.AddCourt>(),
+        gh<_i340.UpdateCourt>(),
+        gh<_i340.DeleteCourt>(),
+      ),
+    );
     gh.factory<_i284.ProfileBloc>(
       () => _i284.ProfileBloc(
         authRepository: gh<_i1015.AuthRepository>(),
@@ -240,6 +331,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i326.GetTransactionStatus>(
       () => _i326.GetTransactionStatus(gh<_i376.PaymentRepository>()),
+    );
+    gh.factory<_i155.VenueManagementBloc>(
+      () => _i155.VenueManagementBloc(
+        getMyVenues: gh<_i829.GetMyVenues>(),
+        createVenue: gh<_i963.CreateVenue>(),
+        updateVenue: gh<_i600.UpdateVenue>(),
+        deleteVenue: gh<_i231.DeleteVenue>(),
+        firebaseAuth: gh<_i59.FirebaseAuth>(),
+      ),
     );
     gh.factory<_i176.BookingDetailBloc>(
       () => _i176.BookingDetailBloc(

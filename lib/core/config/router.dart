@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -11,10 +12,15 @@ import 'package:gsports/features/home/presentation/pages/search_page.dart';
 import 'package:gsports/features/venue/presentation/pages/venue_detail_page.dart';
 import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_detail_page.dart';
-import 'package:gsports/features/partner/presentation/pages/owner_dashboard_page.dart';
+import 'package:gsports/features/partner/dashboard/presentation/pages/owner_dashboard_page.dart';
+import 'package:gsports/features/partner/venue_management/presentation/pages/manage_venues_page.dart';
+import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_venue_page.dart';
+import 'package:gsports/features/partner/venue_management/presentation/pages/venue_courts_page.dart';
+import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_court_page.dart';
 import 'package:gsports/features/profile/presentation/pages/edit_profile_page.dart';
+import 'package:gsports/features/venue/domain/entities/venue.dart';
+import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:gsports/features/scoreboard/presentation/pages/scoreboard_page.dart';
-
 import 'package:gsports/features/scoreboard/presentation/pages/match_recap_page.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
 
@@ -24,7 +30,7 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/',
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final user = FirebaseAuth.instance.currentUser;
       final isLoggedIn = user != null;
       final path = state.uri.path;
@@ -40,9 +46,31 @@ class AppRouter {
 
       // Auth Skip: Redirect authenticated user away from auth pages
       if (isLoggedIn && (path == '/login' || path == '/register')) {
-        // Here we could ideally check roles, but for now we default to home
-        // Role check would usually require a Bloc state or Firestore fetch
         return '/home';
+      }
+
+      // Role Guard for Partner Routes
+      final isPartnerRoute =
+          path.startsWith('/owner') ||
+          path.startsWith('/manage-venues') ||
+          path.startsWith('/add-venue') ||
+          path.startsWith('/edit-venue') ||
+          path.startsWith('/venue-courts');
+
+      if (isLoggedIn && isPartnerRoute) {
+        try {
+          final doc =
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .get();
+          final role = doc.data()?['role'] as String?;
+          if (role != 'mitra') {
+            return '/home';
+          }
+        } catch (e) {
+          return '/home';
+        }
       }
 
       return null;
@@ -58,6 +86,49 @@ class AppRouter {
       GoRoute(
         path: '/owner-dashboard',
         builder: (context, state) => const OwnerDashboardPage(),
+      ),
+      GoRoute(
+        path: '/manage-venues',
+        builder: (context, state) => const ManageVenuesPage(),
+      ),
+      GoRoute(
+        path: '/add-venue',
+        builder: (context, state) => const AddEditVenuePage(),
+      ),
+      GoRoute(
+        path: '/edit-venue',
+        builder: (context, state) {
+          final venue = state.extra as Venue;
+          return AddEditVenuePage(venue: venue);
+        },
+      ),
+      GoRoute(
+        path: '/venue-courts/:venueId',
+        builder: (context, state) {
+          final venueName = state.extra as String? ?? 'Venue';
+          return VenueCourtsPage(
+            venueId: state.pathParameters['venueId']!,
+            venueName: venueName,
+          );
+        },
+        routes: [
+          GoRoute(
+            path: 'add',
+            builder: (context, state) => AddEditCourtPage(
+              venueId: state.pathParameters['venueId']!,
+            ),
+          ),
+          GoRoute(
+            path: 'edit',
+            builder: (context, state) {
+              final court = state.extra as Court;
+              return AddEditCourtPage(
+                venueId: state.pathParameters['venueId']!,
+                court: court,
+              );
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: '/search',

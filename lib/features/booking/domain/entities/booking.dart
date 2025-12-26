@@ -5,6 +5,7 @@ class Booking extends Equatable {
   final String id;
   final String userId;
   final String venueId;
+  final String? ownerId; // Added ownerId
   final String courtId;
   final String sportType;
   final DateTime date; // YYYY-MM-DD 00:00:00
@@ -33,6 +34,7 @@ class Booking extends Equatable {
     required this.id,
     required this.userId,
     required this.venueId,
+    this.ownerId,
     required this.courtId,
     required this.sportType,
     required this.date,
@@ -59,6 +61,7 @@ class Booking extends Equatable {
     id,
     userId,
     venueId,
+    ownerId,
     courtId,
     sportType,
     date,

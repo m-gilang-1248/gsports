@@ -156,6 +156,7 @@ class BookingBottomSheet extends StatelessWidget {
                       .toString(), // Temp ID
                   userId: user.uid,
                   venueId: venue.id,
+                  ownerId: venue.ownerId,
                   courtId: court.id,
                   venueName: venue.name,
                   courtName: court.name,

@@ -14,6 +14,7 @@ class Venue extends Equatable {
   final double rating;
   final int minPrice;
   final bool isVerified;
+  final Map<String, dynamic>? operatingHours; // Added operatingHours
 
   const Venue({
     required this.id,
@@ -28,6 +29,7 @@ class Venue extends Equatable {
     required this.rating,
     required this.minPrice,
     required this.isVerified,
+    this.operatingHours,
   });
 
   @override
@@ -44,5 +46,6 @@ class Venue extends Equatable {
     rating,
     minPrice,
     isVerified,
+    operatingHours,
   ];
 }
