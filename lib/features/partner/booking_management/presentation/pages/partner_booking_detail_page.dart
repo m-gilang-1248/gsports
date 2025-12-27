@@ -57,6 +57,8 @@ class _PartnerBookingDetailView extends StatelessWidget {
                       children: [
                         _buildHeaderStatus(booking),
                         const SizedBox(height: 16),
+                        _buildOrderMetadata(booking),
+                        const SizedBox(height: 16),
                         _buildUserSection(booking),
                         const SizedBox(height: 16),
                         _buildBookingInfoCard(context, booking),
@@ -72,6 +74,61 @@ class _PartnerBookingDetailView extends StatelessWidget {
           }
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Widget _buildOrderMetadata(Booking booking) {
+    final createdFormat = DateFormat('d MMM yyyy, HH:mm', 'id_ID');
+    // Use midtransOrderId for display if available (looks more professional), else use ID
+    final displayId = booking.midtransOrderId ?? booking.id;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Kode Pesanan',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              SelectableText(
+                displayId,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Waktu Pemesanan',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              Text(
+                createdFormat.format(booking.createdAt),
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -159,25 +216,29 @@ class _PartnerBookingDetailView extends StatelessWidget {
                 ? NetworkImage(host.profileUrl!)
                 : null,
             child: host.profileUrl == null
-                ? Text(host.name[0].toUpperCase())
+                ? Text(
+                  host.name.isNotEmpty ? host.name[0].toUpperCase() : 'G',
+                )
                 : null,
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                host.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  host.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              const Text(
-                'Pemesan (Host)',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ],
+                const Text(
+                  'Pemesan (Host)',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -209,20 +270,84 @@ class _PartnerBookingDetailView extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const Divider(height: 24),
-          _infoRow(Icons.stadium, booking.venueName ?? '-'),
-          const SizedBox(height: 12),
-          _infoRow(Icons.category, booking.sportType.toUpperCase()),
-          const SizedBox(height: 12),
-          _infoRow(Icons.sports_tennis, booking.courtName ?? '-'),
-          const SizedBox(height: 12),
-          _infoRow(Icons.calendar_today, dateFormat.format(booking.date)),
-          const SizedBox(height: 12),
-          _infoRow(
-            Icons.access_time,
-            '${timeFormat.format(booking.startTime)} - ${timeFormat.format(booking.endTime)}',
+          _buildDetailItem(
+            icon: Icons.stadium,
+            label: 'Venue',
+            value: booking.venueName ?? '-',
+          ),
+          const SizedBox(height: 16),
+          _buildDetailItem(
+            icon: Icons.sports_tennis,
+            label: 'Lapangan',
+            value: booking.courtName ?? '-',
+          ),
+          const SizedBox(height: 16),
+          _buildDetailItem(
+            icon: Icons.category,
+            label: 'Tipe Olahraga',
+            value: booking.sportType.toUpperCase(),
+          ),
+          const SizedBox(height: 16),
+          _buildDetailItem(
+            icon: Icons.calendar_today,
+            label: 'Tanggal Main',
+            value: dateFormat.format(booking.date),
+          ),
+          const SizedBox(height: 16),
+          _buildDetailItem(
+            icon: Icons.access_time,
+            label: 'Jam Main',
+            value:
+                '${timeFormat.format(booking.startTime)} - ${timeFormat.format(booking.endTime)}',
+          ),
+          const SizedBox(height: 16),
+          _buildDetailItem(
+            icon: Icons.timer_outlined,
+            label: 'Durasi',
+            value: '${booking.durationHours} Jam',
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDetailItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: AppColors.textSecondary),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
