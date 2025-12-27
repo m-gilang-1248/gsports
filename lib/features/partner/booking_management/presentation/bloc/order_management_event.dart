@@ -9,6 +9,15 @@ abstract class OrderManagementEvent extends Equatable {
 
 class FetchPartnerBookings extends OrderManagementEvent {}
 
+class PartnerBookingsUpdated extends OrderManagementEvent {
+  final List<Booking> bookings;
+
+  const PartnerBookingsUpdated(this.bookings);
+
+  @override
+  List<Object?> get props => [bookings];
+}
+
 class UpdateCalendarFocusedDay extends OrderManagementEvent {
   final DateTime focusedDay;
   final DateTime? selectedDay;

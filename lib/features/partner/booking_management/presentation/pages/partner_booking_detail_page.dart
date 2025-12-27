@@ -211,6 +211,8 @@ class _PartnerBookingDetailView extends StatelessWidget {
           const Divider(height: 24),
           _infoRow(Icons.stadium, booking.venueName ?? '-'),
           const SizedBox(height: 12),
+          _infoRow(Icons.category, booking.sportType.toUpperCase()),
+          const SizedBox(height: 12),
           _infoRow(Icons.sports_tennis, booking.courtName ?? '-'),
           const SizedBox(height: 12),
           _infoRow(Icons.calendar_today, dateFormat.format(booking.date)),
@@ -279,6 +281,8 @@ class _PartnerBookingDetailView extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final isManualBooking =
+        booking.midtransOrderId?.startsWith('MANUAL') ?? false;
     final bloc = context.read<BookingDetailBloc>();
 
     return Container(
@@ -320,8 +324,8 @@ class _PartnerBookingDetailView extends StatelessWidget {
                 child: const Text('Tolak / Batal'),
               ),
             ),
-            // Tombol Terima / Konfirmasi (Hanya jika belum paid)
-            if (booking.status != 'paid') ...[
+            // Tombol Terima / Konfirmasi (Hanya jika belum paid DAN bukan manual booking)
+            if (booking.status != 'paid' && !isManualBooking) ...[
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(

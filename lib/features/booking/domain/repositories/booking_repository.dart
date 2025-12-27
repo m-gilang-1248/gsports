@@ -18,6 +18,9 @@ abstract class BookingRepository {
   );
   Future<Either<Failure, List<Booking>>> getMyBookings(String userId);
   Future<Either<Failure, List<Booking>>> getPartnerBookings(String ownerId);
+  Stream<Either<Failure, List<Booking>>> getPartnerBookingsStream(
+    String ownerId,
+  );
   Future<Either<Failure, void>> generateSplitCode(String bookingId);
   Future<Either<Failure, String>> joinBooking(
     String splitCode,

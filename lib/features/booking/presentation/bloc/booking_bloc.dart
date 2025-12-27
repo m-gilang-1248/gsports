@@ -154,6 +154,12 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     await bookingResult.fold(
       (failure) async => emit(BookingFailure(failure.message)),
       (bookingId) async {
+        // If booking is already paid (e.g. Manual Booking), skip Midtrans
+        if (event.booking.status == 'paid') {
+          emit(BookingPaidSuccess(bookingId));
+          return;
+        }
+
         // Assuming bookingId is also the orderId for Midtrans
         // And event.booking.totalPrice is the amount
         final invoiceResult = await createInvoice(

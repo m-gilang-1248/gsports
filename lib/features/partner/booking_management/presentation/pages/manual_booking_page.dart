@@ -39,6 +39,7 @@ class _ManualBookingView extends StatefulWidget {
 
 class _ManualBookingViewState extends State<_ManualBookingView> {
   Venue? _selectedVenue;
+  String? _selectedSportType;
   Court? _selectedCourt;
   DateTime _selectedDate = DateTime.now();
   final List<DateTime> _selectedSlots = [];
@@ -66,7 +67,7 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Booking manual berhasil disimpan')),
             );
-            Navigator.pop(context, true);
+            if (mounted) Navigator.pop(context, true);
           } else if (state is BookingFailure) {
             ScaffoldMessenger.of(
               context,
@@ -103,6 +104,7 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                       onChanged: (v) {
                         setState(() {
                           _selectedVenue = v;
+                          _selectedSportType = null;
                           _selectedCourt = null;
                           _selectedSlots.clear();
                         });
@@ -119,8 +121,57 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
               ),
               const SizedBox(height: 16),
 
-              // 2. Court Selection
+              // 2. Sport Type Selection (New Step)
               if (_selectedVenue != null) ...[
+                const Text(
+                  'Pilih Tipe Olahraga',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                BlocBuilder<CourtManagementBloc, CourtManagementState>(
+                  builder: (context, state) {
+                    if (state is CourtManagementLoaded) {
+                      final sportTypes = state.courts
+                          .map((c) => c.sportType)
+                          .toSet()
+                          .toList();
+                      
+                      if (sportTypes.isEmpty) {
+                         return const Text('Belum ada lapangan di venue ini');
+                      }
+
+                      return DropdownButtonFormField<String>(
+                        initialValue: _selectedSportType,
+                        decoration: const InputDecoration(
+                          fillColor: Colors.white,
+                          filled: true,
+                          border: OutlineInputBorder(),
+                        ),
+                        items: sportTypes
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(s.toUpperCase()),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedSportType = val;
+                            _selectedCourt = null;
+                            _selectedSlots.clear();
+                          });
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ],
+              const SizedBox(height: 16),
+
+              // 3. Court Selection
+              if (_selectedSportType != null) ...[
                 const Text(
                   'Pilih Lapangan',
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -129,6 +180,10 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                 BlocBuilder<CourtManagementBloc, CourtManagementState>(
                   builder: (context, state) {
                     if (state is CourtManagementLoaded) {
+                      final filteredCourts = state.courts
+                          .where((c) => c.sportType == _selectedSportType)
+                          .toList();
+
                       return DropdownButtonFormField<Court>(
                         initialValue: _selectedCourt,
                         decoration: const InputDecoration(
@@ -136,7 +191,7 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                           filled: true,
                           border: OutlineInputBorder(),
                         ),
-                        items: state.courts
+                        items: filteredCourts
                             .map(
                               (c) => DropdownMenuItem(
                                 value: c,
@@ -166,7 +221,7 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
               ],
               const SizedBox(height: 16),
 
-              // 3. Date Selection
+              // 4. Date Selection
               if (_selectedCourt != null) ...[
                 const Text(
                   'Pilih Tanggal',

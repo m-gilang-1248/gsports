@@ -139,32 +139,53 @@ class _BookingListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (bookings.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text(
-              'Tidak ada pesanan',
-              style: TextStyle(color: Colors.grey[500]),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: bookings.length,
-      itemBuilder: (context, index) {
-        return BookingOrderCard(
-          booking: bookings[index],
-          onTap: () =>
-              context.push('/partner/booking-detail/${bookings[index].id}'),
-        );
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<OrderManagementBloc>().add(FetchPartnerBookings());
       },
+      child: bookings.isEmpty
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.inbox_outlined,
+                            size: 64,
+                            color: Colors.grey[300],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Tidak ada pesanan',
+                            style: TextStyle(color: Colors.grey[500]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: bookings.length,
+              itemBuilder: (context, index) {
+                return BookingOrderCard(
+                  booking: bookings[index],
+                  onTap: () => context.push(
+                    '/partner/booking-detail/${bookings[index].id}',
+                  ),
+                );
+              },
+            ),
     );
   }
 }

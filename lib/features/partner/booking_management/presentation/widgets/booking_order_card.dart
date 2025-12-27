@@ -50,21 +50,12 @@ class BookingOrderCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // ROW 1: Avatar + Username | Status
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: Text(
-                              booking.courtName ?? 'Lapangan',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+                          Expanded(child: _buildUserRow(booking)),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
@@ -85,35 +76,59 @@ class BookingOrderCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      _buildInfoRow(
-                        Icons.person_outline,
-                        booking.participants.isNotEmpty
-                            ? booking.participants.first.name
-                            : 'Guest',
+                      const SizedBox(height: 12),
+
+                      // ROW 2: Sport Type (Bold) + Court Name
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: '${booking.sportType.toUpperCase()} ',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            TextSpan(
+                              text: booking.courtName ?? 'Lapangan',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      _buildInfoRow(
-                        Icons.access_time,
-                        '${DateFormat('HH:mm').format(booking.startTime)} - ${DateFormat('HH:mm').format(booking.endTime)}',
-                      ),
-                      const SizedBox(height: 4),
-                      _buildInfoRow(
-                        Icons.calendar_today_outlined,
-                        DateFormat('d MMMM yyyy', 'id_ID').format(booking.date),
-                      ),
-                      const Divider(height: 24),
+                      const SizedBox(height: 12),
+
+                      // ROW 3: Date + Time | Price
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            booking.sportType.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildInfoRow(
+                                  Icons.calendar_today_outlined,
+                                  DateFormat(
+                                    'd MMMM yyyy',
+                                    'id_ID',
+                                  ).format(booking.date),
+                                ),
+                                const SizedBox(height: 4),
+                                _buildInfoRow(
+                                  Icons.access_time,
+                                  '${DateFormat('HH:mm').format(booking.startTime)} - ${DateFormat('HH:mm').format(booking.endTime)}',
+                                ),
+                              ],
                             ),
                           ),
+                          const SizedBox(width: 16),
                           Text(
                             currencyFormat.format(booking.totalPrice),
                             style: const TextStyle(
@@ -132,6 +147,48 @@ class BookingOrderCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildUserRow(Booking booking) {
+    final participant =
+        booking.participants.isNotEmpty ? booking.participants.first : null;
+    final name = participant?.name ?? 'Guest';
+    final profileUrl = participant?.profileUrl;
+
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 12,
+          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+          backgroundImage:
+              profileUrl != null ? NetworkImage(profileUrl) : null,
+          child:
+              profileUrl == null
+                  ? Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : 'G',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                  : null,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 

@@ -15,4 +15,8 @@ class GetPartnerBookings implements UseCase<List<Booking>, String> {
   Future<Either<Failure, List<Booking>>> call(String ownerId) async {
     return await repository.getPartnerBookings(ownerId);
   }
+
+  Stream<Either<Failure, List<Booking>>> callStream(String ownerId) {
+    return repository.getPartnerBookingsStream(ownerId);
+  }
 }
