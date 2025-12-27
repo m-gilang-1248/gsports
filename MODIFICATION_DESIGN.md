@@ -1,73 +1,131 @@
-# MODIFICATION DESIGN: Refined Owner Flow & Stability Fix
+# MODIFICATION DESIGN: Sprint 11 - Order Management (Mitra)
 
-## Overview
-This document outlines the plan to resolve application crashes (ANR) during court management and to refine the user flow for Owner (Partner) users. The primary focus is on stability, correct state management scoping, and logical navigation.
+**Date:** 27 December 2025
+**Status:** Planned
+**Target Module:** `features/partner/booking_management`
 
-## Detailed Analysis
+## 1. Overview
+Fitur ini memberikan kemampuan bagi Mitra (Owner Venue) untuk mengelola pesanan yang masuk, melihat jadwal dalam bentuk kalender, dan melakukan pemblokiran slot secara manual (untuk tamu walk-in/offline).
 
-### 1. The Crash (ANR)
-The user reported an immediate force close when navigating to the "Add Court" page. 
-**Likely Causes:**
-- **Syntactic Error:** `DropdownButtonFormField` was used with `initialValue`, which is not a valid parameter. This causes a build-time exception that, if unhandled during a critical bridge initialization, can lead to hangs.
-- **Provider Error:** `CourtManagementBloc` is provided in `VenueCourtsPage`, but not in its sub-route `AddEditCourtPage`. Accessing `context.read<CourtManagementBloc>()` in the child route throws a `ProviderNotFoundException`.
-- **WebView Conflict:** The log mentions `AndroidWebkitLibraryPigeonInstanceManager`. This might be a side effect of how errors are handled on the device or a conflict with a background process.
+## 2. Dependencies
+*   `table_calendar`: ^3.2.0 (Added)
+*   `intl`: (Existing)
+*   `flutter_bloc`: (Existing)
 
-### 2. User Flow Refinement
-The current flow needs to be more "Dedicated":
-- **Dashboard:** Stats overview + Quick access to recent venues.
-- **Venue Management:** List all owned venues.
-- **Court Management:** Deep-dive into a specific venue to manage its courts and pricing.
+## 3. Architecture & Data Layer
 
-## Proposed Design
+### A. Firestore Query Update
+*   **Collection:** `bookings`
+*   **Index Requirement:** `ownerId` (Ascending) + `date` (Ascending).
+*   **Query Pattern:**
+    ```dart
+    firestore.collection('bookings')
+      .where('ownerId', isEqualTo: currentUserId)
+      .orderBy('date', descending: true) // Newest dates first
+      .get();
+    ```
 
-### A. Correct State Management (GoRouter Integration)
-We will refactor the router to ensure that sub-routes have access to the necessary Blocs. Instead of simple `builder` returns, we will wrap sub-route widgets in `BlocProvider` if they are part of a shared logical flow.
+### B. Domain Layer Extensions
+Lokasi: `lib/features/booking/domain/`
 
-### B. Widget Fixes
-- Replace `initialValue` with `value` in all `DropdownButtonFormField` instances.
-- Ensure all required parameters are passed to `Court` and `Venue` entities.
+1.  **New UseCase:** `GetPartnerBookings`
+    *   **Input:** `ownerId` (String)
+    *   **Output:** `List<Booking>`
+    *   **Logic:** Memanggil repository untuk mengambil semua booking milik mitra.
 
-### C. Refined Navigation Tree
-```mermaid
-graph TD
-    Dashboard["Owner Dashboard"] -->|FAB| AddVenue["Add Venue Page"]
-    Dashboard -->|View All| ManageVenues["Manage Venues Page"]
-    Dashboard -->|Tap Venue| VenueCourts["Venue Courts Page"]
-    
-    ManageVenues -->|FAB| AddVenue
-    ManageVenues -->|Edit Icon| EditVenue["Edit Venue Page"]
-    ManageVenues -->|Tap Card| VenueCourts
-    
-    VenueCourts -->|FAB| AddCourt["Add/Edit Court Page"]
-    VenueCourts -->|Edit Icon| AddCourt
+2.  **Existing UseCase Reuse:** `CreateBooking`
+    *   Digunakan untuk fitur "Manual Blocking" (Walk-in).
+    *   Payload khusus: `paymentStatus: 'manual_offline'`, `status: 'paid'`.
+
+### C. Repository Interface Update
+File: `lib/features/booking/domain/repositories/booking_repository.dart`
+```dart
+Future<Either<Failure, List<Booking>>> getPartnerBookings(String ownerId);
 ```
 
-### D. Detailed Implementation Logic
+## 4. UI/UX Design
 
-1.  **Router Update:**
-    - Provide `VenueManagementBloc` to `/manage-venues`, `/add-venue`, and `/edit-venue`.
-    - Provide `CourtManagementBloc` to `/venue-courts/:venueId` and its sub-routes.
-    - This prevents `ProviderNotFoundException`.
+### A. Entry Point
+*   **Page:** `OwnerDashboardPage`
+*   **Component:** Tambahkan Menu/Card baru di grid atau list navigasi bernama "Order Management" atau "Jadwal Pesanan".
 
-2.  **Entity/Model Synchronization:**
-    - Ensure `CourtModel.fromFirestore` and `toJson` correctly handle `surfaceType` and `isIndoor`.
+### B. Order Management Page (`OrderManagementPage`)
+Halaman utama dengan struktur Tab View.
 
-3.  **UI Polish:**
-    - Use `DropdownSearch` or similar for long lists (like Indonesian Cities) if available, or keep the existing API-based dynamic dropdowns but fix the `value` parameter.
+**Structure:**
+*   **AppBar:** Title "Pesanan Masuk".
+*   **Body:**
+    *   **Mode Toggle:** Segmented Button [List View | Calendar View]
+    *   **View 1: List View (Tabbed)**
+        *   **Tab 1: Perlu Konfirmasi** (`status == 'waiting_payment'`)
+            *   *Note:* Di MVP ini, mostly `waiting_payment` dari Midtrans. Jika nanti ada fitur manual transfer, tab ini krusial.
+        *   **Tab 2: Jadwal** (`status == 'paid'`)
+            *   List booking aktif yang akan datang.
+        *   **Tab 3: Riwayat** (`status == 'completed' || 'cancelled'`)
+            *   Arsip pesanan lampau.
+    *   **View 2: Calendar View**
+        *   Widget: `TableCalendar`.
+        *   **Markers:** Dot marker di tanggal yang memiliki booking.
+        *   **OnDaySelected:** Tampilkan BottomSheet atau List di bawah kalender berisi booking pada tanggal tersebut.
 
-## Alternatives Considered
-- **Global Bloc Provision:** Providing all management Blocs at the root of the app. 
-    - *Pros:* Simpler.
-    - *Cons:* Wasteful of resources for regular users who never see the owner side.
-- **Manual Bloc Passing:** Passing the Bloc instance via `extra` in GoRouter.
-    - *Pros:* Precise.
-    - *Cons:* Breaks if the user deep-links or refreshes the app (for web).
+**UI Components:**
+*   `BookingOrderCard`:
+    *   Info: Jam Main, Nama Lapangan, Nama User (Host).
+    *   Status Strip: Warna visual di kiri card (Kuning=Pending, Hijau=Paid, Merah=Cancel, Abu=Selesai).
 
-**Chosen Approach:** Route-scoped `BlocProvider` in the `AppRouter` configuration.
+### C. Manual Blocking Form (`ManualBookingPage`)
+Fitur untuk memblokir slot bagi tamu offline.
 
-## Summary
-By fixing the widget syntax and ensuring proper Bloc scoping in the router, we eliminate the primary triggers for crashes and exceptions. The refined flow provides a professional management experience for venue owners.
+*   **Trigger:** FAB "Input Manual" di halaman `OrderManagementPage`.
+*   **Form Fields:**
+    1.  **Select Venue:** Dropdown (Load from `VenueManagementBloc`).
+    2.  **Select Court:** Dropdown (Dependent on Venue).
+    3.  **Date Picker:** Pilih Tanggal.
+    4.  **Time Slots:** Grid Selection (Reuse logic from Booking User Side).
+    5.  **Customer Name:** Text Field (Optional, default "Walk-in Guest").
+*   **Submit Action:**
+    *   Create Booking dengan:
+        *   `userId`: `ownerId` (Self-booking) atau dedicated 'guest_offline' ID.
+        *   `paymentStatus`: `manual_offline`.
+        *   `status`: `paid` (Langsung confirm).
 
-## Research
-- `webview_flutter` Pigeon ANR: GitHub issues suggest disposal and thread communication as common friction points.
-- GoRouter Bloc Scope: Standard pattern is to wrap the route widget or use a ShellRoute.
+## 5. State Management (BLoC)
+
+### A. `OrderManagementBloc`
+Mengelola state list pesanan mitra.
+
+*   **Events:**
+    *   `FetchPartnerBookings`: Load data awal.
+    *   `FilterOrders`: Filter by status (lokal filter di memory).
+    *   `UpdateCalendarFocusedDay`: Saat user geser bulan kalender.
+*   **States:**
+    *   `OrderManagementLoading`
+    *   `OrderManagementLoaded`:
+        *   `allBookings`: List<Booking> (Master data)
+        *   `filteredBookings`: List<Booking> (Tampilan saat ini)
+        *   `bookingsByDate`: Map<DateTime, List<Booking>> (Untuk calendar markers)
+    *   `OrderManagementFailure`
+
+## 6. Implementation Steps (Execution Plan)
+
+1.  **Data Layer:**
+    *   Update `BookingRemoteDataSource` (add `getPartnerBookings`).
+    *   Update `BookingRepositoryImpl`.
+
+2.  **Domain Layer:**
+    *   Create `GetPartnerBookings` UseCase.
+    *   Update `BookingRepository` interface.
+
+3.  **Presentation (Bloc):**
+    *   Generate `OrderManagementBloc`.
+    *   Inject dependencies (`GetPartnerBookings`).
+
+4.  **Presentation (UI):**
+    *   Create `BookingOrderCard` widget.
+    *   Create `OrderManagementPage` (Tabs + List View).
+    *   Implement `TableCalendar` integration.
+    *   Create `ManualBookingPage` (Form Walk-in).
+
+5.  **Integration:**
+    *   Link to `AppRouter`.
+    *   Add Entry Point in `OwnerDashboardPage`.

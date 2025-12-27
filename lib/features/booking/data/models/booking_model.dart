@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/booking.dart';
+import '../../domain/entities/payment_participant.dart';
 import 'payment_participant_model.dart';
 
 part 'booking_model.g.dart';
@@ -19,12 +20,6 @@ class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
 @JsonSerializable()
 @TimestampConverter() // Apply converter to the entire class
 class BookingModel extends Booking {
-  @override
-  @JsonKey(
-    includeToJson: true,
-  ) // Ensure participants are included if overridden
-  final List<PaymentParticipantModel> participants;
-
   const BookingModel({
     required super.id,
     required super.userId,
@@ -46,10 +41,14 @@ class BookingModel extends Booking {
     super.midtransPaymentUrl,
     super.isSplitBill = false,
     super.splitCode,
-    this.participants = const [],
+    List<PaymentParticipantModel> participants = const [],
     super.participantIds = const [],
     required super.createdAt,
   }) : super(participants: participants);
+
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  List<PaymentParticipant> get participants => super.participants;
 
   factory BookingModel.fromJson(Map<String, dynamic> json) =>
       _$BookingModelFromJson(json);
@@ -97,7 +96,9 @@ class BookingModel extends Booking {
   Map<String, dynamic> toJson() {
     final json = _$BookingModelToJson(this);
     // Explicitly handle participants serialization
-    json['participants'] = participants.map((p) => p.toJson()).toList();
+    json['participants'] = participants
+        .map((p) => PaymentParticipantModel.fromEntity(p).toJson())
+        .toList();
     json['participantIds'] = participantIds;
     json['createdAt'] = Timestamp.fromDate(createdAt);
     if (ownerId != null) json['ownerId'] = ownerId;

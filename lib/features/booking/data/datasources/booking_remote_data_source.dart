@@ -18,6 +18,7 @@ abstract class BookingRemoteDataSource {
   Future<void> cancelBooking(String bookingId);
   Future<void> updateBookingStatus(String bookingId, String status);
   Future<List<BookingModel>> getMyBookings(String userId);
+  Future<List<BookingModel>> getPartnerBookings(String ownerId);
   Future<void> generateSplitCode(String bookingId);
   Future<String> joinBooking(String splitCode, PaymentParticipant participant);
   Future<BookingModel> getBookingDetail(String bookingId);
@@ -76,6 +77,29 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       return bookings;
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Failed to fetch user bookings');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<List<BookingModel>> getPartnerBookings(String ownerId) async {
+    try {
+      final querySnapshot = await firestore
+          .collection('bookings')
+          .where('ownerId', isEqualTo: ownerId)
+          .get();
+
+      final bookings = querySnapshot.docs
+          .map((doc) => BookingModel.fromJson(doc.data()..['id'] = doc.id))
+          .toList();
+
+      // Client-side sort by createdAt descending (Newest first)
+      bookings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return bookings;
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Failed to fetch partner bookings');
     } catch (e) {
       throw ServerException(e.toString());
     }

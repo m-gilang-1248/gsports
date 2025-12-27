@@ -57,3 +57,16 @@ class UpdateParticipantPaymentStatus extends BookingDetailEvent {
   @override
   List<Object> get props => [bookingId, participantUid, newStatus];
 }
+
+class UpdateBookingStatusRequested extends BookingDetailEvent {
+  final String bookingId;
+  final String status;
+
+  const UpdateBookingStatusRequested({
+    required this.bookingId,
+    required this.status,
+  });
+
+  @override
+  List<Object> get props => [bookingId, status];
+}

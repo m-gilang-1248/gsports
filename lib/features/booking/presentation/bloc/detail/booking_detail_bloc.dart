@@ -41,6 +41,24 @@ class BookingDetailBloc extends Bloc<BookingDetailEvent, BookingDetailState> {
     on<UpdateParticipantPaymentStatus>(_onUpdateParticipantPaymentStatus);
     on<CancelBookingRequested>(_onCancelBookingRequested);
     on<SyncBookingStatus>(_onSyncBookingStatus);
+    on<UpdateBookingStatusRequested>(_onUpdateBookingStatusRequested);
+  }
+
+  Future<void> _onUpdateBookingStatusRequested(
+    UpdateBookingStatusRequested event,
+    Emitter<BookingDetailState> emit,
+  ) async {
+    final result = await _updateBookingStatus(
+      UpdateBookingStatusParams(
+        bookingId: event.bookingId,
+        status: event.status,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(BookingDetailError(_mapFailureToMessage(failure))),
+      (_) => add(FetchBookingDetail(event.bookingId)),
+    );
   }
 
   Future<void> _onSyncBookingStatus(

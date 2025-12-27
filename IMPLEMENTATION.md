@@ -4,39 +4,32 @@
 This project follows an Agile approach. Completed modules (e.g., Auth, Venue) will be revisited and refined in later sprints to accommodate new requirements like Google Sign-In, Owner Roles, and UI Polish.
 
 ## Journal
-*   **Sprint 3 Completed:** Venue Discovery (Supply Side) has been implemented. Domain, Data, and Presentation layers are complete. `VenueSeeder` added for dummy data.
-*   **Sprint 2 Completed:** Authentication and User Profile (Domain, Data, Presentation, and DI) have been fully implemented.
-*   **Phase 1 (Foundation):** Project created, dependencies added. Folder structure set up. Core config (Theme, Router, DI) implemented. Encountered `CardTheme` analysis error (type mismatch with `CardThemeData?`), temporarily commented out `cardTheme` in `AppTheme`. `build_runner` run but no injectables yet. Firebase setup for Android successfully completed, including `firebase_options.dart` generation and `main.dart` update.
-*   **Sprint 4 Completed:** Midtrans integration with Re-query logic & Zombie Booking prevention is implemented.
-*   **Sprint 5 Completed:** Foundation, Basic Auth, Venue Discovery, Booking System, Payment (Midtrans), and Split Bill are functional (MVP level).
-*   **Sprint 6 Completed:** UI Foundation, Auth Revolution, and Guest Mode.
-    *   **Design System:** Implemented v2.1 Design Tokens (Colors, Typography) and Core Widgets (`CustomButton`, `CustomTextField`).
-    *   **Auth Revamp:** Added Google Sign-In (Credential Manager), Multi-Role Registration (Player vs Owner), and Role-Based Navigation.
-    *   **Guest Mode:** Implemented Router Whitelisting to allow unauthenticated exploration of Home and Venue Details. Guests are redirected to Login only when attempting to book.
-*   **Sprint 8 Completed:** Discovery & Booking Experience Polish (UI/UX v2.2).
-    *   **Home Revamp:** Dynamic Header (User/Guest), Search Bar, and Category Rail.
-    *   **Venue Detail:** Overlapping "Stack" layout, Collapsing Image Header, Sticky Title, and Facilities Chips.
-    *   **Search Page:** Dedicated search screen with filtering logic.
-    *   **Calendar:** Improved date picker with full calendar access and immediate availability refresh.
-    *   **Visuals:** Full migration to "Modern Blue" (#1565C0) theme and rounded aesthetics.
-*   **Sprint 8 Polish & Stability:**
-    *   **Payment Stability:** Fixed false-positive success states, implemented robust Midtrans status syncing (`pending`, `not_found`), and fixed booking cancellation logic.
-    *   **Auto-Refresh:** Implemented automatic data refreshing for Booking History when switching tabs or returning from a detail page.
-    *   **Bug Fixes:** Resolved UI crashes in Booking Detail and optimized navigation flows.
-*   **Sprint 9 Phase 1 Completed:** My Bookings UI & Schema Polish.
-    *   **Card Redesign:** Implemented color-coded strips (Orange/Green/Red) and prominent sport icons.
-    *   **Information Density:** Denormalized `venueName`, `courtName`, and `venueLocation` into Booking documents for instant display without extra queries.
-    *   **Visual Hierarchy:** Highlighted booking time (Bold/Primary Color) in both History Card and Detail Page.
-    *   **Tab Logic:** Refined "Berlangsung" (Active) vs "Riwayat" (History) filtering using `endTime` to correctly handle ongoing matches.
+*   **Sprint 10 Completed:** Owner Foundation & Stability.
+    *   **Architecture:** Implemented dedicated `partner` feature module with `dashboard` and `venue_management`.
+    *   **Dashboard:** Owner Dashboard with real-time stats (Revenue, Bookings) and "My Venues" quick access.
+    *   **Venue CRUD:** Full Add/Edit/Delete flow for Venues.
+    *   **Court CRUD:** Full Add/Edit/Delete flow for Courts within a Venue, including hourly price setting.
+    *   **Location Intelligence:** Integrated **API-based Location Picker** (EMSifa) for accurate Indonesia-wide address selection (Province -> City -> District).
+    *   **Automation:** Auto-calculation of `minPrice` for Venues based on Court prices.
+    *   **Stability:** Fixed ANR/Crashes during court addition by refactoring Router Bloc Scoping. Implemented strict Role-Based Redirection (Splash Screen) and Route Guards.
+    *   **UI/UX:** Added facility icons and auto-refresh logic for smoother management experience.
+*   **Sprint 9 Phase 3 Completed:** Profile, Stats & Settings.
+    *   **Architecture:** Created dedicated `features/profile` module.
+    *   **Stats:** Client-side aggregation logic for Matches Played, Won, and Win Rate.
+    *   **Edit Profile:** Profile editing with image upload to Cloudinary and sync with Auth.
+    *   **UI:** Redesigned Profile page with Gamification Card and Settings menu.
 *   **Sprint 9 Phase 2 Completed:** Scoreboard Feature.
     *   **Logic:** Implemented ScoreboardBloc with BWF rules (21 pts, Deuce, Max 30, Best of 3).
     *   **UI:** Digital scoreboard with high contrast, Orbitron font, and wakelock integration.
     *   **Persistence:** Saving match results to Firestore.
-*   **Sprint 9 Phase 3 Completed:** Profile, Stats & Settings.
-    *   **Architecture:** Created dedicated `features/profile` module.
-    *   **Stats:** Client-side aggregation logic for Matches Played, Won, and Win Rate.
-    *   **Edit Profile:** Profile editing with image upload to Firebase Storage and sync with Auth.
-    *   **UI:** Redesigned Profile page with Gamification Card and Settings menu.
+*   **Sprint 9 Phase 1 Completed:** My Bookings UI & Schema Polish.
+    *   **Card Redesign:** Implemented color-coded strips (Orange/Green/Red) and prominent sport icons.
+    *   **Information Density:** Denormalized `venueName`, `courtName`, and `venueLocation` into Booking documents.
+*   **Sprint 8 Polish & Stability:**
+    *   **Payment Stability:** Fixed false-positive success states, implemented robust Midtrans status syncing.
+    *   **Auto-Refresh:** Implemented automatic data refreshing for Booking History.
+*   **Sprint 6 Completed:** UI Foundation, Auth Revolution, and Guest Mode.
+*   **Sprint 5 Completed:** Foundation, Basic Auth, Venue Discovery, Booking System, Payment (Midtrans), and Split Bill.
 
 ## Phase 1: Foundation & Setup
 - [x] Create Flutter project `gsports` using `create_project`.
@@ -68,7 +61,7 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 
 ## Phase 5: Unique Features
 - [x] **Split Bill** (MVP)
-- [ ] **Scoreboard**
+- [x] **Scoreboard**
 
 ## Sprint 6: UI Foundation & Auth Revolution (The Face Lift)
 - [x] **Design System & Assets:** Implemented v2.1 Design Tokens & Core Widgets.
@@ -86,7 +79,7 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 
 ### Phase 2: Venue Detail Polish
 - [x] **Header:** Collapsing Image Carousel with Gradient.
-- [x] **Content:** Overlapping Body, Sticky Title, Facilities Chips.
+- [x] **Content:** Overlapping Body, Sticky Title, Facilities Chips (with Icons).
 - [x] **Interactions:** Favorite Button & Share.
 - [x] **Booking:** Sticky Bottom Bar & Full Calendar Picker.
 
@@ -123,20 +116,29 @@ This project follows an Agile approach. Completed modules (e.g., Auth, Venue) wi
 
 ---
 
-## Sprint 10: Owner Foundation (Owner Side)
+## Sprint 10: Owner Foundation (Owner Side) - COMPLETED
 *Goal: Allow partners to manage their business.*
 
 ### Phase 1: Owner Dashboard
-- [ ] **Routing:** Create protected route `/owner-dashboard`.
-- [ ] **UI:** Create Dashboard Shell (Stats Overview: Income, Total Booking).
+- [x] **Routing:** Create protected route `/owner-dashboard`.
+- [x] **UI:** Create Dashboard Shell (Stats Overview: Income, Total Booking).
+- [x] **Logic:** Fetch stats from Firestore (Aggregation of bookings).
 
-### Phase 2: Venue Management (CRUD) - Part 1
-- [ ] **Backend:** Create `VenueManagementBloc`. Implement Add/Update/Delete Venue logic in Firestore.
-- [ ] **UI:** Create "My Venues" list for Owner.
+### Phase 2: Venue Management (CRUD)
+- [x] **Backend:** Create `VenueManagementBloc`. Implement Add/Update/Delete Venue logic in Firestore.
+- [x] **UI:** Create "My Venues" list for Owner.
+- [x] **Location:** Implement API-based Location Picker (Province -> City -> District).
+- [x] **Images:** Implement Cloudinary upload for Venue images.
 
-### Phase 3: Venue Management (CRUD) - Part 2 (Images)
-- [ ] **Logic:** Implement Image Upload to Firebase Storage.
-- [ ] **UI:** Create "Add Venue Form" with Image Picker integration.
+### Phase 3: Court Management (CRUD)
+- [x] **Backend:** Implement `CourtManagementBloc`. Add/Update/Delete Courts in sub-collection.
+- [x] **Logic:** Auto-update Venue `minPrice` based on cheapest court.
+- [x] **UI:** "Venue Courts" page with list and Add/Edit form.
+
+### Phase 4: Stability & Polish
+- [x] **Route Guards:** Strict role checking on Splash and Router to prevent unauthorized access.
+- [x] **Crash Fixes:** Resolve ANR in Add Court by fixing Bloc Scoping in GoRouter.
+- [x] **UX:** Auto-refresh lists after edits.
 
 ---
 

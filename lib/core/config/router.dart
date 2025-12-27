@@ -19,6 +19,9 @@ import 'package:gsports/features/partner/venue_management/presentation/pages/man
 import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_venue_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/venue_courts_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_court_page.dart';
+import 'package:gsports/features/partner/booking_management/presentation/pages/order_management_page.dart';
+import 'package:gsports/features/partner/booking_management/presentation/pages/manual_booking_page.dart';
+import 'package:gsports/features/partner/booking_management/presentation/pages/partner_booking_detail_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
 import 'package:gsports/features/profile/presentation/pages/edit_profile_page.dart';
@@ -59,7 +62,8 @@ class AppRouter {
           path.startsWith('/manage-venues') ||
           path.startsWith('/add-venue') ||
           path.startsWith('/edit-venue') ||
-          path.startsWith('/venue-courts');
+          path.startsWith('/venue-courts') ||
+          path.startsWith('/partner');
 
       if (isLoggedIn && isPartnerRoute) {
         try {
@@ -89,6 +93,19 @@ class AppRouter {
       GoRoute(
         path: '/owner-dashboard',
         builder: (context, state) => const OwnerDashboardPage(),
+      ),
+      GoRoute(
+        path: '/partner/orders',
+        builder: (context, state) => const OrderManagementPage(),
+      ),
+      GoRoute(
+        path: '/partner/manual-booking',
+        builder: (context, state) => const ManualBookingPage(),
+      ),
+      GoRoute(
+        path: '/partner/booking-detail/:id',
+        builder: (context, state) =>
+            PartnerBookingDetailPage(bookingId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/manage-venues',

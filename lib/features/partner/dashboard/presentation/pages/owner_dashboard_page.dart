@@ -94,6 +94,43 @@ class _OwnerDashboardView extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
+              // QUICK ACTIONS
+              const Text(
+                'Quick Actions',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  onTap: () => context.push('/partner/orders'),
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    child: const Icon(
+                      Icons.calendar_month,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  title: const Text(
+                    'Kelola Pesanan & Jadwal',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text('Lihat jadwal masuk dan input manual'),
+                  trailing: const Icon(Icons.chevron_right),
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // 2. MY VENUES SECTION
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
