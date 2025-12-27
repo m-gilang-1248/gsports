@@ -156,6 +156,11 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       (bookingId) async {
         // If booking is already paid (e.g. Manual Booking), skip Midtrans
         if (event.booking.status == 'paid') {
+          // Force update status to ensure it persists as 'paid'
+          // This handles cases where Firestore triggers might default it to 'waiting_payment'
+          await updateBookingStatus(
+            UpdateBookingStatusParams(bookingId: bookingId, status: 'paid'),
+          );
           emit(BookingPaidSuccess(bookingId));
           return;
         }
