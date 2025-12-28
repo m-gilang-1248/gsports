@@ -14,7 +14,9 @@ import 'package:gsports/features/home/presentation/pages/search_page.dart';
 import 'package:gsports/features/venue/presentation/pages/venue_detail_page.dart';
 import 'package:gsports/features/payment/presentation/pages/payment_page.dart';
 import 'package:gsports/features/booking/presentation/pages/booking_detail_page.dart';
-import 'package:gsports/features/partner/dashboard/presentation/pages/owner_dashboard_page.dart';
+import 'package:gsports/features/partner/dashboard/presentation/pages/partner_main_page.dart';
+import 'package:gsports/features/partner/dashboard/presentation/pages/booking_analytics_page.dart';
+import 'package:gsports/features/partner/dashboard/presentation/pages/revenue_analytics_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/manage_venues_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_venue_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/venue_courts_page.dart';
@@ -92,7 +94,7 @@ class AppRouter {
       GoRoute(path: '/home', builder: (context, state) => const MainPage()),
       GoRoute(
         path: '/owner-dashboard',
-        builder: (context, state) => const OwnerDashboardPage(),
+        builder: (context, state) => const PartnerMainPage(),
       ),
       GoRoute(
         path: '/partner/orders',
@@ -106,6 +108,14 @@ class AppRouter {
         path: '/partner/booking-detail/:id',
         builder: (context, state) =>
             PartnerBookingDetailPage(bookingId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/partner/booking-analytics',
+        builder: (context, state) => const BookingAnalyticsPage(),
+      ),
+      GoRoute(
+        path: '/partner/revenue-analytics',
+        builder: (context, state) => const RevenueAnalyticsPage(),
       ),
       GoRoute(
         path: '/manage-venues',
