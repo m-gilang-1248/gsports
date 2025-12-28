@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
@@ -147,14 +148,22 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                           filled: true,
                           border: OutlineInputBorder(),
                         ),
-                        items: sportTypes
-                            .map(
-                              (s) => DropdownMenuItem(
-                                value: s,
-                                child: Text(s.toUpperCase()),
-                              ),
-                            )
-                            .toList(),
+                        items: sportTypes.map((s) {
+                          return DropdownMenuItem(
+                            value: s,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  AppConstants.getSportIcon(s),
+                                  size: 20,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(AppConstants.getSportName(s)),
+                              ],
+                            ),
+                          );
+                        }).toList(),
                         onChanged: (val) {
                           setState(() {
                             _selectedSportType = val;

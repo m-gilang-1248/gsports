@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../config/app_colors.dart';
+import '../../constants/app_constants.dart';
 import '../../../features/venue/domain/entities/venue.dart';
 
 class VenueCard extends StatelessWidget {
@@ -18,20 +19,23 @@ class VenueCard extends StatelessWidget {
       decimalDigits: 0,
     );
 
-    // Placeholder sport type logic (since Venue entity might not have explicit sport type field for MVP)
-    // We infer from name or facilities, or default to 'Sports'
-    String sportType = 'Sports';
-    if (venue.name.toLowerCase().contains('badminton')) {
-      sportType = 'Badminton';
-    }
-    if (venue.name.toLowerCase().contains('futsal')) {
-      sportType = 'Futsal';
-    }
-    if (venue.name.toLowerCase().contains('tennis')) {
-      sportType = 'Tennis';
-    }
-    if (venue.name.toLowerCase().contains('basketball')) {
-      sportType = 'Basketball';
+    // Detect sports based on name and facilities using the registry
+    final detectedSports = AppConstants.sports.where((sport) {
+      final query = sport.id.toLowerCase();
+      final nameMatch = venue.name.toLowerCase().contains(query);
+      final facilityMatch = venue.facilities.any(
+        (f) => f.toLowerCase().contains(query),
+      );
+      // Also match display name for robustness
+      final displayNameMatch = venue.name.toLowerCase().contains(
+        sport.displayName.toLowerCase(),
+      );
+      return nameMatch || facilityMatch || displayNameMatch;
+    }).toList();
+
+    // Default if none detected
+    if (detectedSports.isEmpty) {
+      // Optional: Add a default 'Sports' category if needed, or leave empty
     }
 
     return Container(
@@ -84,46 +88,60 @@ class VenueCard extends StatelessWidget {
                             child: const Icon(Icons.image, color: Colors.grey),
                           ),
                   ),
-                  // Category Chip (Overlay) - v2.2 Spec
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.sports_tennis, // Generic icon for now
-                            size: 12,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            sportType.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
+                  // Category Chips (Overlay) - v2.2 Spec
+                  if (detectedSports.isNotEmpty)
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      right: 60, // Avoid overlapping rating
+                      child: SizedBox(
+                        height: 24,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: detectedSports.take(3).length, // Limit to 3
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: 4),
+                          itemBuilder: (context, index) {
+                            final sport = detectedSports[index];
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    sport.icon,
+                                    size: 12,
+                                    color: AppColors.primary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    sport.displayName.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  ),
                   // Rating Pill (Keeping this as it's useful)
                   Positioned(
                     top: 12,

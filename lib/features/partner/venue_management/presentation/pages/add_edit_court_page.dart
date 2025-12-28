@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/core/presentation/widgets/custom_button.dart';
 import 'package:gsports/core/presentation/widgets/custom_text_field.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
@@ -21,9 +22,7 @@ class _AddEditCourtPageState extends State<AddEditCourtPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _priceController;
-  String _selectedSport = 'Badminton';
-
-  final List<String> _sports = ['Badminton', 'Futsal', 'Basketball', 'Tennis'];
+  late String _selectedSportId;
 
   @override
   void initState() {
@@ -32,8 +31,14 @@ class _AddEditCourtPageState extends State<AddEditCourtPage> {
     _priceController = TextEditingController(
       text: widget.court?.hourlyPrice.toString(),
     );
+    // Initialize with existing sport or default to first in registry
     if (widget.court != null) {
-      _selectedSport = widget.court!.sportType;
+      // Try to find the matching ID, handle case sensitivity or fallback
+      final existingId = widget.court!.sportType.toLowerCase();
+      final match = AppConstants.sports.any((s) => s.id == existingId);
+      _selectedSportId = match ? existingId : AppConstants.sports.first.id;
+    } else {
+      _selectedSportId = AppConstants.sports.first.id;
     }
   }
 
@@ -50,7 +55,7 @@ class _AddEditCourtPageState extends State<AddEditCourtPage> {
     final court = Court(
       id: widget.court?.id ?? '', // ID handled by repo if new
       name: _nameController.text,
-      sportType: _selectedSport,
+      sportType: _selectedSportId,
       hourlyPrice: int.tryParse(_priceController.text) ?? 0,
       isActive: true,
       surfaceType: widget.court?.surfaceType ?? 'Standard', // Default
@@ -107,15 +112,24 @@ class _AddEditCourtPageState extends State<AddEditCourtPage> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  initialValue: _selectedSport,
+                  initialValue: _selectedSportId,
                   decoration: const InputDecoration(
                     labelText: 'Sport Type',
                     border: OutlineInputBorder(),
                   ),
-                  items: _sports
-                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedSport = val!),
+                  items: AppConstants.sports.map((sport) {
+                    return DropdownMenuItem(
+                      value: sport.id,
+                      child: Row(
+                        children: [
+                          Icon(sport.icon, size: 20, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Text(sport.displayName),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) => setState(() => _selectedSportId = val!),
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(

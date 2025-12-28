@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 
 class BookingOrderCard extends StatelessWidget {
@@ -82,8 +83,20 @@ class BookingOrderCard extends StatelessWidget {
                       RichText(
                         text: TextSpan(
                           children: [
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Icon(
+                                  AppConstants.getSportIcon(booking.sportType),
+                                  size: 16,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
                             TextSpan(
-                              text: '${booking.sportType.toUpperCase()} ',
+                              text:
+                                  '${AppConstants.getSportName(booking.sportType).toUpperCase()} ',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w900,
                                 fontSize: 15,

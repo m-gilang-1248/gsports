@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/core/presentation/widgets/venue_card.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
@@ -192,27 +193,18 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildCategoryRail(BuildContext context) {
-    final categories = [
-      {'name': 'Badminton', 'icon': Icons.sports_tennis},
-      {'name': 'Futsal', 'icon': Icons.sports_soccer},
-      {'name': 'Tennis', 'icon': Icons.sports_tennis_outlined},
-      {'name': 'Basketball', 'icon': Icons.sports_basketball},
-      {'name': 'Golf', 'icon': Icons.sports_golf},
-      {'name': 'Volley', 'icon': Icons.sports_volleyball},
-    ];
-
     return SizedBox(
       height: 90,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
+        itemCount: AppConstants.sports.length,
         itemBuilder: (context, index) {
-          final category = categories[index];
+          final sport = AppConstants.sports[index];
           return Padding(
             padding: const EdgeInsets.only(right: 20),
             child: InkWell(
               onTap: () {
-                context.push('/search?category=${category['name']}');
+                context.push('/search?category=${sport.id}');
               },
               borderRadius: BorderRadius.circular(8),
               child: Column(
@@ -224,14 +216,14 @@ class _HomePageState extends State<HomePage>
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      category['icon'] as IconData,
+                      sport.icon,
                       color: AppColors.primary,
                       size: 28,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    category['name'] as String,
+                    sport.displayName,
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ],

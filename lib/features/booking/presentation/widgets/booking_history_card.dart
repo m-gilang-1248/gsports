@@ -21,10 +21,8 @@ class BookingHistoryCard extends StatelessWidget {
       decimalDigits: 0,
     );
 
-    // Capitalize Sport Type
-    final sportName =
-        booking.sportType[0].toUpperCase() +
-        booking.sportType.substring(1).toLowerCase();
+    // Standardized Sport Name
+    final sportName = AppConstants.getSportName(booking.sportType);
 
     // Status & Color Logic
     Color statusColor;
