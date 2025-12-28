@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
@@ -283,9 +284,9 @@ class _PartnerBookingDetailView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _buildDetailItem(
-            icon: Icons.category,
+            icon: AppConstants.getSportIcon(booking.sportType),
             label: 'Tipe Olahraga',
-            value: booking.sportType.toUpperCase(),
+            value: AppConstants.getSportName(booking.sportType).toUpperCase(),
           ),
           const SizedBox(height: 16),
           _buildDetailItem(

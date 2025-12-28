@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
 import 'package:gsports/features/scoreboard/domain/repositories/scoreboard_repository.dart';
 import 'package:intl/intl.dart';
@@ -105,7 +106,7 @@ class MatchHistoryWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  _getSportIcon(match.sportType),
+                  AppConstants.getSportIcon(match.sportType),
                   color: AppColors.primary,
                   size: 24,
                 ),
@@ -164,17 +165,6 @@ class MatchHistoryWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  IconData _getSportIcon(String sportType) {
-    final type = sportType.toLowerCase();
-    if (type.contains('badminton')) return Icons.sports_tennis;
-    if (type.contains('futsal') || type.contains('soccer')) {
-      return Icons.sports_soccer;
-    }
-    if (type.contains('basketball')) return Icons.sports_basketball;
-    if (type.contains('volleyball')) return Icons.sports_volleyball;
-    return Icons.sports_handball;
   }
 
   String _getScoreSummary(MatchResult match) {

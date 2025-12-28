@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/core/constants/facility_data.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:gsports/features/booking/presentation/widgets/booking_bottom_sheet.dart';
@@ -329,6 +330,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 12),
+
+                      // Sport Badges
+                      _buildSportBadges(venue, courts),
                       const SizedBox(height: 24),
 
                       // 2. Price Block
@@ -430,6 +435,77 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildSportBadges(Venue venue, List<Court> courts) {
+    // Derive sports from actual courts available
+    final sportIds = courts.map((c) => c.sportType.toLowerCase()).toSet();
+    
+    // Also include detection from name/facilities for robustness (fallback)
+    final detectedFromVenue = AppConstants.sports.where((sport) {
+      final queryId = sport.id.toLowerCase();
+      final queryName = sport.displayName.toLowerCase();
+      final keywords = sport.keywords.map((k) => k.toLowerCase()).toList();
+
+      final inName =
+          venue.name.toLowerCase().contains(queryId) ||
+          venue.name.toLowerCase().contains(queryName) ||
+          keywords.any((k) => venue.name.toLowerCase().contains(k));
+
+      final inFacilities = venue.facilities.any((f) {
+        final fLower = f.toLowerCase();
+        return fLower.contains(queryId) ||
+            fLower.contains(queryName) ||
+            keywords.any((k) => fLower.contains(k));
+      });
+
+      return inName || inFacilities;
+    }).map((s) => s.id.toLowerCase());
+
+    final allSportIds = {...sportIds, ...detectedFromVenue};
+
+    final detectedSports = AppConstants.sports
+        .where((s) => allSportIds.contains(s.id.toLowerCase()))
+        .toList();
+
+    if (detectedSports.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: detectedSports.map((sport) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(sport.icon, size: 16, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                sport.displayName.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 10, // Match VenueCard size
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -602,8 +678,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                     color: AppColors.neutral,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.sports_tennis,
+                  child: Icon(
+                    AppConstants.getSportIcon(court.sportType),
                     color: AppColors.primary,
                   ),
                 ),

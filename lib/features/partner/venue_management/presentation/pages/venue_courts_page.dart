@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:intl/intl.dart';
@@ -101,7 +102,10 @@ class _VenueCourtsView extends StatelessWidget {
             color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(Icons.sports_tennis, color: AppColors.primary),
+          child: Icon(
+            AppConstants.getSportIcon(court.sportType),
+            color: AppColors.primary,
+          ),
         ),
         title: Text(
           court.name,

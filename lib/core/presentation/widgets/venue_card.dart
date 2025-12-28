@@ -21,22 +21,23 @@ class VenueCard extends StatelessWidget {
 
     // Detect sports based on name and facilities using the registry
     final detectedSports = AppConstants.sports.where((sport) {
-      final query = sport.id.toLowerCase();
-      final nameMatch = venue.name.toLowerCase().contains(query);
-      final facilityMatch = venue.facilities.any(
-        (f) => f.toLowerCase().contains(query),
-      );
-      // Also match display name for robustness
-      final displayNameMatch = venue.name.toLowerCase().contains(
-        sport.displayName.toLowerCase(),
-      );
-      return nameMatch || facilityMatch || displayNameMatch;
+      final queryId = sport.id.toLowerCase();
+      final queryName = sport.displayName.toLowerCase();
+      final keywords = sport.keywords.map((k) => k.toLowerCase()).toList();
+      
+      final inName = venue.name.toLowerCase().contains(queryId) || 
+                     venue.name.toLowerCase().contains(queryName) ||
+                     keywords.any((k) => venue.name.toLowerCase().contains(k));
+                     
+      final inFacilities = venue.facilities.any((f) {
+        final fLower = f.toLowerCase();
+        return fLower.contains(queryId) || 
+               fLower.contains(queryName) ||
+               keywords.any((k) => fLower.contains(k));
+      });
+      
+      return inName || inFacilities;
     }).toList();
-
-    // Default if none detected
-    if (detectedSports.isEmpty) {
-      // Optional: Add a default 'Sports' category if needed, or leave empty
-    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -94,22 +95,18 @@ class VenueCard extends StatelessWidget {
                       top: 12,
                       left: 12,
                       right: 60, // Avoid overlapping rating
-                      child: SizedBox(
-                        height: 24,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: detectedSports.take(3).length, // Limit to 3
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(width: 4),
-                          itemBuilder: (context, index) {
-                            final sport = detectedSports[index];
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: detectedSports.map((sport) {
                             return Container(
+                              margin: const EdgeInsets.only(right: 4),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: Colors.white.withValues(alpha: 0.95),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
@@ -123,7 +120,7 @@ class VenueCard extends StatelessWidget {
                                 children: [
                                   Icon(
                                     sport.icon,
-                                    size: 12,
+                                    size: 14, // Slightly larger
                                     color: AppColors.primary,
                                   ),
                                   const SizedBox(width: 4),
@@ -138,7 +135,7 @@ class VenueCard extends StatelessWidget {
                                 ],
                               ),
                             );
-                          },
+                          }).toList(),
                         ),
                       ),
                     ),

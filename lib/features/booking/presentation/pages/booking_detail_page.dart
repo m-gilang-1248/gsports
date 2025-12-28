@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/presentation/bloc/detail/booking_detail_bloc.dart';
@@ -495,12 +496,22 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              booking.sportType,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
+            Row(
+              children: [
+                Icon(
+                  AppConstants.getSportIcon(booking.sportType),
+                  size: 24,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  AppConstants.getSportName(booking.sportType),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
 

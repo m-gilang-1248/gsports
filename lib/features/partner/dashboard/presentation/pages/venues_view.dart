@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:intl/intl.dart';
@@ -92,6 +93,26 @@ class VenuesView extends StatelessWidget {
       decimalDigits: 0,
     );
 
+    // Detect sports (Logic from VenueCard)
+    final detectedSports = AppConstants.sports.where((sport) {
+      final queryId = sport.id.toLowerCase();
+      final queryName = sport.displayName.toLowerCase();
+      final keywords = sport.keywords.map((k) => k.toLowerCase()).toList();
+
+      final inName = venue.name.toLowerCase().contains(queryId) ||
+          venue.name.toLowerCase().contains(queryName) ||
+          keywords.any((k) => venue.name.toLowerCase().contains(k));
+
+      final inFacilities = venue.facilities.any((f) {
+        final fLower = f.toLowerCase();
+        return fLower.contains(queryId) ||
+            fLower.contains(queryName) ||
+            keywords.any((k) => fLower.contains(k));
+      });
+
+      return inName || inFacilities;
+    }).toList();
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -111,20 +132,73 @@ class VenuesView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              child: SizedBox(
-                height: 150,
-                width: double.infinity,
-                child: venue.photos.isNotEmpty
-                    ? Image.network(venue.photos[0], fit: BoxFit.cover)
-                    : Container(
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.image, color: Colors.grey),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  child: SizedBox(
+                    height: 150,
+                    width: double.infinity,
+                    child: venue.photos.isNotEmpty
+                        ? Image.network(venue.photos[0], fit: BoxFit.cover)
+                        : Container(
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.image, color: Colors.grey),
+                          ),
+                  ),
+                ),
+                if (detectedSports.isNotEmpty)
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    right: 12,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: detectedSports.map((sport) {
+                          return Container(
+                            margin: const EdgeInsets.only(right: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.95),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  sport.icon,
+                                  size: 14,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  sport.displayName.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
                       ),
-              ),
+                    ),
+                  ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.all(16),

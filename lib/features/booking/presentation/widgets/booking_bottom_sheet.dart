@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
@@ -89,7 +90,7 @@ class BookingBottomSheet extends StatelessWidget {
           const SizedBox(height: 12),
           _buildInfoRow(
             context,
-            icon: Icons.sports_tennis_outlined,
+            icon: AppConstants.getSportIcon(court.sportType),
             label: 'Lapangan',
             value: court.name,
           ),
