@@ -10,6 +10,7 @@ class Venue extends Equatable {
   final String city;
   final VenueLocation location;
   final List<String> facilities;
+  final List<String> sportCategories;
   final List<String> photos;
   final double rating;
   final int minPrice;
@@ -25,6 +26,7 @@ class Venue extends Equatable {
     required this.city,
     required this.location,
     required this.facilities,
+    this.sportCategories = const [],
     required this.photos,
     required this.rating,
     required this.minPrice,
@@ -42,6 +44,7 @@ class Venue extends Equatable {
     city,
     location,
     facilities,
+    sportCategories,
     photos,
     rating,
     minPrice,

@@ -20,6 +20,7 @@ class VenueModel extends Venue {
     required super.city,
     required this.location,
     required super.facilities,
+    super.sportCategories,
     required super.photos,
     required super.rating,
     required super.minPrice,
@@ -43,6 +44,9 @@ class VenueModel extends Venue {
       city: data['city'] as String? ?? '',
       location: _locationFromGeoPoint(data['location'] as GeoPoint?),
       facilities: List<String>.from(data['facilities'] as List? ?? []),
+      sportCategories: List<String>.from(
+        data['sportCategories'] as List? ?? [],
+      ),
       photos: List<String>.from(data['photos'] as List? ?? []),
       rating: (data['rating'] as num? ?? 0.0).toDouble(),
       minPrice: (data['minPrice'] as num? ?? 0).toInt(),

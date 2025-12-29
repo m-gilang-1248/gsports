@@ -19,6 +19,11 @@ VenueModel _$VenueModelFromJson(Map<String, dynamic> json) => VenueModel(
   facilities: (json['facilities'] as List<dynamic>)
       .map((e) => e as String)
       .toList(),
+  sportCategories:
+      (json['sportCategories'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
   photos: (json['photos'] as List<dynamic>).map((e) => e as String).toList(),
   rating: (json['rating'] as num).toDouble(),
   minPrice: (json['minPrice'] as num).toInt(),
@@ -35,6 +40,7 @@ Map<String, dynamic> _$VenueModelToJson(VenueModel instance) =>
       'address': instance.address,
       'city': instance.city,
       'facilities': instance.facilities,
+      'sportCategories': instance.sportCategories,
       'photos': instance.photos,
       'rating': instance.rating,
       'minPrice': instance.minPrice,
