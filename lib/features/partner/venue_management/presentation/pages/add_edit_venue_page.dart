@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/core/constants/facility_data.dart';
 import 'package:gsports/core/presentation/widgets/custom_button.dart';
 import 'package:gsports/core/presentation/widgets/custom_text_field.dart';
@@ -55,6 +56,7 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
 
   final List<String> _availableFacilities = kFacilityIcons.keys.toList();
   List<String> _selectedFacilities = [];
+  List<String> _selectedSportCategories = [];
 
   @override
   void initState() {
@@ -78,6 +80,9 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
         : [];
     _selectedFacilities = widget.venue?.facilities != null
         ? List<String>.from(widget.venue!.facilities)
+        : [];
+    _selectedSportCategories = widget.venue?.sportCategories != null
+        ? List<String>.from(widget.venue!.sportCategories)
         : [];
   }
 
@@ -244,6 +249,7 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
           widget.venue?.location ??
           const VenueLocation(lat: -6.200000, lng: 106.816666),
       facilities: _selectedFacilities,
+      sportCategories: _selectedSportCategories,
       photos: _currentPhotos,
       rating: widget.venue?.rating ?? 0.0,
       minPrice: 0,
@@ -363,6 +369,23 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
                       validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
                     ),
                     const SizedBox(height: 24),
+
+                    const Text(
+                      'Sport Types Available',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Select the sports available at your venue. This will display badges on the venue card.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSportCategoryChips(),
+                    const SizedBox(height: 24),
+
                     const Text(
                       'Facilities',
                       style: TextStyle(
@@ -630,6 +653,43 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
                 _selectedFacilities.add(facility);
               } else {
                 _selectedFacilities.remove(facility);
+              }
+            });
+          },
+          selectedColor: AppColors.primary.withValues(alpha: 0.1),
+          backgroundColor: Colors.white,
+          checkmarkColor: AppColors.primary,
+          side: BorderSide(
+            color: isSelected ? AppColors.primary : AppColors.border,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildSportCategoryChips() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: AppConstants.sports.map((sport) {
+        final isSelected = _selectedSportCategories.contains(sport.id);
+        return FilterChip(
+          label: Text(sport.displayName),
+          avatar: Icon(
+            sport.icon,
+            size: 18,
+            color: isSelected ? AppColors.primary : Colors.grey,
+          ),
+          selected: isSelected,
+          onSelected: (selected) {
+            setState(() {
+              if (selected) {
+                _selectedSportCategories.add(sport.id);
+              } else {
+                _selectedSportCategories.remove(sport.id);
               }
             });
           },
