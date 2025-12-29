@@ -214,46 +214,64 @@ class VenueCard extends StatelessWidget {
 
   Widget _buildSportBadges(List<String> categories) {
     const double size = 32.0;
-    const double overlap = 8.0;
+
     final displayCategories = categories.take(3).toList();
+
     final hasMore = categories.length > 3;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
+
       children: List.generate(displayCategories.length, (index) {
         final isLastAndMore = hasMore && index == 2;
+
         final category = displayCategories[index];
 
-        return Container(
-          width: size,
-          height: size,
-          margin: EdgeInsets.only(left: index == 0 ? 0 : -overlap),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Center(
-            child: isLastAndMore
-                ? Text(
-                    '+${categories.length - 2}',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+        return Align(
+          widthFactor: index == displayCategories.length - 1 ? 1.0 : 0.7,
+
+          child: Container(
+            width: size,
+
+            height: size,
+
+            decoration: BoxDecoration(
+              color: Colors.white,
+
+              shape: BoxShape.circle,
+
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+
+                  blurRadius: 4,
+
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+
+            child: Center(
+              child: isLastAndMore
+                  ? Text(
+                      '+${categories.length - 2}',
+
+                      style: const TextStyle(
+                        fontSize: 10,
+
+                        fontWeight: FontWeight.bold,
+
+                        color: AppColors.textPrimary,
+                      ),
+                    )
+                  : Icon(
+                      AppConstants.getSportIcon(category),
+
+                      size: 18,
+
+                      color: AppColors.primary,
                     ),
-                  )
-                : Icon(
-                    AppConstants.getSportIcon(category),
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
+            ),
           ),
         );
       }),

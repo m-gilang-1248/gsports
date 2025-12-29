@@ -18,8 +18,13 @@ abstract class VenueManagementRemoteDataSource {
 
   // Court Management
   Future<List<CourtModel>> getVenueCourts(String venueId);
-  Future<void> addCourt(String venueId, CourtModel court);
-  Future<void> updateCourt(String venueId, CourtModel court);
+  Future<void> addCourt(String venueId, CourtModel court, List<File> images);
+  Future<void> updateCourt(
+    String venueId,
+    CourtModel court, {
+    List<File>? newImages,
+    List<String>? removedImageUrls,
+  });
   Future<void> deleteCourt(String venueId, String courtId);
 }
 
@@ -135,10 +140,21 @@ class VenueManagementRemoteDataSourceImpl
   }
 
   @override
-  Future<void> addCourt(String venueId, CourtModel court) async {
+  Future<void> addCourt(
+    String venueId,
+    CourtModel court,
+    List<File> images,
+  ) async {
     try {
+      // 1. Upload images
+      final imageUrls = await cloudinaryService.uploadImages(
+        images,
+        folder: 'courts',
+      );
+
       final data = court.toJson();
       data.remove('id');
+      data['photos'] = imageUrls;
 
       await firestore
           .collection('venues')
@@ -146,18 +162,41 @@ class VenueManagementRemoteDataSourceImpl
           .collection('courts')
           .add(data);
 
-      // Trigger minPrice update
+      // Trigger minPrice and sportCategories update
       await _updateVenueMinPrice(venueId);
+      await _updateVenueSportCategories(venueId);
     } catch (e) {
       throw ServerException(e.toString());
     }
   }
 
   @override
-  Future<void> updateCourt(String venueId, CourtModel court) async {
+  Future<void> updateCourt(
+    String venueId,
+    CourtModel court, {
+    List<File>? newImages,
+    List<String>? removedImageUrls,
+  }) async {
     try {
+      List<String> currentPhotos = List<String>.from(court.photos);
+
+      // Remove URLs
+      if (removedImageUrls != null) {
+        currentPhotos.removeWhere((url) => removedImageUrls.contains(url));
+      }
+
+      // Upload new images
+      if (newImages != null && newImages.isNotEmpty) {
+        final newUrls = await cloudinaryService.uploadImages(
+          newImages,
+          folder: 'courts',
+        );
+        currentPhotos.addAll(newUrls);
+      }
+
       final data = court.toJson();
       data.remove('id');
+      data['photos'] = currentPhotos;
 
       await firestore
           .collection('venues')
@@ -166,8 +205,9 @@ class VenueManagementRemoteDataSourceImpl
           .doc(court.id)
           .update(data);
 
-      // Trigger minPrice update
+      // Trigger minPrice and sportCategories update
       await _updateVenueMinPrice(venueId);
+      await _updateVenueSportCategories(venueId);
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -183,8 +223,9 @@ class VenueManagementRemoteDataSourceImpl
           .doc(courtId)
           .delete();
 
-      // Trigger minPrice update
+      // Trigger minPrice and sportCategories update
       await _updateVenueMinPrice(venueId);
+      await _updateVenueSportCategories(venueId);
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -213,6 +254,34 @@ class VenueManagementRemoteDataSourceImpl
 
     await firestore.collection('venues').doc(venueId).update({
       'minPrice': minPrice,
+    });
+  }
+
+  /// Private helper to update the sport categories of a venue based on its courts
+  Future<void> _updateVenueSportCategories(String venueId) async {
+    final courtsSnapshot = await firestore
+        .collection('venues')
+        .doc(venueId)
+        .collection('courts')
+        .get();
+
+    if (courtsSnapshot.docs.isEmpty) {
+      await firestore.collection('venues').doc(venueId).update({
+        'sportCategories': [],
+      });
+      return;
+    }
+
+    final Set<String> categories = {};
+    for (var doc in courtsSnapshot.docs) {
+      final sportType = doc.data()['sportType'] as String?;
+      if (sportType != null && sportType.isNotEmpty) {
+        categories.add(sportType);
+      }
+    }
+
+    await firestore.collection('venues').doc(venueId).update({
+      'sportCategories': categories.toList(),
     });
   }
 }
