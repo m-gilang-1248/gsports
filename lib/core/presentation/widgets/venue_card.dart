@@ -19,25 +19,31 @@ class VenueCard extends StatelessWidget {
       decimalDigits: 0,
     );
 
-    // Detect sports based on name and facilities using the registry
+    // Detect sports based on name and facilities using the registry (Fallback)
     final detectedSports = AppConstants.sports.where((sport) {
       final queryId = sport.id.toLowerCase();
       final queryName = sport.displayName.toLowerCase();
       final keywords = sport.keywords.map((k) => k.toLowerCase()).toList();
-      
-      final inName = venue.name.toLowerCase().contains(queryId) || 
-                     venue.name.toLowerCase().contains(queryName) ||
-                     keywords.any((k) => venue.name.toLowerCase().contains(k));
-                     
+
+      final inName =
+          venue.name.toLowerCase().contains(queryId) ||
+          venue.name.toLowerCase().contains(queryName) ||
+          keywords.any((k) => venue.name.toLowerCase().contains(k));
+
       final inFacilities = venue.facilities.any((f) {
         final fLower = f.toLowerCase();
-        return fLower.contains(queryId) || 
-               fLower.contains(queryName) ||
-               keywords.any((k) => fLower.contains(k));
+        return fLower.contains(queryId) ||
+            fLower.contains(queryName) ||
+            keywords.any((k) => fLower.contains(k));
       });
-      
+
       return inName || inFacilities;
     }).toList();
+
+    // Use venue.sportCategories if available, otherwise fallback to detectedSports
+    final List<String> categoriesToDisplay = venue.sportCategories.isNotEmpty
+        ? venue.sportCategories
+        : detectedSports.map((s) => s.id).toList();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -89,55 +95,12 @@ class VenueCard extends StatelessWidget {
                             child: const Icon(Icons.image, color: Colors.grey),
                           ),
                   ),
-                  // Category Chips (Overlay) - v2.2 Spec
-                  if (detectedSports.isNotEmpty)
+                  // Overlapping Sport Icons (Overlay)
+                  if (categoriesToDisplay.isNotEmpty)
                     Positioned(
                       top: 12,
                       left: 12,
-                      right: 60, // Avoid overlapping rating
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: detectedSports.map((sport) {
-                            return Container(
-                              margin: const EdgeInsets.only(right: 4),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.95),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    sport.icon,
-                                    size: 14, // Slightly larger
-                                    color: AppColors.primary,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    sport.displayName.toUpperCase(),
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                      child: _buildSportBadges(categoriesToDisplay),
                     ),
                   // Rating Pill (Keeping this as it's useful)
                   Positioned(
@@ -151,6 +114,12 @@ class VenueCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -178,49 +147,60 @@ class VenueCard extends StatelessWidget {
               // Content Section
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      venue.name,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            venue.city,
-                            style: Theme.of(context).textTheme.bodyMedium,
+                    // Left Side: Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            venue.name,
+                            style: Theme.of(context).textTheme.headlineMedium,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'Start from ',
-                            style: Theme.of(context).textTheme.labelSmall,
-                          ),
-                          TextSpan(
-                            text: currencyFormat.format(venue.minPrice),
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(color: AppColors.primary),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  venue.city,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Right Side: Price (Vertical)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Start from',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                        Text(
+                          currencyFormat.format(venue.minPrice),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -229,6 +209,54 @@ class VenueCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSportBadges(List<String> categories) {
+    const double size = 32.0;
+    const double overlap = 8.0;
+    final displayCategories = categories.take(3).toList();
+    final hasMore = categories.length > 3;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(displayCategories.length, (index) {
+        final isLastAndMore = hasMore && index == 2;
+        final category = displayCategories[index];
+
+        return Container(
+          width: size,
+          height: size,
+          margin: EdgeInsets.only(left: index == 0 ? 0 : -overlap),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: isLastAndMore
+                ? Text(
+                    '+${categories.length - 2}',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  )
+                : Icon(
+                    AppConstants.getSportIcon(category),
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+          ),
+        );
+      }),
     );
   }
 }
