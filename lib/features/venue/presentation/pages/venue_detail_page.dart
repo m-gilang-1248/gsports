@@ -258,6 +258,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             const SizedBox(width: 16),
           ],
           flexibleSpace: FlexibleSpaceBar(
+            collapseMode:
+                CollapseMode.pin, // Prevents parallax from blocking gestures
             background: Stack(
               children: [
                 venue.photos.isNotEmpty
@@ -433,59 +435,19 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         ),
         SliverPersistentHeader(
           pinned: true,
-          delegate: _StickyDateDelegate(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: _buildDatePicker(context),
+          delegate: _StickyFiltersDelegate(
+            height: sportTypes.length > 1 ? 200 : 145,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 0, 16),
+                  child: _buildDatePicker(context),
+                ),
+                if (sportTypes.length > 1) _buildSportTabs(context, sportTypes),
+              ],
             ),
           ),
         ),
-        if (sportTypes.length > 1)
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickyTabDelegate(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                color: AppColors.background,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: sportTypes.length,
-                  itemBuilder: (context, index) {
-                    final sport = sportTypes[index];
-                    final isSelected = sport == _selectedSportType;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(sport),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          if (selected) {
-                            setState(() {
-                              _selectedSportType = sport;
-                            });
-                          }
-                        },
-                        selectedColor: AppColors.primary,
-                        labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : AppColors.primary,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                        backgroundColor: Colors.white,
-                        side: const BorderSide(color: AppColors.primary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        showCheckmark: false,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           sliver: filteredCourts.isEmpty
@@ -504,6 +466,51 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
+    );
+  }
+
+  Widget _buildSportTabs(BuildContext context, List<String> sportTypes) {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 8),
+      color: AppColors.background,
+      child: SizedBox(
+        height: 40,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          itemCount: sportTypes.length,
+          itemBuilder: (context, index) {
+            final sport = sportTypes[index];
+            final isSelected = sport == _selectedSportType;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(sport),
+                selected: isSelected,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() {
+                      _selectedSportType = sport;
+                    });
+                  }
+                },
+                selectedColor: AppColors.primary,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.primary,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+                backgroundColor: Colors.white,
+                side: const BorderSide(color: AppColors.primary),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                showCheckmark: false,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -571,57 +578,71 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   }
 
   Widget _buildDatePicker(BuildContext context) {
+    // Generate 14 days starting from the current selection or today
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // If _selectedDate is before today (shouldn't happen with picker), fallback to today
+    final startBase = _selectedDate.isBefore(today) ? today : _selectedDate;
+
     final List<DateTime> displayDates = List.generate(
       14,
-      (index) => _selectedDate.add(Duration(days: index)),
+      (index) => startBase.add(Duration(days: index)),
     );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Select Date',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontSize: 18),
-            ),
-            IconButton(
-              icon: const Icon(Icons.calendar_month, color: AppColors.primary),
-              onPressed: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (date != null && context.mounted) {
-                  setState(() => _selectedDate = date);
-                  final venueState = context.read<VenueBloc>().state;
-                  final bookingState = context.read<BookingBloc>().state;
-                  if (venueState is VenueDetailLoaded &&
-                      bookingState is BookingAvailabilityLoaded) {
-                    context.read<BookingBloc>().add(
-                      BookingAvailabilityChecked(
-                        courtId: bookingState.selectedCourtId,
-                        date: date,
-                        operatingHours: venueState.venue.operatingHours,
-                      ),
-                    );
+        Padding(
+          padding: const EdgeInsets.only(right: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Select Date',
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineMedium?.copyWith(fontSize: 18),
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.calendar_month,
+                  color: AppColors.primary,
+                ),
+                onPressed: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedDate,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                  );
+                  if (date != null && context.mounted) {
+                    setState(() => _selectedDate = date);
+                    final venueState = context.read<VenueBloc>().state;
+                    final bookingState = context.read<BookingBloc>().state;
+                    if (venueState is VenueDetailLoaded &&
+                        bookingState is BookingAvailabilityLoaded) {
+                      context.read<BookingBloc>().add(
+                        BookingAvailabilityChecked(
+                          courtId: bookingState.selectedCourtId,
+                          date: date,
+                          operatingHours: venueState.venue.operatingHours,
+                        ),
+                      );
+                    }
                   }
-                }
-              },
-            ),
-          ],
+                },
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 4),
         SizedBox(
-          height: 80,
+          height: 85,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             itemCount: displayDates.length,
             itemBuilder: (context, index) {
               final date = displayDates[index];
@@ -949,10 +970,11 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   }
 }
 
-class _StickyDateDelegate extends SliverPersistentHeaderDelegate {
+class _StickyFiltersDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
+  final double height;
 
-  _StickyDateDelegate({required this.child});
+  _StickyFiltersDelegate({required this.child, required this.height});
 
   @override
   Widget build(
@@ -960,47 +982,17 @@ class _StickyDateDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(
-      height: maxExtent,
-      color: AppColors.background,
-      child: child,
-    );
+    return Container(height: height, color: AppColors.background, child: child);
   }
 
   @override
-  double get maxExtent => 135;
+  double get maxExtent => height;
 
   @override
-  double get minExtent => 135;
+  double get minExtent => height;
 
   @override
-  bool shouldRebuild(covariant _StickyDateDelegate oldDelegate) {
-    return true;
-  }
-}
-
-class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
-  _StickyTabDelegate({required this.child});
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return Container(color: AppColors.background, child: child);
-  }
-
-  @override
-  double get maxExtent => 60;
-
-  @override
-  double get minExtent => 60;
-
-  @override
-  bool shouldRebuild(covariant _StickyTabDelegate oldDelegate) {
-    return true;
+  bool shouldRebuild(covariant _StickyFiltersDelegate oldDelegate) {
+    return oldDelegate.height != height || oldDelegate.child != child;
   }
 }
