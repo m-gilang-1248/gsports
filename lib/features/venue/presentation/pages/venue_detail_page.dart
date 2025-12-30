@@ -28,8 +28,11 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   DateTime _selectedDate = DateTime.now();
   String? _selectedSportType;
   int _currentImageIndex = 0;
+
   late ScrollController _scrollController;
   late PageController _pageController;
+  late ScrollController _dateScrollController;
+
   bool _isCollapsed = false;
 
   @override
@@ -39,11 +42,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
     _scrollController = ScrollController();
     _pageController = PageController();
+    _dateScrollController = ScrollController();
+
     _scrollController.addListener(() {
       final collapsed =
           _scrollController.hasClients &&
-          _scrollController.offset >
-              (MediaQuery.of(context).size.height * 0.4 - kToolbarHeight - 20);
+          _scrollController.offset > 200; // Threshold for title appearance
       if (collapsed != _isCollapsed) {
         setState(() {
           _isCollapsed = collapsed;
@@ -56,7 +60,26 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   void dispose() {
     _scrollController.dispose();
     _pageController.dispose();
+    _dateScrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollToSelectedDate() {
+    if (!_dateScrollController.hasClients) return;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final difference = _selectedDate.difference(today).inDays;
+
+    if (difference >= 0) {
+      // Approximate width of a date item (60 width + 12 margin)
+      const itemWidth = 72.0;
+      _dateScrollController.animateTo(
+        difference * itemWidth,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -95,23 +118,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               ),
             );
             context.go('/home');
-          } else if (state is BookingWaitingForPayment) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Menunggu pembayaran. Silakan cek riwayat pesanan.',
-                ),
-                backgroundColor: AppColors.warning,
-              ),
-            );
-            context.go('/home');
-          } else if (state is BookingCancelledState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Pembayaran dibatalkan'),
-                backgroundColor: AppColors.error,
-              ),
-            );
           } else if (state is BookingFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -122,6 +128,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           }
         },
         child: Scaffold(
+          backgroundColor: AppColors.background,
           body: BlocBuilder<VenueBloc, VenueState>(
             builder: (context, venueState) {
               if (venueState is VenueDetailLoading) {
@@ -163,13 +170,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
+        // 1. App Bar
         SliverAppBar(
-          expandedHeight: MediaQuery.of(context).size.height * 0.4,
           pinned: true,
           backgroundColor: Colors.white,
           elevation: 0,
           scrolledUnderElevation: 0,
-          centerTitle: true,
           title: _isCollapsed
               ? Text(
                   venue.name,
@@ -180,274 +186,222 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   ),
                 )
               : null,
-          leading: Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: _isCollapsed
-                  ? Colors.transparent
-                  : Colors.black.withValues(alpha: 0.3),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: _isCollapsed ? AppColors.textPrimary : Colors.white,
-              ),
-              onPressed: () => context.pop(),
-            ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary),
+            onPressed: () => context.pop(),
           ),
           actions: [
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: _isCollapsed
-                    ? Colors.transparent
-                    : Colors.black.withValues(alpha: 0.3),
-                shape: BoxShape.circle,
-              ),
-              child: BlocBuilder<FavoritesBloc, FavoritesState>(
-                builder: (context, state) {
-                  bool isFav = false;
-                  if (state is FavoriteStatusLoaded) {
-                    isFav = state.isFavorite;
-                  }
-                  return IconButton(
-                    icon: Icon(
-                      isFav ? Icons.favorite : Icons.favorite_border,
-                      color: isFav
-                          ? Colors.red
-                          : (_isCollapsed
-                                ? AppColors.textPrimary
-                                : Colors.white),
-                    ),
-                    onPressed: () {
-                      final user = FirebaseAuth.instance.currentUser;
-                      if (user == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Login untuk menyimpan favorit'),
-                          ),
-                        );
-                        return;
-                      }
-                      context.read<FavoritesBloc>().add(
-                        ToggleFavoriteRequested(user.uid, venue),
+            BlocBuilder<FavoritesBloc, FavoritesState>(
+              builder: (context, state) {
+                bool isFav = false;
+                if (state is FavoriteStatusLoaded) {
+                  isFav = state.isFavorite;
+                }
+                return IconButton(
+                  icon: Icon(
+                    isFav ? Icons.favorite : Icons.favorite_border,
+                    color: isFav ? Colors.red : AppColors.textPrimary,
+                  ),
+                  onPressed: () {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Login required')),
                       );
-                    },
-                  );
-                },
-              ),
+                      return;
+                    }
+                    context.read<FavoritesBloc>().add(
+                      ToggleFavoriteRequested(user.uid, venue),
+                    );
+                  },
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.share, color: AppColors.textPrimary),
+              onPressed: () {},
             ),
             const SizedBox(width: 8),
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: _isCollapsed
-                    ? Colors.transparent
-                    : Colors.black.withValues(alpha: 0.3),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.share,
-                  color: _isCollapsed ? AppColors.textPrimary : Colors.white,
-                ),
-                onPressed: () {},
-              ),
-            ),
-            const SizedBox(width: 16),
           ],
-          flexibleSpace: FlexibleSpaceBar(
-            collapseMode:
-                CollapseMode.pin, // Prevents parallax from blocking gestures
-            background: Stack(
-              children: [
-                venue.photos.isNotEmpty
-                    ? PageView.builder(
-                        controller: _pageController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: venue.photos.length,
-                        onPageChanged: (index) {
-                          setState(() {
-                            _currentImageIndex = index;
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          return Image.network(
-                            venue.photos[index],
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(color: Colors.grey),
-                          );
-                        },
-                      )
-                    : Container(color: Colors.grey[300]),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.4),
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.4),
-                      ],
-                    ),
-                  ),
-                ),
-                if (venue.photos.length > 1)
-                  Positioned(
-                    bottom: 32,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        venue.photos.length,
-                        (index) => AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: _currentImageIndex == index ? 24 : 8,
-                          height: 8,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            color: _currentImageIndex == index
-                                ? AppColors.primary
-                                : Colors.white.withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(4),
+        ),
+
+        // 2. Carousel
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.35,
+                child: Stack(
+                  children: [
+                    venue.photos.isNotEmpty
+                        ? PageView.builder(
+                            controller: _pageController,
+                            itemCount: venue.photos.length,
+                            onPageChanged: (index) {
+                              setState(() => _currentImageIndex = index);
+                            },
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                venue.photos[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(color: Colors.grey),
+                              );
+                            },
+                          )
+                        : Container(color: Colors.grey[300]),
+                    if (venue.photos.length > 1)
+                      Positioned(
+                        bottom: 16,
+                        left: 0,
+                        right: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            venue.photos.length,
+                            (index) => AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: _currentImageIndex == index ? 24 : 8,
+                              height: 8,
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              decoration: BoxDecoration(
+                                color: _currentImageIndex == index
+                                    ? AppColors.primary
+                                    : Colors.white.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
                           ),
                         ),
                       ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // 3. Venue Info
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  venue.name,
+                  style: Theme.of(context).textTheme.headlineLarge,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      size: 16,
+                      color: AppColors.primary,
                     ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        venue.address,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                    const Icon(Icons.star, size: 18, color: AppColors.warning),
+                    const SizedBox(width: 4),
+                    Text(
+                      venue.rating.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildSportBadges(venue, courts),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral,
+                    borderRadius: BorderRadius.circular(16),
                   ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Start from',
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                      Text(
+                        '${currencyFormat.format(venue.minPrice)} / jam',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Description',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  venue.description,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Facilities',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: venue.facilities.map((facility) {
+                    return Chip(
+                      label: Text(facility),
+                      avatar: Icon(
+                        kFacilityIcons[facility] ?? Icons.check_circle,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                      backgroundColor: AppColors.surface,
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 32),
+                const Divider(),
               ],
             ),
           ),
         ),
-        SliverToBoxAdapter(
-          child: Container(
-            color: AppColors.background,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+
+        // 4. Combined Sticky Header
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: _StickyFiltersDelegate(
+            height: sportTypes.length > 1 ? 210 : 150,
+            child: Container(
+              color: AppColors.background,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 24),
-                  Text(
-                    venue.name,
-                    style: Theme.of(context).textTheme.headlineLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        size: 16,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          venue.address,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      const Icon(
-                        Icons.star,
-                        size: 18,
-                        color: AppColors.warning,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        venue.rating.toString(),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildSportBadges(venue, courts),
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.neutral,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Start from',
-                          style: Theme.of(context).textTheme.labelMedium,
-                        ),
-                        Text(
-                          '${currencyFormat.format(venue.minPrice)} / jam',
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: AppColors.primary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Description',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    venue.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Facilities',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: venue.facilities.map((facility) {
-                      return Chip(
-                        label: Text(facility),
-                        avatar: Icon(
-                          kFacilityIcons[facility] ?? Icons.check_circle,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                        backgroundColor: AppColors.surface,
-                        side: BorderSide.none,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        elevation: 1,
-                        shadowColor: Colors.black12,
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 8),
+                  _buildDatePicker(context),
+                  if (sportTypes.length > 1)
+                    _buildSportTabs(context, sportTypes),
                 ],
               ),
             ),
           ),
         ),
-        SliverPersistentHeader(
-          pinned: true,
-          delegate: _StickyFiltersDelegate(
-            height: sportTypes.length > 1 ? 200 : 145,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 0, 16),
-                  child: _buildDatePicker(context),
-                ),
-                if (sportTypes.length > 1) _buildSportTabs(context, sportTypes),
-              ],
-            ),
-          ),
-        ),
+
+        // 5. Courts List
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           sliver: filteredCourts.isEmpty
@@ -469,76 +423,186 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     );
   }
 
-  Widget _buildSportTabs(BuildContext context, List<String> sportTypes) {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 8),
-      color: AppColors.background,
-      child: SizedBox(
-        height: 40,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          itemCount: sportTypes.length,
-          itemBuilder: (context, index) {
-            final sport = sportTypes[index];
-            final isSelected = sport == _selectedSportType;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(sport),
-                selected: isSelected,
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _selectedSportType = sport;
-                    });
-                  }
-                },
-                selectedColor: AppColors.primary,
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.primary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  Widget _buildDatePicker(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Static range of 30 days
+    final List<DateTime> displayDates = List.generate(
+      30,
+      (index) => today.add(Duration(days: index)),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 0, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Select Date',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.headlineMedium?.copyWith(fontSize: 18),
                 ),
-                backgroundColor: Colors.white,
-                side: const BorderSide(color: AppColors.primary),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                IconButton(
+                  icon: const Icon(
+                    Icons.calendar_month,
+                    color: AppColors.primary,
+                  ),
+                  onPressed: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (date != null && context.mounted) {
+                      setState(() => _selectedDate = date);
+                      _scrollToSelectedDate();
+                      _refreshAvailability();
+                    }
+                  },
                 ),
-                showCheckmark: false,
-              ),
-            );
-          },
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 85,
+            child: ListView.builder(
+              controller: _dateScrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: displayDates.length,
+              itemBuilder: (context, index) {
+                final date = displayDates[index];
+                final isSelected = DateUtils.isSameDay(date, _selectedDate);
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => _selectedDate = date);
+                    _refreshAvailability();
+                  },
+                  child: Container(
+                    width: 60,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primary : AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.border,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          DateFormat('MMM').format(date),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          date.day.toString(),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          DateFormat('E').format(date),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _refreshAvailability() {
+    final bookingState = context.read<BookingBloc>().state;
+    final venueState = context.read<VenueBloc>().state;
+    if (venueState is VenueDetailLoaded &&
+        bookingState is BookingAvailabilityLoaded) {
+      context.read<BookingBloc>().add(
+        BookingAvailabilityChecked(
+          courtId: bookingState.selectedCourtId,
+          date: _selectedDate,
+          operatingHours: venueState.venue.operatingHours,
         ),
+      );
+    }
+  }
+
+  Widget _buildSportTabs(BuildContext context, List<String> sportTypes) {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        itemCount: sportTypes.length,
+        itemBuilder: (context, index) {
+          final sport = sportTypes[index];
+          final isSelected = sport == _selectedSportType;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(sport),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() => _selectedSportType = sport);
+                }
+              },
+              selectedColor: AppColors.primary,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : AppColors.primary,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+              backgroundColor: Colors.white,
+              side: const BorderSide(color: AppColors.primary),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              showCheckmark: false,
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildSportBadges(Venue venue, List<Court> courts) {
-    final sportIds = courts.map((c) => c.sportType.toLowerCase()).toSet();
-    final detectedFromVenue = AppConstants.sports
-        .where((sport) {
-          final queryId = sport.id.toLowerCase();
-          final queryName = sport.displayName.toLowerCase();
-          final keywords = sport.keywords.map((k) => k.toLowerCase()).toList();
-          final inName =
-              venue.name.toLowerCase().contains(queryId) ||
-              venue.name.toLowerCase().contains(queryName) ||
-              keywords.any((k) => venue.name.toLowerCase().contains(k));
-          final inFacilities = venue.facilities.any((f) {
-            final fLower = f.toLowerCase();
-            return fLower.contains(queryId) ||
-                fLower.contains(queryName) ||
-                keywords.any((k) => fLower.contains(k));
-          });
-          return inName || inFacilities;
-        })
-        .map((s) => s.id.toLowerCase());
-    final allSportIds = {...sportIds, ...detectedFromVenue};
+    final sportIds = courts.map((c) => c.sportType).toSet().toList();
     final detectedSports = AppConstants.sports
-        .where((s) => allSportIds.contains(s.id.toLowerCase()))
+        .where((s) => sportIds.contains(s.id))
         .toList();
-    if (detectedSports.isEmpty) return const SizedBox.shrink();
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -548,13 +612,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
             border: Border.all(color: Colors.grey.shade200),
           ),
           child: Row(
@@ -574,164 +631,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           ),
         );
       }).toList(),
-    );
-  }
-
-  Widget _buildDatePicker(BuildContext context) {
-    // Generate 14 days starting from the current selection or today
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-
-    // If _selectedDate is before today (shouldn't happen with picker), fallback to today
-    final startBase = _selectedDate.isBefore(today) ? today : _selectedDate;
-
-    final List<DateTime> displayDates = List.generate(
-      14,
-      (index) => startBase.add(Duration(days: index)),
-    );
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Select Date',
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineMedium?.copyWith(fontSize: 18),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.calendar_month,
-                  color: AppColors.primary,
-                ),
-                onPressed: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDate,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-                  if (date != null && context.mounted) {
-                    setState(() => _selectedDate = date);
-                    final venueState = context.read<VenueBloc>().state;
-                    final bookingState = context.read<BookingBloc>().state;
-                    if (venueState is VenueDetailLoaded &&
-                        bookingState is BookingAvailabilityLoaded) {
-                      context.read<BookingBloc>().add(
-                        BookingAvailabilityChecked(
-                          courtId: bookingState.selectedCourtId,
-                          date: date,
-                          operatingHours: venueState.venue.operatingHours,
-                        ),
-                      );
-                    }
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        SizedBox(
-          height: 85,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: displayDates.length,
-            itemBuilder: (context, index) {
-              final date = displayDates[index];
-              final isSelected =
-                  date.day == _selectedDate.day &&
-                  date.month == _selectedDate.month &&
-                  date.year == _selectedDate.year;
-
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _selectedDate = date);
-                  final venueState = context.read<VenueBloc>().state;
-                  final bookingState = context.read<BookingBloc>().state;
-                  if (venueState is VenueDetailLoaded &&
-                      bookingState is BookingAvailabilityLoaded) {
-                    context.read<BookingBloc>().add(
-                      BookingAvailabilityChecked(
-                        courtId: bookingState.selectedCourtId,
-                        date: date,
-                        operatingHours: venueState.venue.operatingHours,
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  width: 60,
-                  margin: const EdgeInsets.only(right: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primary : AppColors.border,
-                      width: isSelected ? 2 : 1,
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        DateFormat('MMM').format(date),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          color: isSelected
-                              ? Colors.white
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        date.day.toString(),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected
-                              ? Colors.white
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        DateFormat('E').format(date),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          color: isSelected
-                              ? Colors.white
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 
@@ -792,10 +691,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                           child: Image.network(
                             court.photos.first,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              AppConstants.getSportIcon(court.sportType),
-                              color: AppColors.primary,
-                            ),
                           ),
                         )
                       : Icon(
@@ -921,9 +816,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   ) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login untuk melakukan booking')),
-      );
       context.push('/login');
       return;
     }
@@ -960,9 +852,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
       '/payment',
       extra: state.paymentUrl,
     );
-
     if (!context.mounted) return;
-
     final status = result ?? 'pending';
     context.read<BookingBloc>().add(
       BookingPaymentCompleted(bookingId: state.bookingId, status: status),
@@ -982,7 +872,7 @@ class _StickyFiltersDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(height: height, color: AppColors.background, child: child);
+    return child;
   }
 
   @override
