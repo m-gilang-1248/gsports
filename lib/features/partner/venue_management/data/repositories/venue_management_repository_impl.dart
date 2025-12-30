@@ -116,7 +116,11 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
   }
 
   @override
-  Future<Either<Failure, void>> addCourt(String venueId, Court court) async {
+  Future<Either<Failure, void>> addCourt(
+    String venueId,
+    Court court, {
+    List<File> images = const [],
+  }) async {
     try {
       final courtModel = CourtModel(
         id: court.id,
@@ -124,8 +128,12 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
         sportType: court.sportType,
         hourlyPrice: court.hourlyPrice,
         isActive: court.isActive,
+        surfaceType: court.surfaceType,
+        isIndoor: court.isIndoor,
+        photos: court.photos,
+        description: court.description,
       );
-      await remoteDataSource.addCourt(venueId, courtModel);
+      await remoteDataSource.addCourt(venueId, courtModel, images);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -135,7 +143,12 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updateCourt(String venueId, Court court) async {
+  Future<Either<Failure, void>> updateCourt(
+    String venueId,
+    Court court, {
+    List<File> newImages = const [],
+    List<String> removedImageUrls = const [],
+  }) async {
     try {
       final courtModel = CourtModel(
         id: court.id,
@@ -143,8 +156,17 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
         sportType: court.sportType,
         hourlyPrice: court.hourlyPrice,
         isActive: court.isActive,
+        surfaceType: court.surfaceType,
+        isIndoor: court.isIndoor,
+        photos: court.photos,
+        description: court.description,
       );
-      await remoteDataSource.updateCourt(venueId, courtModel);
+      await remoteDataSource.updateCourt(
+        venueId,
+        courtModel,
+        newImages: newImages,
+        removedImageUrls: removedImageUrls,
+      );
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

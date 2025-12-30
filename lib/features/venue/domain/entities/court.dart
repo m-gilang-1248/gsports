@@ -8,6 +8,8 @@ class Court extends Equatable {
   final bool isActive;
   final String surfaceType;
   final bool isIndoor;
+  final List<String> photos;
+  final String description;
 
   const Court({
     required this.id,
@@ -17,16 +19,20 @@ class Court extends Equatable {
     this.isActive = true,
     this.surfaceType = 'Standard',
     this.isIndoor = true,
+    this.photos = const [],
+    this.description = '',
   });
 
   @override
   List<Object?> get props => [
-    id,
-    name,
-    sportType,
-    hourlyPrice,
-    isActive,
-    surfaceType,
-    isIndoor,
-  ];
+        id,
+        name,
+        sportType,
+        hourlyPrice,
+        isActive,
+        surfaceType,
+        isIndoor,
+        photos,
+        description,
+      ];
 }

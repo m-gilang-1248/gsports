@@ -14,6 +14,10 @@ CourtModel _$CourtModelFromJson(Map<String, dynamic> json) => CourtModel(
   isActive: json['isActive'] as bool? ?? true,
   surfaceType: json['surfaceType'] as String? ?? 'Standard',
   isIndoor: json['isIndoor'] as bool? ?? true,
+  photos:
+      (json['photos'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  description: json['description'] as String? ?? '',
 );
 
 Map<String, dynamic> _$CourtModelToJson(CourtModel instance) =>
@@ -25,4 +29,6 @@ Map<String, dynamic> _$CourtModelToJson(CourtModel instance) =>
       'isActive': instance.isActive,
       'surfaceType': instance.surfaceType,
       'isIndoor': instance.isIndoor,
+      'photos': instance.photos,
+      'description': instance.description,
     };

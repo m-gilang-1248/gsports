@@ -14,6 +14,8 @@ class CourtModel extends Court {
     super.isActive = true,
     super.surfaceType = 'Standard',
     super.isIndoor = true,
+    super.photos = const [],
+    super.description = '',
   });
 
   factory CourtModel.fromJson(Map<String, dynamic> json) =>
@@ -31,6 +33,8 @@ class CourtModel extends Court {
       isActive: data['isActive'] as bool? ?? true,
       surfaceType: data['surfaceType'] as String? ?? 'Standard',
       isIndoor: data['isIndoor'] as bool? ?? true,
+      photos: List<String>.from(data['photos'] as List? ?? []),
+      description: data['description'] as String? ?? '',
     );
   }
 }
