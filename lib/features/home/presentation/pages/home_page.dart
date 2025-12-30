@@ -215,11 +215,7 @@ class _HomePageState extends State<HomePage>
                       color: AppColors.neutral,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      sport.icon,
-                      color: AppColors.primary,
-                      size: 28,
-                    ),
+                    child: Icon(sport.icon, color: AppColors.primary, size: 28),
                   ),
                   const SizedBox(height: 8),
                   Text(

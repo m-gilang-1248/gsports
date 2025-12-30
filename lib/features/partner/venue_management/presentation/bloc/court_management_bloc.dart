@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
@@ -14,13 +15,21 @@ class FetchCourts extends CourtManagementEvent {
 class AddCourtRequested extends CourtManagementEvent {
   final String venueId;
   final Court court;
-  AddCourtRequested(this.venueId, this.court);
+  final List<File> images;
+  AddCourtRequested(this.venueId, this.court, this.images);
 }
 
 class UpdateCourtRequested extends CourtManagementEvent {
   final String venueId;
   final Court court;
-  UpdateCourtRequested(this.venueId, this.court);
+  final List<File>? newImages;
+  final List<String>? removedImageUrls;
+  UpdateCourtRequested(
+    this.venueId,
+    this.court, {
+    this.newImages,
+    this.removedImageUrls,
+  });
 }
 
 class DeleteCourtRequested extends CourtManagementEvent {
@@ -88,7 +97,9 @@ class CourtManagementBloc
     Emitter<CourtManagementState> emit,
   ) async {
     emit(CourtManagementLoading());
-    final result = await addCourt(AddCourtParams(event.venueId, event.court));
+    final result = await addCourt(
+      AddCourtParams(event.venueId, event.court, event.images),
+    );
     result.fold((failure) => emit(CourtManagementError(failure.message)), (_) {
       emit(CourtActionSuccess("Court added successfully"));
       add(FetchCourts(event.venueId));
@@ -101,7 +112,12 @@ class CourtManagementBloc
   ) async {
     emit(CourtManagementLoading());
     final result = await updateCourt(
-      UpdateCourtParams(event.venueId, event.court),
+      UpdateCourtParams(
+        event.venueId,
+        event.court,
+        newImages: event.newImages,
+        removedImageUrls: event.removedImageUrls,
+      ),
     );
     result.fold((failure) => emit(CourtManagementError(failure.message)), (_) {
       emit(CourtActionSuccess("Court updated successfully"));

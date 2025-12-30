@@ -136,9 +136,9 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                           .map((c) => c.sportType)
                           .toSet()
                           .toList();
-                      
+
                       if (sportTypes.isEmpty) {
-                         return const Text('Belum ada lapangan di venue ini');
+                        return const Text('Belum ada lapangan di venue ini');
                       }
 
                       return DropdownButtonFormField<String>(
@@ -218,6 +218,7 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                               BookingAvailabilityChecked(
                                 courtId: c.id,
                                 date: _selectedDate,
+                                operatingHours: _selectedVenue?.operatingHours,
                               ),
                             );
                           }
@@ -250,12 +251,15 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                         _selectedDate = date;
                         _selectedSlots.clear();
                       });
-                      context.read<BookingBloc>().add(
-                        BookingAvailabilityChecked(
-                          courtId: _selectedCourt!.id,
-                          date: date,
-                        ),
-                      );
+                      if (context.mounted) {
+                        context.read<BookingBloc>().add(
+                          BookingAvailabilityChecked(
+                            courtId: _selectedCourt!.id,
+                            date: date,
+                            operatingHours: _selectedVenue?.operatingHours,
+                          ),
+                        );
+                      }
                     }
                   },
                   child: Container(
@@ -285,6 +289,15 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                 BlocBuilder<BookingBloc, BookingState>(
                   builder: (context, state) {
                     if (state is BookingAvailabilityLoaded) {
+                      final availabilityMap = state.availabilityMap;
+                      final sortedHours = availabilityMap.keys.toList()..sort();
+
+                      if (sortedHours.isEmpty) {
+                        return const Center(
+                          child: Text('Venue tutup pada tanggal ini.'),
+                        );
+                      }
+
                       return GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -295,17 +308,16 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                               crossAxisSpacing: 8,
                               mainAxisSpacing: 8,
                             ),
-                        itemCount: 15, // 08:00 - 22:00
+                        itemCount: sortedHours.length,
                         itemBuilder: (context, index) {
-                          final hour = index + 8;
+                          final hour = sortedHours[index];
                           final slotTime = DateTime(
                             _selectedDate.year,
                             _selectedDate.month,
                             _selectedDate.day,
                             hour,
                           );
-                          final isAvailable =
-                              state.availabilityMap[hour] ?? false;
+                          final isAvailable = availabilityMap[hour] ?? false;
                           final isSelected = _selectedSlots.any(
                             (s) => s.hour == hour,
                           );

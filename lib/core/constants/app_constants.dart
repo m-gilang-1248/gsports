@@ -101,12 +101,11 @@ class AppConstants {
       return sports
           .firstWhere(
             (s) => s.id.toLowerCase() == sportType.toLowerCase(),
-            orElse:
-                () => const SportCategory(
-                  id: 'unknown',
-                  displayName: 'Unknown',
-                  icon: Icons.sports,
-                ),
+            orElse: () => const SportCategory(
+              id: 'unknown',
+              displayName: 'Unknown',
+              icon: Icons.sports,
+            ),
           )
           .icon;
     } catch (e) {
@@ -119,12 +118,11 @@ class AppConstants {
       return sports
           .firstWhere(
             (s) => s.id.toLowerCase() == sportType.toLowerCase(),
-            orElse:
-                () => SportCategory(
-                  id: sportType,
-                  displayName: sportType, // Fallback to key
-                  icon: Icons.sports,
-                ),
+            orElse: () => SportCategory(
+              id: sportType,
+              displayName: sportType, // Fallback to key
+              icon: Icons.sports,
+            ),
           )
           .displayName;
     } catch (e) {

@@ -118,9 +118,9 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
   @override
   Future<Either<Failure, void>> addCourt(
     String venueId,
-    Court court, {
-    List<File> images = const [],
-  }) async {
+    Court court,
+    List<File> images,
+  ) async {
     try {
       final courtModel = CourtModel(
         id: court.id,
@@ -146,8 +146,8 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
   Future<Either<Failure, void>> updateCourt(
     String venueId,
     Court court, {
-    List<File> newImages = const [],
-    List<String> removedImageUrls = const [],
+    List<File>? newImages,
+    List<String>? removedImageUrls,
   }) async {
     try {
       final courtModel = CourtModel(

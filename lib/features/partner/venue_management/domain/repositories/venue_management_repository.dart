@@ -16,7 +16,16 @@ abstract class VenueManagementRepository {
 
   // Court Management
   Future<Either<Failure, List<Court>>> getVenueCourts(String venueId);
-  Future<Either<Failure, void>> addCourt(String venueId, Court court);
-  Future<Either<Failure, void>> updateCourt(String venueId, Court court);
+  Future<Either<Failure, void>> addCourt(
+    String venueId,
+    Court court,
+    List<File> images,
+  );
+  Future<Either<Failure, void>> updateCourt(
+    String venueId,
+    Court court, {
+    List<File>? newImages,
+    List<String>? removedImageUrls,
+  });
   Future<Either<Failure, void>> deleteCourt(String venueId, String courtId);
 }

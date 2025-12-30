@@ -79,7 +79,7 @@ class _OrdersViewState extends State<OrdersView>
             ],
           ),
         ),
-        
+
         // Content Section
         Expanded(
           child: BlocBuilder<OrderManagementBloc, OrderManagementState>(

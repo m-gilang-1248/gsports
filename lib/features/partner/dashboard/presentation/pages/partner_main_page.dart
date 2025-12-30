@@ -20,7 +20,8 @@ class PartnerMainPage extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (context) =>
-              GetIt.I<PartnerDashboardBloc>()..add(FetchPartnerDashboardStats()),
+              GetIt.I<PartnerDashboardBloc>()
+                ..add(FetchPartnerDashboardStats()),
         ),
         BlocProvider(
           create: (context) =>
@@ -64,10 +65,7 @@ class _PartnerMainPageViewState extends State<_PartnerMainPageView> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -157,10 +155,7 @@ class _PartnerMainPageViewState extends State<_PartnerMainPageView> {
     }
 
     return AppBar(
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.white,
       actions: actions,

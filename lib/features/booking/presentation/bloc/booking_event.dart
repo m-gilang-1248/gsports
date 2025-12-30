@@ -10,11 +10,16 @@ abstract class BookingEvent extends Equatable {
 class BookingAvailabilityChecked extends BookingEvent {
   final String courtId;
   final DateTime date;
+  final Map<String, dynamic>? operatingHours;
 
-  const BookingAvailabilityChecked({required this.courtId, required this.date});
+  const BookingAvailabilityChecked({
+    required this.courtId,
+    required this.date,
+    this.operatingHours,
+  });
 
   @override
-  List<Object> get props => [courtId, date];
+  List<Object> get props => [courtId, date, operatingHours ?? {}];
 }
 
 class BookingSlotSelected extends BookingEvent {

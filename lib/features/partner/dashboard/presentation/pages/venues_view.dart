@@ -99,7 +99,8 @@ class VenuesView extends StatelessWidget {
       final queryName = sport.displayName.toLowerCase();
       final keywords = sport.keywords.map((k) => k.toLowerCase()).toList();
 
-      final inName = venue.name.toLowerCase().contains(queryId) ||
+      final inName =
+          venue.name.toLowerCase().contains(queryId) ||
           venue.name.toLowerCase().contains(queryName) ||
           keywords.any((k) => venue.name.toLowerCase().contains(k));
 

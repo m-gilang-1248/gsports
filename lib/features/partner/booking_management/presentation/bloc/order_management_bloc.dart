@@ -41,9 +41,9 @@ class OrderManagementBloc
     }
 
     await _bookingsSubscription?.cancel();
-    _bookingsSubscription = getPartnerBookings
-        .callStream(user.uid)
-        .listen((result) {
+    _bookingsSubscription = getPartnerBookings.callStream(user.uid).listen((
+      result,
+    ) {
       result.fold(
         (failure) => add(PartnerBookingsUpdated(const [])), // Or handle error
         (bookings) => add(PartnerBookingsUpdated(bookings)),
@@ -60,8 +60,9 @@ class OrderManagementBloc
     final today = DateTime(now.year, now.month, now.day);
 
     // 1. Pending Bookings (Status: waiting_payment)
-    final pending =
-        bookings.where((b) => b.status == 'waiting_payment').toList();
+    final pending = bookings
+        .where((b) => b.status == 'waiting_payment')
+        .toList();
     // Sort pending by oldest first (urgent to confirm) or newest? usually newest first for dashboard
     pending.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 

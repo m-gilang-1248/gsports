@@ -73,8 +73,7 @@ class RevenueAnalyticsPage extends StatelessWidget {
                     child: ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: revenueBookings.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(),
+                      separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {
                         final booking = revenueBookings[index];
                         return ListTile(

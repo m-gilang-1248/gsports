@@ -146,19 +146,24 @@ class BookingRepositoryImpl implements BookingRepository {
   Stream<Either<Failure, List<Booking>>> getPartnerBookingsStream(
     String ownerId,
   ) {
-    return remoteDataSource.getPartnerBookingsStream(ownerId).map((bookings) {
-      return Right<Failure, List<Booking>>(bookings);
-    }).handleError((error) {
-      if (error is ServerException) {
-        return Left<Failure, List<Booking>>(ServerFailure(error.message));
-      } else if (error is FirebaseException) {
-        return Left<Failure, List<Booking>>(
-          ServerFailure(error.message ?? 'Unknown Firebase error'),
-        );
-      } else {
-        return Left<Failure, List<Booking>>(ServerFailure(error.toString()));
-      }
-    });
+    return remoteDataSource
+        .getPartnerBookingsStream(ownerId)
+        .map((bookings) {
+          return Right<Failure, List<Booking>>(bookings);
+        })
+        .handleError((error) {
+          if (error is ServerException) {
+            return Left<Failure, List<Booking>>(ServerFailure(error.message));
+          } else if (error is FirebaseException) {
+            return Left<Failure, List<Booking>>(
+              ServerFailure(error.message ?? 'Unknown Firebase error'),
+            );
+          } else {
+            return Left<Failure, List<Booking>>(
+              ServerFailure(error.toString()),
+            );
+          }
+        });
   }
 
   @override

@@ -48,79 +48,82 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         .where('ownerId', isEqualTo: ownerId)
         .snapshots()
         .asyncMap((snapshot) async {
-      final bookings = <BookingModel>[];
+          final bookings = <BookingModel>[];
 
-      for (final doc in snapshot.docs) {
-        var booking = BookingModel.fromJson(doc.data()..['id'] = doc.id);
+          for (final doc in snapshot.docs) {
+            var booking = BookingModel.fromJson(doc.data()..['id'] = doc.id);
 
-        // Enrichment: If participants list is empty or name is guest/user/missing, fetch user data
-        // BUT: Skip if it's a manual booking (don't overwrite the name entered by partner)
-        final isManual = booking.midtransOrderId?.startsWith('MANUAL') ?? false;
-        
-        final firstParticipantName =
-            booking.participants.isNotEmpty
+            // Enrichment: If participants list is empty or name is guest/user/missing, fetch user data
+            // BUT: Skip if it's a manual booking (don't overwrite the name entered by partner)
+            final isManual =
+                booking.midtransOrderId?.startsWith('MANUAL') ?? false;
+
+            final firstParticipantName = booking.participants.isNotEmpty
                 ? booking.participants.first.name.trim().toLowerCase()
                 : '';
-        
-        if (!isManual && (booking.participants.isEmpty ||
-            ((firstParticipantName.contains('guest') ||
-                    firstParticipantName == 'user') &&
-                booking.userId.isNotEmpty))) {
-          try {
-            final userDoc =
-                await firestore.collection('users').doc(booking.userId).get();
-            if (userDoc.exists) {
-              final userData = userDoc.data();
-              final userName = userData?['displayName'] ?? 'User';
-              final userPhoto = userData?['photoUrl'];
 
-              // Create enriched participant
-              final enrichedParticipant = PaymentParticipantModel(
-                uid: booking.userId,
-                name: userName,
-                status: 'host',
-                paymentStatusToHost: 'paid', // Assume host paid
-                profileUrl: userPhoto,
-              );
+            if (!isManual &&
+                (booking.participants.isEmpty ||
+                    ((firstParticipantName.contains('guest') ||
+                            firstParticipantName == 'user') &&
+                        booking.userId.isNotEmpty))) {
+              try {
+                final userDoc = await firestore
+                    .collection('users')
+                    .doc(booking.userId)
+                    .get();
+                if (userDoc.exists) {
+                  final userData = userDoc.data();
+                  final userName = userData?['displayName'] ?? 'User';
+                  final userPhoto = userData?['photoUrl'];
 
-              // Update booking with enriched participant
-              booking = BookingModel(
-                id: booking.id,
-                userId: booking.userId,
-                venueId: booking.venueId,
-                ownerId: booking.ownerId,
-                courtId: booking.courtId,
-                sportType: booking.sportType,
-                date: booking.date,
-                startTime: booking.startTime,
-                endTime: booking.endTime,
-                durationHours: booking.durationHours,
-                totalPrice: booking.totalPrice,
-                status: booking.status,
-                paymentStatus: booking.paymentStatus,
-                venueName: booking.venueName,
-                courtName: booking.courtName,
-                venueLocation: booking.venueLocation,
-                midtransOrderId: booking.midtransOrderId,
-                midtransPaymentUrl: booking.midtransPaymentUrl,
-                isSplitBill: booking.isSplitBill,
-                splitCode: booking.splitCode,
-                participants: [enrichedParticipant],
-                participantIds: booking.participantIds,
-                createdAt: booking.createdAt,
-              );
+                  // Create enriched participant
+                  final enrichedParticipant = PaymentParticipantModel(
+                    uid: booking.userId,
+                    name: userName,
+                    status: 'host',
+                    paymentStatusToHost: 'paid', // Assume host paid
+                    profileUrl: userPhoto,
+                  );
+
+                  // Update booking with enriched participant
+                  booking = BookingModel(
+                    id: booking.id,
+                    userId: booking.userId,
+                    venueId: booking.venueId,
+                    ownerId: booking.ownerId,
+                    courtId: booking.courtId,
+                    sportType: booking.sportType,
+                    date: booking.date,
+                    startTime: booking.startTime,
+                    endTime: booking.endTime,
+                    durationHours: booking.durationHours,
+                    totalPrice: booking.totalPrice,
+                    status: booking.status,
+                    paymentStatus: booking.paymentStatus,
+                    venueName: booking.venueName,
+                    courtName: booking.courtName,
+                    venueLocation: booking.venueLocation,
+                    midtransOrderId: booking.midtransOrderId,
+                    midtransPaymentUrl: booking.midtransPaymentUrl,
+                    isSplitBill: booking.isSplitBill,
+                    splitCode: booking.splitCode,
+                    participants: [enrichedParticipant],
+                    participantIds: booking.participantIds,
+                    createdAt: booking.createdAt,
+                  );
+                }
+              } catch (e) {
+                developer.log('Error enriching booking ${booking.id}: $e');
+              }
             }
-          } catch (e) {
-            developer.log('Error enriching booking ${booking.id}: $e');
+            bookings.add(booking);
           }
-        }
-        bookings.add(booking);
-      }
 
-      // Client-side sort by createdAt descending (Newest first)
-      bookings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return bookings;
-    });
+          // Client-side sort by createdAt descending (Newest first)
+          bookings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return bookings;
+        });
   }
 
   @override

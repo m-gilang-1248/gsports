@@ -164,8 +164,9 @@ class BookingOrderCard extends StatelessWidget {
   }
 
   Widget _buildUserRow(Booking booking) {
-    final participant =
-        booking.participants.isNotEmpty ? booking.participants.first : null;
+    final participant = booking.participants.isNotEmpty
+        ? booking.participants.first
+        : null;
     final name = participant?.name ?? 'Guest';
     final profileUrl = participant?.profileUrl;
 
@@ -174,19 +175,17 @@ class BookingOrderCard extends StatelessWidget {
         CircleAvatar(
           radius: 12,
           backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-          backgroundImage:
-              profileUrl != null ? NetworkImage(profileUrl) : null,
-          child:
-              profileUrl == null
-                  ? Text(
-                    name.isNotEmpty ? name[0].toUpperCase() : 'G',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                  : null,
+          backgroundImage: profileUrl != null ? NetworkImage(profileUrl) : null,
+          child: profileUrl == null
+              ? Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : 'G',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              : null,
         ),
         const SizedBox(width: 8),
         Expanded(

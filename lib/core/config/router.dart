@@ -27,6 +27,7 @@ import 'package:gsports/features/partner/booking_management/presentation/pages/p
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
 import 'package:gsports/features/profile/presentation/pages/edit_profile_page.dart';
+import 'package:gsports/features/favorites/presentation/pages/saved_venues_page.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:gsports/features/scoreboard/presentation/pages/scoreboard_page.dart';
@@ -203,6 +204,11 @@ class AppRouter {
       GoRoute(
         path: '/edit-profile',
         builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: '/favorites',
+        name: 'favorites',
+        builder: (context, state) => const SavedVenuesPage(),
       ),
       GoRoute(
         path: '/scoreboard',

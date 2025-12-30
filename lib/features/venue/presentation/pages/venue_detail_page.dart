@@ -10,6 +10,7 @@ import 'package:gsports/features/booking/presentation/widgets/booking_time_slot_
 import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
+import 'package:gsports/features/favorites/presentation/bloc/favorites_bloc.dart';
 import 'package:gsports/injection_container.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,13 +28,23 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   DateTime _selectedDate = DateTime.now();
   int _currentImageIndex = 0;
   late ScrollController _scrollController;
+  late PageController _pageController;
   bool _isCollapsed = false;
 
   @override
   void initState() {
     super.initState();
     context.read<VenueBloc>().add(VenueFetchDetailRequested(widget.venueId));
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // We'll provide FavoritesBloc via MultiBlocProvider in build,
+      // but we need to trigger the event.
+      // Since we create it in build, we can't read it here easily unless we use a wrapper.
+    }
+
     _scrollController = ScrollController();
+    _pageController = PageController();
     _scrollController.addListener(() {
       final collapsed =
           _scrollController.hasClients &&
@@ -50,13 +61,26 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<BookingBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => getIt<BookingBloc>()),
+        BlocProvider(
+          create: (context) {
+            final bloc = getIt<FavoritesBloc>();
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              bloc.add(CheckIsFavoriteRequested(user.uid, widget.venueId));
+            }
+            return bloc;
+          },
+        ),
+      ],
       child: BlocListener<BookingBloc, BookingState>(
         listener: (context, state) {
           if (state is BookingSuccess) {
@@ -180,16 +204,35 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                         : Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.favorite_border,
-                      color: _isCollapsed
-                          ? AppColors.textPrimary
-                          : Colors.white,
-                    ),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Saved to Favorites')),
+                  child: BlocBuilder<FavoritesBloc, FavoritesState>(
+                    builder: (context, state) {
+                      bool isFav = false;
+                      if (state is FavoriteStatusLoaded) {
+                        isFav = state.isFavorite;
+                      }
+                      return IconButton(
+                        icon: Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav
+                              ? Colors.red
+                              : (_isCollapsed
+                                    ? AppColors.textPrimary
+                                    : Colors.white),
+                        ),
+                        onPressed: () {
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Login untuk menyimpan favorit'),
+                              ),
+                            );
+                            return;
+                          }
+                          context.read<FavoritesBloc>().add(
+                            ToggleFavoriteRequested(user.uid, venue),
+                          );
+                        },
                       );
                     },
                   ),
@@ -220,6 +263,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   children: [
                     venue.photos.isNotEmpty
                         ? PageView.builder(
+                            controller: _pageController,
+                            physics: const ClampingScrollPhysics(),
                             itemCount: venue.photos.length,
                             onPageChanged: (index) {
                               setState(() {
@@ -280,6 +325,20 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               ),
             ),
 
+            // Sticky Header for Date Selection
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _StickyDateDelegate(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  child: _buildDatePicker(context),
+                ),
+              ),
+            ),
+
             // Layer 2: Content Body (SliverToBoxAdapter with overlapped top)
             SliverToBoxAdapter(
               child: Container(
@@ -287,16 +346,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   color: AppColors.background,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
-                transform: Matrix4.translationValues(
-                  0,
-                  -20,
-                  0,
-                ), // Slight overlap visual hack
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 24),
                       // 1. Title Header
                       Text(
                         venue.name,
@@ -403,10 +458,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                       const Divider(),
                       const SizedBox(height: 24),
 
-                      // Date Selection
-                      _buildDatePicker(context),
-                      const SizedBox(height: 24),
-
                       // Courts
                       Text(
                         'Choose Court',
@@ -441,27 +492,29 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   Widget _buildSportBadges(Venue venue, List<Court> courts) {
     // Derive sports from actual courts available
     final sportIds = courts.map((c) => c.sportType.toLowerCase()).toSet();
-    
+
     // Also include detection from name/facilities for robustness (fallback)
-    final detectedFromVenue = AppConstants.sports.where((sport) {
-      final queryId = sport.id.toLowerCase();
-      final queryName = sport.displayName.toLowerCase();
-      final keywords = sport.keywords.map((k) => k.toLowerCase()).toList();
+    final detectedFromVenue = AppConstants.sports
+        .where((sport) {
+          final queryId = sport.id.toLowerCase();
+          final queryName = sport.displayName.toLowerCase();
+          final keywords = sport.keywords.map((k) => k.toLowerCase()).toList();
 
-      final inName =
-          venue.name.toLowerCase().contains(queryId) ||
-          venue.name.toLowerCase().contains(queryName) ||
-          keywords.any((k) => venue.name.toLowerCase().contains(k));
+          final inName =
+              venue.name.toLowerCase().contains(queryId) ||
+              venue.name.toLowerCase().contains(queryName) ||
+              keywords.any((k) => venue.name.toLowerCase().contains(k));
 
-      final inFacilities = venue.facilities.any((f) {
-        final fLower = f.toLowerCase();
-        return fLower.contains(queryId) ||
-            fLower.contains(queryName) ||
-            keywords.any((k) => fLower.contains(k));
-      });
+          final inFacilities = venue.facilities.any((f) {
+            final fLower = f.toLowerCase();
+            return fLower.contains(queryId) ||
+                fLower.contains(queryName) ||
+                keywords.any((k) => fLower.contains(k));
+          });
 
-      return inName || inFacilities;
-    }).map((s) => s.id.toLowerCase());
+          return inName || inFacilities;
+        })
+        .map((s) => s.id.toLowerCase());
 
     final allSportIds = {...sportIds, ...detectedFromVenue};
 
@@ -510,6 +563,23 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   }
 
   Widget _buildDatePicker(BuildContext context) {
+    final List<DateTime> displayDates = List.generate(
+      14,
+      (index) => DateTime.now().add(Duration(days: index)),
+    );
+
+    // Check if selected date is within the next 14 days
+    final isSelectedInDisplay = displayDates.any(
+      (d) =>
+          d.year == _selectedDate.year &&
+          d.month == _selectedDate.month &&
+          d.day == _selectedDate.day,
+    );
+
+    if (!isSelectedInDisplay) {
+      displayDates.add(_selectedDate);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -518,31 +588,35 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           children: [
             Text(
               'Select Date',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontSize: 18),
             ),
             IconButton(
-              icon: const Icon(Icons.calendar_month, color: AppColors.primary),
+              icon: Icon(
+                Icons.calendar_month,
+                color: isSelectedInDisplay
+                    ? AppColors.primary
+                    : AppColors.secondary,
+              ),
               onPressed: () async {
                 final date = await showDatePicker(
                   context: context,
                   initialDate: _selectedDate,
                   firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(
-                    const Duration(days: 365),
-                  ), // Full calendar access
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
                 );
                 if (date != null && context.mounted) {
                   setState(() => _selectedDate = date);
-                  // Refresh availability for the new date if a court is selected
                   final venueState = context.read<VenueBloc>().state;
                   final bookingState = context.read<BookingBloc>().state;
                   if (venueState is VenueDetailLoaded &&
                       bookingState is BookingAvailabilityLoaded) {
-                    // Check availability again for the currently selected court but new date
                     context.read<BookingBloc>().add(
                       BookingAvailabilityChecked(
                         courtId: bookingState.selectedCourtId,
                         date: date,
+                        operatingHours: venueState.venue.operatingHours,
                       ),
                     );
                   }
@@ -551,14 +625,14 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         SizedBox(
           height: 80,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: 14,
+            itemCount: displayDates.length,
             itemBuilder: (context, index) {
-              final date = DateTime.now().add(Duration(days: index));
+              final date = displayDates[index];
               final isSelected =
                   date.day == _selectedDate.day &&
                   date.month == _selectedDate.month &&
@@ -567,13 +641,15 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               return GestureDetector(
                 onTap: () {
                   setState(() => _selectedDate = date);
-                  // Trigger availability check update
+                  final venueState = context.read<VenueBloc>().state;
                   final bookingState = context.read<BookingBloc>().state;
-                  if (bookingState is BookingAvailabilityLoaded) {
+                  if (venueState is VenueDetailLoaded &&
+                      bookingState is BookingAvailabilityLoaded) {
                     context.read<BookingBloc>().add(
                       BookingAvailabilityChecked(
                         courtId: bookingState.selectedCourtId,
                         date: date,
+                        operatingHours: venueState.venue.operatingHours,
                       ),
                     );
                   }
@@ -586,7 +662,17 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected ? AppColors.primary : AppColors.border,
+                      width: isSelected ? 2 : 1,
                     ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -594,7 +680,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                       Text(
                         DateFormat('MMM').format(date),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 10,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           color: isSelected
                               ? Colors.white
                               : AppColors.textSecondary,
@@ -603,7 +692,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                       Text(
                         date.day.toString(),
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: isSelected
                               ? Colors.white
@@ -613,7 +702,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                       Text(
                         DateFormat('E').format(date),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 10,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           color: isSelected
                               ? Colors.white
                               : AppColors.textSecondary,
@@ -662,26 +754,42 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                 onTap: () {
                   // Only fetch if selecting a new court OR date changed (date logic handled in date picker)
                   if (!isSelected) {
-                    context.read<BookingBloc>().add(
-                      BookingAvailabilityChecked(
-                        courtId: court.id,
-                        date: _selectedDate,
-                      ),
-                    );
+                    final venueState = context.read<VenueBloc>().state;
+                    if (venueState is VenueDetailLoaded) {
+                      context.read<BookingBloc>().add(
+                        BookingAvailabilityChecked(
+                          courtId: court.id,
+                          date: _selectedDate,
+                          operatingHours: venueState.venue.operatingHours,
+                        ),
+                      );
+                    }
                   }
                 },
                 contentPadding: const EdgeInsets.all(16),
                 leading: Container(
-                  width: 48,
-                  height: 48,
+                  width: 56, // Slightly larger for image
+                  height: 56,
                   decoration: BoxDecoration(
                     color: AppColors.neutral,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    AppConstants.getSportIcon(court.sportType),
-                    color: AppColors.primary,
-                  ),
+                  child: court.photos.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            court.photos.first,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              AppConstants.getSportIcon(court.sportType),
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          AppConstants.getSportIcon(court.sportType),
+                          color: AppColors.primary,
+                        ),
                 ),
                 title: Text(
                   court.name,
@@ -705,6 +813,36 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (court.photos.isNotEmpty) ...[
+                        SizedBox(
+                          height: 150,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: court.photos.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                width: 200,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: DecorationImage(
+                                    image: NetworkImage(court.photos[index]),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (court.description.isNotEmpty) ...[
+                        Text(
+                          court.description,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       Text(
                         'Available Slots',
                         style: Theme.of(context).textTheme.labelMedium,
@@ -818,5 +956,31 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     context.read<BookingBloc>().add(
       BookingPaymentCompleted(bookingId: state.bookingId, status: status),
     );
+  }
+}
+
+class _StickyDateDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _StickyDateDelegate({required this.child});
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: AppColors.background, child: child);
+  }
+
+  @override
+  double get maxExtent => 160; // Adjusted for height of date picker + padding
+
+  @override
+  double get minExtent => 160;
+
+  @override
+  bool shouldRebuild(covariant _StickyDateDelegate oldDelegate) {
+    return true;
   }
 }

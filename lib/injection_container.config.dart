@@ -49,6 +49,14 @@ import 'features/booking/presentation/bloc/booking_bloc.dart' as _i393;
 import 'features/booking/presentation/bloc/detail/booking_detail_bloc.dart'
     as _i176;
 import 'features/booking/presentation/bloc/history/history_bloc.dart' as _i1064;
+import 'features/favorites/data/datasources/favorites_remote_data_source.dart'
+    as _i367;
+import 'features/favorites/data/repositories/favorites_repository_impl.dart'
+    as _i764;
+import 'features/favorites/domain/repositories/favorites_repository.dart'
+    as _i320;
+import 'features/favorites/domain/usecases/favorites_usecases.dart' as _i145;
+import 'features/favorites/presentation/bloc/favorites_bloc.dart' as _i906;
 import 'features/partner/booking_management/presentation/bloc/order_management_bloc.dart'
     as _i44;
 import 'features/partner/dashboard/data/datasources/partner_remote_data_source.dart'
@@ -149,6 +157,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i266.PartnerRemoteDataSource>(
       () => _i266.PartnerRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
     );
+    gh.lazySingleton<_i367.FavoritesRemoteDataSource>(
+      () => _i367.FavoritesRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
     gh.factory<_i997.VenueRepository>(
       () => _i346.VenueRepositoryImpl(gh<_i1039.VenueRemoteDataSource>()),
     );
@@ -234,6 +245,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i626.ProfileRepository>(
       () => _i277.ProfileRepositoryImpl(gh<_i336.ProfileRemoteDataSource>()),
     );
+    gh.factory<_i320.FavoritesRepository>(
+      () =>
+          _i764.FavoritesRepositoryImpl(gh<_i367.FavoritesRemoteDataSource>()),
+    );
     gh.factory<_i848.PartnerRepository>(
       () => _i18.PartnerRepositoryImpl(gh<_i266.PartnerRemoteDataSource>()),
     );
@@ -288,6 +303,15 @@ extension GetItInjectableX on _i174.GetIt {
         getVenueDetail: gh<_i15.GetVenueDetail>(),
         getVenueCourts: gh<_i606.GetVenueCourts>(),
       ),
+    );
+    gh.lazySingleton<_i145.ToggleFavorite>(
+      () => _i145.ToggleFavorite(gh<_i320.FavoritesRepository>()),
+    );
+    gh.lazySingleton<_i145.CheckIsFavorite>(
+      () => _i145.CheckIsFavorite(gh<_i320.FavoritesRepository>()),
+    );
+    gh.lazySingleton<_i145.GetFavoriteVenues>(
+      () => _i145.GetFavoriteVenues(gh<_i320.FavoritesRepository>()),
     );
     gh.factory<_i44.OrderManagementBloc>(
       () => _i44.OrderManagementBloc(gh<_i541.GetPartnerBookings>()),
@@ -348,6 +372,13 @@ extension GetItInjectableX on _i174.GetIt {
         updateVenue: gh<_i600.UpdateVenue>(),
         deleteVenue: gh<_i231.DeleteVenue>(),
         firebaseAuth: gh<_i59.FirebaseAuth>(),
+      ),
+    );
+    gh.factory<_i906.FavoritesBloc>(
+      () => _i906.FavoritesBloc(
+        getFavoriteVenues: gh<_i145.GetFavoriteVenues>(),
+        toggleFavorite: gh<_i145.ToggleFavorite>(),
+        checkIsFavorite: gh<_i145.CheckIsFavorite>(),
       ),
     );
     gh.factory<_i176.BookingDetailBloc>(

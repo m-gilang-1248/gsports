@@ -15,9 +15,7 @@ class DashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () async {
-        context.read<PartnerDashboardBloc>().add(
-          FetchPartnerDashboardStats(),
-        );
+        context.read<PartnerDashboardBloc>().add(FetchPartnerDashboardStats());
         context.read<OrderManagementBloc>().add(FetchPartnerBookings());
       },
       child: SingleChildScrollView(
@@ -58,19 +56,17 @@ class DashboardView extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundImage:
-                  photoUrl != null ? NetworkImage(photoUrl) : null,
+              backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
               backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child:
-                  photoUrl == null
-                      ? Text(
-                        name.isNotEmpty ? name[0].toUpperCase() : 'P',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                      : null,
+              child: photoUrl == null
+                  ? Text(
+                      name.isNotEmpty ? name[0].toUpperCase() : 'P',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
             ),
             const SizedBox(width: 12),
             Column(
@@ -271,8 +267,7 @@ class DashboardView extends StatelessWidget {
   }
 
   Widget _buildStatusItem(
-    BuildContext context,
-    {
+    BuildContext context, {
     required IconData icon,
     required String label,
     required int count,

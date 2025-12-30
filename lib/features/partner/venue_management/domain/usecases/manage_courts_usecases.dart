@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
 import 'package:gsports/core/error/failures.dart';
@@ -25,15 +26,20 @@ class AddCourt implements UseCase<void, AddCourtParams> {
 
   @override
   Future<Either<Failure, void>> call(AddCourtParams params) async {
-    return await repository.addCourt(params.venueId, params.court);
+    return await repository.addCourt(
+      params.venueId,
+      params.court,
+      params.images,
+    );
   }
 }
 
 class AddCourtParams {
   final String venueId;
   final Court court;
+  final List<File> images;
 
-  AddCourtParams(this.venueId, this.court);
+  AddCourtParams(this.venueId, this.court, this.images);
 }
 
 @lazySingleton
@@ -44,15 +50,27 @@ class UpdateCourt implements UseCase<void, UpdateCourtParams> {
 
   @override
   Future<Either<Failure, void>> call(UpdateCourtParams params) async {
-    return await repository.updateCourt(params.venueId, params.court);
+    return await repository.updateCourt(
+      params.venueId,
+      params.court,
+      newImages: params.newImages,
+      removedImageUrls: params.removedImageUrls,
+    );
   }
 }
 
 class UpdateCourtParams {
   final String venueId;
   final Court court;
+  final List<File>? newImages;
+  final List<String>? removedImageUrls;
 
-  UpdateCourtParams(this.venueId, this.court);
+  UpdateCourtParams(
+    this.venueId,
+    this.court, {
+    this.newImages,
+    this.removedImageUrls,
+  });
 }
 
 @lazySingleton

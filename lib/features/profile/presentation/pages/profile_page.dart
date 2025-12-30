@@ -229,6 +229,13 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.favorite_border),
+            title: const Text('Favorit Saya'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/favorites'),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.security_outlined),
             title: const Text('Privasi & Keamanan'),
             trailing: const Icon(Icons.chevron_right),

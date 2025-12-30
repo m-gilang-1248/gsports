@@ -99,9 +99,7 @@ class ProfileView extends StatelessWidget {
             ),
           ),
           backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-          side: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.3),
-          ),
+          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
         ),
       ],
     );

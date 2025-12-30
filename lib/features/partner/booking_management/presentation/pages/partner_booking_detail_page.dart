@@ -217,9 +217,7 @@ class _PartnerBookingDetailView extends StatelessWidget {
                 ? NetworkImage(host.profileUrl!)
                 : null,
             child: host.profileUrl == null
-                ? Text(
-                  host.name.isNotEmpty ? host.name[0].toUpperCase() : 'G',
-                )
+                ? Text(host.name.isNotEmpty ? host.name[0].toUpperCase() : 'G')
                 : null,
           ),
           const SizedBox(width: 16),

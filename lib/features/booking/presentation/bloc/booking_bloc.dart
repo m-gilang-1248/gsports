@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
+import 'package:intl/intl.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/check_availability.dart';
 import 'package:gsports/features/booking/domain/usecases/create_booking.dart';
@@ -50,12 +51,51 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     final courtId = event.courtId;
     final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
-    // Check hours 08:00 to 22:00 (inclusive start)
-    // Parallelizing requests for speed.
+    // 1. Determine Operating Hours
+    final dayOfWeek = DateFormat('EEEE').format(date);
+    final hoursConfig =
+        event.operatingHours?[dayOfWeek] as Map<String, dynamic>?;
+
+    int startHour = 8;
+    int endHour = 22;
+    bool isOpen = true;
+
+    if (hoursConfig != null) {
+      isOpen = hoursConfig['isOpen'] as bool? ?? true;
+      if (isOpen) {
+        final openStr = hoursConfig['open'] as String? ?? '08:00';
+        final closeStr = hoursConfig['close'] as String? ?? '22:00';
+        startHour = int.tryParse(openStr.split(':')[0]) ?? 8;
+        endHour = int.tryParse(closeStr.split(':')[0]) ?? 22;
+      }
+    }
+
+    if (!isOpen) {
+      emit(
+        BookingAvailabilityLoaded(
+          availabilityMap: const {},
+          selectedCourtId: courtId,
+          selectedDate: date,
+          selectedSlots: const [],
+        ),
+      );
+      return;
+    }
+
+    // 2. Determine Past Hours if date is today
+    final now = DateTime.now();
+    final isToday =
+        date.year == now.year && date.month == now.month && date.day == now.day;
 
     final futures = <Future<void>>[];
 
-    for (int hour = 8; hour <= 22; hour++) {
+    for (int hour = startHour; hour < endHour; hour++) {
+      // Check for past time
+      if (isToday && hour <= now.hour) {
+        availabilityMap[hour] = false;
+        continue;
+      }
+
       futures.add(() async {
         final startTime = DateTime(date.year, date.month, date.day, hour);
         final endTime = startTime.add(const Duration(hours: 1));
@@ -71,8 +111,6 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
 
         result.fold(
           (failure) {
-            // If guest and error occurs (e.g. permission), default to AVAILABLE
-            // This ensures they can select a slot and see the login redirect.
             availabilityMap[hour] = !isLoggedIn;
           },
           (isAvailable) {
@@ -89,7 +127,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         availabilityMap: availabilityMap,
         selectedCourtId: courtId,
         selectedDate: date,
-        selectedSlots: const [], // Reset selection on new check
+        selectedSlots: const [],
       ),
     );
   }
