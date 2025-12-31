@@ -35,10 +35,21 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
   bool _isCollapsed = false;
 
+  // Static date range: Today to +365 days
+  late final List<DateTime> _displayDates;
+
   @override
   void initState() {
     super.initState();
     context.read<VenueBloc>().add(VenueFetchDetailRequested(widget.venueId));
+
+    // Initialize display dates once
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    _displayDates = List.generate(
+      365,
+      (index) => today.add(Duration(days: index)),
+    );
 
     _scrollController = ScrollController();
     _pageController = PageController();
@@ -46,14 +57,34 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
     _scrollController.addListener(() {
       final collapsed =
-          _scrollController.hasClients &&
-          _scrollController.offset > 200; // Threshold for title appearance
+          _scrollController.hasClients && _scrollController.offset > 200;
       if (collapsed != _isCollapsed) {
         setState(() {
           _isCollapsed = collapsed;
         });
       }
     });
+
+    // Initial scroll to today (index 0) is default,
+    // but if we ever allow deep linking to a date, we'd use _scrollToCenteredDate here.
+  }
+
+  void _scrollToCenteredDate(DateTime date) {
+    if (!_dateScrollController.hasClients) return;
+
+    final index = _displayDates.indexWhere((d) => DateUtils.isSameDay(d, date));
+    if (index == -1) return;
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    const itemWidth = 72.0; // 60 width + 12 margin
+    final targetOffset =
+        (index * itemWidth) - (screenWidth / 2) + (itemWidth / 2);
+
+    _dateScrollController.animateTo(
+      targetOffset.clamp(0.0, _dateScrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   @override
@@ -369,8 +400,8 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         SliverPersistentHeader(
           pinned: true,
           delegate: _StickyFiltersDelegate(
-            height: sportTypes.length > 1 ? 210 : 160,
-            child: Container(
+            height: sportTypes.length > 1 ? 230 : 170,
+            child: Material(
               color: AppColors.background,
               child: Column(
                 children: [
@@ -407,50 +438,51 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   }
 
   Widget _buildDatePicker(BuildContext context) {
-    // Generate 14 days starting strictly from the selected date
-    final List<DateTime> displayDates = List.generate(
-      14,
-      (index) => _selectedDate.add(Duration(days: index)),
-    );
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 0, 16),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+
         children: [
           Padding(
             padding: const EdgeInsets.only(right: 24),
+
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
               children: [
                 Text(
                   'Select Date',
+
                   style: Theme.of(
                     context,
                   ).textTheme.headlineMedium?.copyWith(fontSize: 18),
                 ),
+
                 IconButton(
                   icon: const Icon(
                     Icons.calendar_month,
+
                     color: AppColors.primary,
                   ),
+
                   onPressed: () async {
                     final date = await showDatePicker(
                       context: context,
+
                       initialDate: _selectedDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
+
+                      firstDate: _displayDates.first,
+
+                      lastDate: _displayDates.last,
                     );
+
                     if (date != null && context.mounted) {
                       setState(() => _selectedDate = date);
-                      // Reset scroll to start
-                      if (_dateScrollController.hasClients) {
-                        _dateScrollController.animateTo(
-                          0,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      }
+
+                      _scrollToCenteredDate(date);
+
                       _refreshAvailability();
                     }
                   },
@@ -458,77 +490,110 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
               ],
             ),
           ),
+
           const SizedBox(height: 8),
+
           SizedBox(
             height: 85,
+
             child: ListView.builder(
               controller: _dateScrollController,
+
               scrollDirection: Axis.horizontal,
+
               physics: const BouncingScrollPhysics(),
-              itemCount: displayDates.length,
+
+              itemCount: _displayDates.length,
+
               itemBuilder: (context, index) {
-                final date = displayDates[index];
+                final date = _displayDates[index];
+
                 final isSelected = DateUtils.isSameDay(date, _selectedDate);
 
                 return GestureDetector(
                   onTap: () {
                     setState(() => _selectedDate = date);
+
+                    _scrollToCenteredDate(date);
+
                     _refreshAvailability();
                   },
+
                   child: Container(
                     width: 60,
+
                     margin: const EdgeInsets.only(right: 12),
+
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.primary : AppColors.surface,
+
                       borderRadius: BorderRadius.circular(12),
+
                       border: Border.all(
                         color: isSelected
                             ? AppColors.primary
                             : AppColors.border,
+
                         width: isSelected ? 2 : 1,
                       ),
+
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
                                 color: AppColors.primary.withValues(alpha: 0.3),
+
                                 blurRadius: 4,
+
                                 offset: const Offset(0, 2),
                               ),
                             ]
                           : null,
                     ),
+
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+
                       children: [
                         Text(
                           DateFormat('MMM').format(date),
+
                           style: TextStyle(
                             fontSize: 10,
+
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
+
                             color: isSelected
                                 ? Colors.white
                                 : AppColors.textSecondary,
                           ),
                         ),
+
                         Text(
                           date.day.toString(),
+
                           style: TextStyle(
                             fontSize: 18,
+
                             fontWeight: FontWeight.bold,
+
                             color: isSelected
                                 ? Colors.white
                                 : AppColors.textPrimary,
                           ),
                         ),
+
                         Text(
                           DateFormat('E').format(date),
+
                           style: TextStyle(
                             fontSize: 10,
+
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
+
                             color: isSelected
                                 ? Colors.white
                                 : AppColors.textSecondary,
