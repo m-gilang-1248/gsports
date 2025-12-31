@@ -45,7 +45,12 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     BookingAvailabilityChecked event,
     Emitter<BookingState> emit,
   ) async {
-    emit(BookingLoading());
+    if (state is BookingAvailabilityLoaded &&
+        (state as BookingAvailabilityLoaded).selectedCourtId == event.courtId) {
+      emit((state as BookingAvailabilityLoaded).copyWith(isRefreshing: true));
+    } else {
+      emit(BookingLoading());
+    }
 
     final availabilityMap = <int, bool>{};
     final date = event.date;
@@ -78,6 +83,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
           selectedCourtId: courtId,
           selectedDate: date,
           selectedSlots: const [],
+          isRefreshing: false,
         ),
       );
       return;
@@ -129,6 +135,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         selectedCourtId: courtId,
         selectedDate: date,
         selectedSlots: const [],
+        isRefreshing: false,
       ),
     );
   }

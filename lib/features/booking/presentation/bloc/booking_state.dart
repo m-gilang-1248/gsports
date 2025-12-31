@@ -16,12 +16,14 @@ class BookingAvailabilityLoaded extends BookingState {
   final String selectedCourtId;
   final DateTime selectedDate;
   final List<DateTime> selectedSlots;
+  final bool isRefreshing;
 
   const BookingAvailabilityLoaded({
     required this.availabilityMap,
     required this.selectedCourtId,
     required this.selectedDate,
     this.selectedSlots = const [],
+    this.isRefreshing = false,
   });
 
   @override
@@ -30,6 +32,7 @@ class BookingAvailabilityLoaded extends BookingState {
     selectedCourtId,
     selectedDate,
     selectedSlots,
+    isRefreshing,
   ];
 
   BookingAvailabilityLoaded copyWith({
@@ -38,6 +41,7 @@ class BookingAvailabilityLoaded extends BookingState {
     DateTime? selectedDate,
     List<DateTime>? selectedSlots,
     bool clearSelectedSlots = false,
+    bool? isRefreshing,
   }) {
     return BookingAvailabilityLoaded(
       availabilityMap: availabilityMap ?? this.availabilityMap,
@@ -46,6 +50,7 @@ class BookingAvailabilityLoaded extends BookingState {
       selectedSlots: clearSelectedSlots
           ? []
           : (selectedSlots ?? this.selectedSlots),
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 }
