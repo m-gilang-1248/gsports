@@ -64,24 +64,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
     super.dispose();
   }
 
-  void _scrollToSelectedDate() {
-    if (!_dateScrollController.hasClients) return;
-
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final difference = _selectedDate.difference(today).inDays;
-
-    if (difference >= 0) {
-      // Approximate width of a date item (60 width + 12 margin)
-      const itemWidth = 72.0;
-      _dateScrollController.animateTo(
-        difference * itemWidth,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -387,7 +369,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         SliverPersistentHeader(
           pinned: true,
           delegate: _StickyFiltersDelegate(
-            height: sportTypes.length > 1 ? 210 : 150,
+            height: sportTypes.length > 1 ? 210 : 160,
             child: Container(
               color: AppColors.background,
               child: Column(
@@ -401,11 +383,12 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
           ),
         ),
 
-        // 5. Courts List
+        // Courts List
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           sliver: filteredCourts.isEmpty
-              ? const SliverToBoxAdapter(
+              ? const SliverFillRemaining(
+                  hasScrollBody: false,
                   child: Center(child: Text('No courts available')),
                 )
               : SliverList(
@@ -424,13 +407,10 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
   }
 
   Widget _buildDatePicker(BuildContext context) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-
-    // Static range of 30 days
+    // Generate 14 days starting strictly from the selected date
     final List<DateTime> displayDates = List.generate(
-      30,
-      (index) => today.add(Duration(days: index)),
+      14,
+      (index) => _selectedDate.add(Duration(days: index)),
     );
 
     return Padding(
@@ -463,7 +443,14 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                     );
                     if (date != null && context.mounted) {
                       setState(() => _selectedDate = date);
-                      _scrollToSelectedDate();
+                      // Reset scroll to start
+                      if (_dateScrollController.hasClients) {
+                        _dateScrollController.animateTo(
+                          0,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
                       _refreshAvailability();
                     }
                   },
@@ -500,6 +487,15 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                             : AppColors.border,
                         width: isSelected ? 2 : 1,
                       ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -508,6 +504,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                           DateFormat('MMM').format(date),
                           style: TextStyle(
                             fontSize: 10,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             color: isSelected
                                 ? Colors.white
                                 : AppColors.textSecondary,
@@ -527,6 +526,9 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                           DateFormat('E').format(date),
                           style: TextStyle(
                             fontSize: 10,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             color: isSelected
                                 ? Colors.white
                                 : AppColors.textSecondary,
