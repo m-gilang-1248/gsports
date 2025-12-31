@@ -52,3 +52,5 @@ class BookingPaymentCompleted extends BookingEvent {
   @override
   List<Object> get props => [bookingId, status];
 }
+
+class BookingSelectionReset extends BookingEvent {}

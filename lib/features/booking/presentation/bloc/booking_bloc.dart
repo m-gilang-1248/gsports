@@ -38,6 +38,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     on<BookingSlotSelected>(_onSlotSelected);
     on<BookingCreated>(_onCreated);
     on<BookingPaymentCompleted>(_onPaymentCompleted);
+    on<BookingSelectionReset>((event, emit) => emit(BookingInitial()));
   }
 
   Future<void> _onAvailabilityChecked(
