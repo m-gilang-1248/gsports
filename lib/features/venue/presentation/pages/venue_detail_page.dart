@@ -483,7 +483,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
                       _scrollToCenteredDate(date);
 
-                      _refreshAvailability();
+                      context.read<BookingBloc>().add(BookingSelectionReset());
                     }
                   },
                 ),
@@ -516,7 +516,7 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
 
                     _scrollToCenteredDate(date);
 
-                    _refreshAvailability();
+                    context.read<BookingBloc>().add(BookingSelectionReset());
                   },
 
                   child: Container(
@@ -609,21 +609,6 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         ],
       ),
     );
-  }
-
-  void _refreshAvailability() {
-    final bookingState = context.read<BookingBloc>().state;
-    final venueState = context.read<VenueBloc>().state;
-    if (venueState is VenueDetailLoaded &&
-        bookingState is BookingAvailabilityLoaded) {
-      context.read<BookingBloc>().add(
-        BookingAvailabilityChecked(
-          courtId: bookingState.selectedCourtId,
-          date: _selectedDate,
-          operatingHours: venueState.venue.operatingHours,
-        ),
-      );
-    }
   }
 
   Widget _buildSportTabs(BuildContext context, List<String> sportTypes) {
