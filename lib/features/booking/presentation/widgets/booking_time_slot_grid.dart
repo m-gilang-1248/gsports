@@ -16,6 +16,13 @@ class BookingTimeSlotGrid extends StatelessWidget {
         }
 
         if (state is BookingAvailabilityLoaded) {
+          if (state.isRefreshing) {
+            return const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
           final availabilityMap = state.availabilityMap;
           final selectedDate = state.selectedDate;
           final selectedSlots = state.selectedSlots;
