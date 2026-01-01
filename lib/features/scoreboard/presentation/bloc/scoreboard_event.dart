@@ -4,7 +4,7 @@ abstract class ScoreboardEvent extends Equatable {
   const ScoreboardEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class IncrementScoreA extends ScoreboardEvent {}
@@ -21,13 +21,26 @@ class ResetMatch extends ScoreboardEvent {}
 
 class ToggleTimer extends ScoreboardEvent {}
 
-class InitializeScoreboard extends ScoreboardEvent {
-  final String sportType;
-
-  const InitializeScoreboard(this.sportType);
+class TimerTick extends ScoreboardEvent {
+  final int secondsElapsed;
+  const TimerTick(this.secondsElapsed);
 
   @override
-  List<Object> get props => [sportType];
+  List<Object> get props => [secondsElapsed];
+}
+
+class StartNextPeriod extends ScoreboardEvent {}
+
+class FinishMatch extends ScoreboardEvent {}
+
+class InitializeScoreboard extends ScoreboardEvent {
+  final String sportType;
+  final MatchConfiguration? config;
+
+  const InitializeScoreboard(this.sportType, {this.config});
+
+  @override
+  List<Object?> get props => [sportType, config];
 }
 
 class SaveMatchRequested extends ScoreboardEvent {

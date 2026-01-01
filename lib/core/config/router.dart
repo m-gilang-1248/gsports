@@ -33,6 +33,7 @@ import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:gsports/features/scoreboard/presentation/pages/scoreboard_page.dart';
 import 'package:gsports/features/scoreboard/presentation/pages/match_recap_page.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
+import 'package:gsports/features/scoreboard/domain/entities/match_configuration.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -227,6 +228,7 @@ class AppRouter {
             courtName: extra['courtName'] as String?,
             startTime: extra['startTime'] as DateTime?,
             endTime: extra['endTime'] as DateTime?,
+            config: extra['config'] as MatchConfiguration?,
           );
         },
       ),

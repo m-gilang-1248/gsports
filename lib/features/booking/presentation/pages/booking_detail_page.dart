@@ -299,8 +299,10 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
             onPressed: () async {
               final result = await showDialog<Map<String, dynamic>>(
                 context: context,
-                builder: (context) =>
-                    ScoreboardSetupDialog(participants: booking.participants),
+                builder: (context) => ScoreboardSetupDialog(
+                  participants: booking.participants,
+                  sportType: booking.sportType,
+                ),
               );
 
               if (result != null && context.mounted) {
@@ -326,6 +328,7 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
                     'courtName': booking.courtName,
                     'startTime': booking.startTime,
                     'endTime': booking.endTime,
+                    'config': result['config'], // Pass the config
                   },
                 );
               }

@@ -1,14 +1,16 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:gsports/features/scoreboard/presentation/bloc/scoreboard_bloc.dart';
-import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:gsports/features/scoreboard/domain/entities/match_configuration.dart';
+import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
+import 'package:gsports/features/scoreboard/presentation/bloc/scoreboard_bloc.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ScoreboardPage extends StatelessWidget {
   final String bookingId;
@@ -23,6 +25,7 @@ class ScoreboardPage extends StatelessWidget {
   final String? courtName;
   final DateTime? startTime;
   final DateTime? endTime;
+  final MatchConfiguration? config;
 
   const ScoreboardPage({
     super.key,
@@ -38,6 +41,7 @@ class ScoreboardPage extends StatelessWidget {
     this.courtName,
     this.startTime,
     this.endTime,
+    this.config,
   });
 
   @override
@@ -57,6 +61,7 @@ class ScoreboardPage extends StatelessWidget {
         courtName: courtName,
         startTime: startTime,
         endTime: endTime,
+        config: config,
       ),
     );
   }
@@ -75,6 +80,7 @@ class _ScoreboardView extends StatefulWidget {
   final String? courtName;
   final DateTime? startTime;
   final DateTime? endTime;
+  final MatchConfiguration? config;
 
   const _ScoreboardView({
     required this.bookingId,
@@ -89,6 +95,7 @@ class _ScoreboardView extends StatefulWidget {
     this.courtName,
     this.startTime,
     this.endTime,
+    this.config,
   });
 
   @override
@@ -96,10 +103,13 @@ class _ScoreboardView extends StatefulWidget {
 }
 
 class _ScoreboardViewState extends State<_ScoreboardView> {
-  int _secondsElapsed = 0;
+  // Timer State
+  int _periodElapsedSeconds = 0;
+  int _totalElapsedSeconds = 0;
 
   late Stream<int> _timerStream;
   late StreamSubscription<int> _timerSubscription;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -109,7 +119,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<ScoreboardBloc>().add(
-          InitializeScoreboard(widget.sportType),
+          InitializeScoreboard(widget.sportType, config: widget.config),
         );
       }
     });
@@ -117,17 +127,24 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
     _timerStream = Stream.periodic(const Duration(seconds: 1), (i) => i);
     _timerSubscription = _timerStream.listen((_) {
       if (!mounted) return;
-      final state = context.read<ScoreboardBloc>().state;
-      if (!state.isTimerPaused && !state.isMatchFinished) {
+      final bloc = context.read<ScoreboardBloc>();
+      final state = bloc.state;
+
+      if (!state.isTimerPaused &&
+          !state.isMatchFinished &&
+          !state.isPeriodFinished) {
         setState(() {
-          _secondsElapsed++;
+          _periodElapsedSeconds++;
+          _totalElapsedSeconds++;
         });
+        // Send period elapsed for logic check
+        bloc.add(TimerTick(_periodElapsedSeconds));
       }
     });
 
     // Enable Wakelock to keep screen on
     WakelockPlus.enable();
-    // Force Landscape for better experience (optional but recommended for scoreboard)
+    // Force Landscape for better experience
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -144,10 +161,19 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
   @override
   void dispose() {
     _timerSubscription.cancel();
+    _audioPlayer.dispose();
     WakelockPlus.disable();
     // Restore orientation
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
+  }
+
+  Future<void> _playSound() async {
+    try {
+      await _audioPlayer.play(AssetSource('sounds/whistle.mp3'));
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
   }
 
   @override
@@ -167,14 +193,11 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
           listener: (context, state) {
             if (state.isMatchFinished) {
               _showFinishDialog(context, state);
+            } else if (state.isPeriodFinished) {
+              _playSound();
+              _showPeriodFinishedDialog(context, state);
             }
-            // Auto finish if time is up for timed sports
-            if (state.isTimed &&
-                !state.isMatchFinished &&
-                _secondsElapsed >= (state.targetDurationMinutes * 60) &&
-                state.targetDurationMinutes > 0) {
-              _showTimeUpDialog(context, state);
-            }
+
             if (state.saveSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -188,7 +211,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                 bookingId: widget.bookingId,
                 sportType: widget.sportType,
                 playedAt: DateTime.now(),
-                durationSeconds: _secondsElapsed,
+                durationSeconds: _totalElapsedSeconds,
                 players: widget.players,
                 teamAIds: widget.teamA,
                 teamBIds: widget.teamB,
@@ -269,7 +292,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (state.usesSets)
+                          if (state.usesSets || state.isTimed)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -280,7 +303,9 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                'SET ${state.currentSet}',
+                                state.isTimed
+                                    ? 'PERIOD ${state.currentSet}'
+                                    : 'SET ${state.currentSet}',
                                 style: GoogleFonts.orbitron(
                                   color: Colors.white,
                                   fontSize: 24,
@@ -293,7 +318,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                _formatDuration(_secondsElapsed),
+                                _formatDuration(_periodElapsedSeconds),
                                 style: GoogleFonts.orbitron(
                                   color: state.isTimerPaused
                                       ? Colors.orangeAccent
@@ -461,31 +486,38 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
     );
   }
 
-  void _showTimeUpDialog(BuildContext context, ScoreboardState state) {
-    if (!state.isTimerPaused) {
-      context.read<ScoreboardBloc>().add(ToggleTimer());
-    }
-
+  void _showPeriodFinishedDialog(BuildContext context, ScoreboardState state) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text(
-          'Sesi Telah Habis!',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          'End of Period ${state.currentSet}',
+          style: const TextStyle(color: Colors.white),
         ),
         content: const Text(
-          'Waktu pertandingan telah mencapai batas durasi. Silakan simpan hasil pertandingan.',
+          'Time limit reached. Ready for next period?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              // Finish Match Early
+              Navigator.pop(dialogContext);
+              context.read<ScoreboardBloc>().add(FinishMatch());
+            },
+            child: const Text('End Match', style: TextStyle(color: Colors.red)),
+          ),
           FilledButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              _showFinishDialog(context, state);
+              setState(() {
+                _periodElapsedSeconds = 0; // Reset period timer
+              });
+              context.read<ScoreboardBloc>().add(StartNextPeriod());
             },
-            child: const Text('Lihat Hasil'),
+            child: const Text('Start Next Period'),
           ),
         ],
       ),
@@ -545,7 +577,8 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
             onPressed: () {
               context.read<ScoreboardBloc>().add(ResetMatch());
               setState(() {
-                _secondsElapsed = 0;
+                _periodElapsedSeconds = 0;
+                _totalElapsedSeconds = 0;
               });
               Navigator.pop(dialogContext);
             },
@@ -581,18 +614,28 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
             ),
             const SizedBox(height: 16),
             Text('Final Score:', style: const TextStyle(color: Colors.white70)),
-            ...state.historySets.map(
-              (s) => Text(
-                '${s.scoreA} - ${s.scoreB}',
+            if (state.isTimed)
+              Text(
+                '${state.scoreA} - ${state.scoreB}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              )
+            else
+              ...state.historySets.map(
+                (s) => Text(
+                  '${s.scoreA} - ${s.scoreB}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
             const SizedBox(height: 8),
             Text(
-              'Duration: ${_formatDuration(_secondsElapsed)}',
+              'Duration: ${_formatDuration(_totalElapsedSeconds)}',
               style: const TextStyle(color: Colors.white60, fontSize: 12),
             ),
           ],
@@ -621,7 +664,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                   courtName: widget.courtName,
                   startTime: widget.startTime,
                   endTime: widget.endTime,
-                  durationSeconds: _secondsElapsed,
+                  durationSeconds: _totalElapsedSeconds,
                 ),
               );
               Navigator.pop(dialogContext);
