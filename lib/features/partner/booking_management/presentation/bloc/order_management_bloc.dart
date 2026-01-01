@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/get_partner_bookings.dart';
+import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart'; // Added
 
 part 'order_management_event.dart';
 part 'order_management_state.dart';
@@ -13,9 +14,10 @@ part 'order_management_state.dart';
 class OrderManagementBloc
     extends Bloc<OrderManagementEvent, OrderManagementState> {
   final GetPartnerBookings getPartnerBookings;
+  final CancelBooking _cancelBooking; // Added CancelBooking
   StreamSubscription? _bookingsSubscription;
 
-  OrderManagementBloc(this.getPartnerBookings)
+  OrderManagementBloc(this.getPartnerBookings, this._cancelBooking)
     : super(OrderManagementInitial()) {
     on<FetchPartnerBookings>(_onFetchPartnerBookings);
     on<PartnerBookingsUpdated>(_onPartnerBookingsUpdated);
@@ -59,15 +61,30 @@ class OrderManagementBloc
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    // 1. Pending Bookings (Status: waiting_payment)
-    final pending = bookings
+    // 1. Filter and Check for Expiry
+    final validBookings = <Booking>[];
+    for (final booking in bookings) {
+      if (booking.status == 'waiting_payment') {
+        final difference = now.difference(booking.createdAt);
+        if (difference.inMinutes >= 15) {
+          // Auto-cancel in background
+          _cancelBooking(booking.id);
+          // Don't add to validBookings for current state emission
+          continue;
+        }
+      }
+      validBookings.add(booking);
+    }
+
+    // 2. Pending Bookings (Status: waiting_payment)
+    final pending = validBookings
         .where((b) => b.status == 'waiting_payment')
         .toList();
     // Sort pending by oldest first (urgent to confirm) or newest? usually newest first for dashboard
     pending.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    // 2. Upcoming Bookings (Status: paid AND date >= today)
-    final upcoming = bookings.where((b) {
+    // 3. Upcoming Bookings (Status: paid AND date >= today)
+    final upcoming = validBookings.where((b) {
       final isPaid = b.status == 'paid';
       final bookingDate = DateTime(b.date.year, b.date.month, b.date.day);
       return isPaid && !bookingDate.isBefore(today);
@@ -75,8 +92,8 @@ class OrderManagementBloc
     // Sort Ascending (Nearest date first)
     upcoming.sort((a, b) => a.startTime.compareTo(b.startTime));
 
-    // 3. History Bookings (Status: completed, cancelled OR date < today)
-    final history = bookings.where((b) {
+    // 4. History Bookings (Status: completed, cancelled OR date < today)
+    final history = validBookings.where((b) {
       final isFinishedStatus =
           b.status == 'completed' || b.status == 'cancelled';
       final bookingDate = DateTime(b.date.year, b.date.month, b.date.day);
@@ -87,9 +104,9 @@ class OrderManagementBloc
     // Sort Descending (Newest date first)
     history.sort((a, b) => b.startTime.compareTo(a.startTime));
 
-    // 4. Map for Calendar
+    // 5. Map for Calendar
     final bookingsByDate = <DateTime, List<Booking>>{};
-    for (var booking in bookings) {
+    for (var booking in validBookings) {
       // Normalize date to 00:00:00
       final normalizedDate = DateTime(
         booking.date.year,
@@ -114,7 +131,7 @@ class OrderManagementBloc
 
     emit(
       OrderManagementLoaded(
-        allBookings: bookings,
+        allBookings: validBookings,
         pendingBookings: pending,
         upcomingBookings: upcoming,
         historyBookings: history,

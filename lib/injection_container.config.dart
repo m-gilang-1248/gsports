@@ -249,6 +249,12 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i764.FavoritesRepositoryImpl(gh<_i367.FavoritesRemoteDataSource>()),
     );
+    gh.factory<_i44.OrderManagementBloc>(
+      () => _i44.OrderManagementBloc(
+        gh<_i541.GetPartnerBookings>(),
+        gh<_i488.CancelBooking>(),
+      ),
+    );
     gh.factory<_i848.PartnerRepository>(
       () => _i18.PartnerRepositoryImpl(gh<_i266.PartnerRemoteDataSource>()),
     );
@@ -312,9 +318,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i145.GetFavoriteVenues>(
       () => _i145.GetFavoriteVenues(gh<_i320.FavoritesRepository>()),
-    );
-    gh.factory<_i44.OrderManagementBloc>(
-      () => _i44.OrderManagementBloc(gh<_i541.GetPartnerBookings>()),
     );
     gh.lazySingleton<_i506.GetPartnerStats>(
       () => _i506.GetPartnerStats(gh<_i848.PartnerRepository>()),
