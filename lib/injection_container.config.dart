@@ -328,13 +328,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i648.SignInWithGoogle>(),
       ),
     );
-    gh.factory<_i1064.HistoryBloc>(
-      () => _i1064.HistoryBloc(
-        getMyBookings: gh<_i776.GetMyBookings>(),
-        joinBooking: gh<_i1015.JoinBooking>(),
-        firebaseAuth: gh<_i59.FirebaseAuth>(),
-      ),
-    );
     gh.lazySingleton<_i376.PaymentRepository>(
       () => _i210.PaymentRepositoryImpl(gh<_i692.PaymentRemoteDataSource>()),
     );
@@ -342,6 +335,14 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i453.PartnerDashboardBloc(
         gh<_i506.GetPartnerStats>(),
         gh<_i59.FirebaseAuth>(),
+      ),
+    );
+    gh.factory<_i1064.HistoryBloc>(
+      () => _i1064.HistoryBloc(
+        getMyBookings: gh<_i776.GetMyBookings>(),
+        joinBooking: gh<_i1015.JoinBooking>(),
+        cancelBooking: gh<_i488.CancelBooking>(),
+        firebaseAuth: gh<_i59.FirebaseAuth>(),
       ),
     );
     gh.factory<_i152.CourtManagementBloc>(
