@@ -110,21 +110,20 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
     if (state is VenueListLoaded) {
       final currentState = state as VenueListLoaded;
 
-      // Only filter by city if the detected city exists in our database
-      String? matchedCity;
-      if (event.cityName != null &&
-          currentState.availableCities.contains(event.cityName)) {
-        matchedCity = event.cityName;
-      }
-
-      List<Venue> filtered = currentState.allVenues;
-      if (matchedCity != null) {
+      // Filter by city if detected
+      List<Venue> filtered = [];
+      if (event.cityName != null) {
         filtered = currentState.allVenues
-            .where((v) => v.city == matchedCity)
+            .where((v) => v.city == event.cityName)
             .toList();
       }
 
-      // Sort by proximity (always do this if location is detected)
+      // If no venues in that city, show all venues (discovery mode)
+      if (filtered.isEmpty) {
+        filtered = List.from(currentState.allVenues);
+      }
+
+      // Sort by proximity
       filtered.sort((a, b) {
         final distA = _calculateDistance(
           event.lat,
@@ -144,7 +143,7 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
       emit(
         currentState.copyWith(
           filteredVenues: filtered,
-          selectedCity: matchedCity,
+          selectedCity: event.cityName,
           userLat: event.lat,
           userLng: event.lng,
         ),

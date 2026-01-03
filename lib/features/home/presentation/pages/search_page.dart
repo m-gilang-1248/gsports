@@ -151,10 +151,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    initialValue:
-                        (state.availableCities.contains(_selectedCity))
-                        ? _selectedCity
-                        : null,
+                    initialValue: _selectedCity,
                     hint: const Text('Pilih Kota'),
                     decoration: InputDecoration(
                       filled: true,
@@ -164,9 +161,17 @@ class _SearchPageState extends State<SearchPage> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    items: state.availableCities.map((city) {
-                      return DropdownMenuItem(value: city, child: Text(city));
-                    }).toList(),
+                    items: [
+                      if (_selectedCity != null &&
+                          !state.availableCities.contains(_selectedCity))
+                        DropdownMenuItem(
+                          value: _selectedCity,
+                          child: Text(_selectedCity!),
+                        ),
+                      ...state.availableCities.map((city) {
+                        return DropdownMenuItem(value: city, child: Text(city));
+                      }),
+                    ],
                     onChanged: (value) {
                       setModalState(() {
                         _selectedCity = value;

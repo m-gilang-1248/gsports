@@ -141,11 +141,7 @@ class _HomePageState extends State<HomePage>
                           const SizedBox(width: 4),
                           if (venueState is VenueListLoaded)
                             DropdownButton<String>(
-                              value:
-                                  (selectedCity != null &&
-                                      cities.contains(selectedCity))
-                                  ? selectedCity
-                                  : null,
+                              value: selectedCity,
                               hint: Text(
                                 'Pilih Kota',
                                 style: Theme.of(context)
@@ -168,12 +164,20 @@ class _HomePageState extends State<HomePage>
                                     color: AppColors.primary,
                                     fontSize: 18,
                                   ),
-                              items: cities.map((city) {
-                                return DropdownMenuItem(
-                                  value: city,
-                                  child: Text(city),
-                                );
-                              }).toList(),
+                              items: [
+                                if (selectedCity != null &&
+                                    !cities.contains(selectedCity))
+                                  DropdownMenuItem(
+                                    value: selectedCity,
+                                    child: Text(selectedCity),
+                                  ),
+                                ...cities.map((city) {
+                                  return DropdownMenuItem(
+                                    value: city,
+                                    child: Text(city),
+                                  );
+                                }),
+                              ],
                               onChanged: (value) {
                                 if (value != null) {
                                   context.read<VenueBloc>().add(
@@ -343,21 +347,64 @@ class _HomePageState extends State<HomePage>
               child: Center(child: Text('Tidak ada lapangan ditemukan.')),
             );
           }
-          return SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final venue = state.filteredVenues[index];
-                return VenueCard(
-                  venue: venue,
-                  userLat: state.userLat,
-                  userLng: state.userLng,
-                  onTap: () {
-                    context.push('/venue/${venue.id}');
-                  },
-                );
-              }, childCount: state.filteredVenues.length),
-            ),
+          final isFallbackProximity =
+              state.selectedCity != null &&
+              !state.allVenues.any((v) => v.city == state.selectedCity);
+
+          return SliverMainAxisGroup(
+            slivers: [
+              if (isFallbackProximity)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Belum ada lapangan di ${state.selectedCity}. Menampilkan lapangan terdekat dari lokasi Anda.',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final venue = state.filteredVenues[index];
+                    return VenueCard(
+                      venue: venue,
+                      userLat: state.userLat,
+                      userLng: state.userLng,
+                      onTap: () {
+                        context.push('/venue/${venue.id}');
+                      },
+                    );
+                  }, childCount: state.filteredVenues.length),
+                ),
+              ),
+            ],
           );
         }
         return const SliverToBoxAdapter(child: SizedBox.shrink());
