@@ -8,7 +8,6 @@ import 'package:gsports/features/auth/presentation/bloc/auth_event.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
 import 'package:gsports/features/auth/domain/entities/user_entity.dart';
 import 'package:gsports/features/profile/domain/entities/user_stats.dart';
-import 'package:gsports/features/scoreboard/presentation/widgets/match_history_widget.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
@@ -60,8 +59,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         _buildHeader(state.user),
                         const SizedBox(height: 24),
                         _buildStatsCard(state.stats),
-                        const SizedBox(height: 32),
-                        MatchHistoryWidget(userId: state.user.uid),
                         const SizedBox(height: 32),
                         _buildMenu(context),
                         const SizedBox(height: 24),
@@ -151,43 +148,38 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildStatsCard(UserStats stats) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-
-      padding: const EdgeInsets.all(20),
-
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
-
-          begin: Alignment.topLeft,
-
-          end: Alignment.bottomRight,
-        ),
-
-        borderRadius: BorderRadius.circular(16),
-
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-
-            blurRadius: 10,
-
-            offset: const Offset(0, 4),
+    return InkWell(
+      onTap: () => context.push('/match-history'),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primary,
+              AppColors.primary.withValues(alpha: 0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-
-        children: [
-          _buildStatItem('Matches', '${stats.matchesPlayed}', Icons.sports),
-
-          _buildStatItem('Won', '${stats.matchesWon}', Icons.emoji_events),
-
-          _buildStatItem('Win Rate', '${stats.winRate}%', Icons.trending_up),
-        ],
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildStatItem('Matches', '${stats.matchesPlayed}', Icons.sports),
+            _buildStatItem('Won', '${stats.matchesWon}', Icons.emoji_events),
+            _buildStatItem('Win Rate', '${stats.winRate}%', Icons.trending_up),
+          ],
+        ),
       ),
     );
   }

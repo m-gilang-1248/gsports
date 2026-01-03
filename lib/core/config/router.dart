@@ -27,6 +27,7 @@ import 'package:gsports/features/partner/booking_management/presentation/pages/p
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
 import 'package:gsports/features/profile/presentation/pages/edit_profile_page.dart';
+import 'package:gsports/features/profile/presentation/pages/match_history_page.dart';
 import 'package:gsports/features/favorites/presentation/pages/saved_venues_page.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
@@ -183,6 +184,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/venue/:id',
+        name: 'venueDetail',
         builder: (context, state) =>
             VenueDetailPage(venueId: state.pathParameters['id']!),
       ),
@@ -205,6 +207,10 @@ class AppRouter {
       GoRoute(
         path: '/edit-profile',
         builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: '/match-history',
+        builder: (context, state) => const MatchHistoryPage(),
       ),
       GoRoute(
         path: '/favorites',
