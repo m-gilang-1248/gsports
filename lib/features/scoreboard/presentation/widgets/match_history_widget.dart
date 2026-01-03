@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
-import 'package:gsports/features/scoreboard/domain/repositories/scoreboard_repository.dart';
+import 'package:gsports/features/scoreboard/presentation/bloc/match_history/match_history_bloc.dart';
 import 'package:intl/intl.dart';
 
 class MatchHistoryWidget extends StatelessWidget {
@@ -15,62 +16,61 @@ class MatchHistoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: GetIt.I<ScoreboardRepository>().getMatchesByUser(userId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return BlocProvider(
+      create: (context) =>
+          GetIt.I<MatchHistoryBloc>()..add(LoadMatchHistory(userId)),
+      child: BlocBuilder<MatchHistoryBloc, MatchHistoryState>(
+        builder: (context, state) {
+          if (state.status == MatchHistoryStatus.loading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (snapshot.hasError) {
-          return const Center(child: Text('Error loading matches'));
-        }
-
-        final result = snapshot.data;
-        if (result == null) return const SizedBox.shrink();
-
-        return result.fold((failure) => Center(child: Text(failure.message)), (
-          matches,
-        ) {
-          if (matches.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'No matches played yet',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
+          if (state.status == MatchHistoryStatus.error) {
+            return Center(
+              child: Text(state.errorMessage ?? 'Error loading matches'),
             );
           }
 
-          // Sort matches by date descending
-          final sortedMatches = List<MatchResult>.from(matches)
-            ..sort((a, b) => b.playedAt.compareTo(a.playedAt));
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text(
-                  'Riwayat Pertandingan',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          if (state.status == MatchHistoryStatus.loaded) {
+            final matches = state.filteredMatches;
+            if (matches.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'No matches found',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: sortedMatches.length,
-                itemBuilder: (context, index) {
-                  final match = sortedMatches[index];
-                  return _buildMatchCard(context, match);
-                },
-              ),
-            ],
-          );
-        });
-      },
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text(
+                    'Riwayat Pertandingan',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: matches.length,
+                  itemBuilder: (context, index) {
+                    final match = matches[index];
+                    return _buildMatchCard(context, match);
+                  },
+                ),
+              ],
+            );
+          }
+
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 
