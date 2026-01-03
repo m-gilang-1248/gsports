@@ -112,6 +112,8 @@ import 'features/scoreboard/data/repositories/scoreboard_repository_impl.dart'
     as _i107;
 import 'features/scoreboard/domain/repositories/scoreboard_repository.dart'
     as _i556;
+import 'features/scoreboard/presentation/bloc/match_history/match_history_bloc.dart'
+    as _i1055;
 import 'features/scoreboard/presentation/bloc/scoreboard_bloc.dart' as _i780;
 import 'features/venue/data/datasources/venue_remote_data_source.dart'
     as _i1039;
@@ -186,6 +188,9 @@ extension GetItInjectableX on _i174.GetIt {
         firebaseFirestore: gh<_i974.FirebaseFirestore>(),
         googleSignIn: gh<_i116.GoogleSignIn>(),
       ),
+    );
+    gh.factory<_i1055.MatchHistoryBloc>(
+      () => _i1055.MatchHistoryBloc(gh<_i556.ScoreboardRepository>()),
     );
     gh.factory<_i780.ScoreboardBloc>(
       () => _i780.ScoreboardBloc(gh<_i556.ScoreboardRepository>()),

@@ -16,6 +16,15 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
   late ScoringLogic _scoringLogic;
 
   ScoreboardBloc(this.repository) : super(const ScoreboardState()) {
+    _scoringLogic = ScoringLogic(
+      const MatchConfiguration(
+        sportType: 'generic',
+        scoringType: ScoringType.pointsBased,
+        winningScorePerSet: 21,
+        deuceEnabled: true,
+        maxScorePerSet: 30,
+      ),
+    );
     on<InitializeScoreboard>(_onInitializeScoreboard);
     on<IncrementScoreA>(_onIncrementScoreA);
     on<IncrementScoreB>(_onIncrementScoreB);
