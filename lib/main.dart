@@ -10,6 +10,7 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/venue/presentation/bloc/venue_bloc.dart';
 import 'injection_container.dart'; // Import the DI setup
 import 'package:intl/date_symbol_data_local.dart';
+import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,9 @@ void main() async {
   configureDependencies(); // Call the DI setup
 
   await initializeDateFormatting('id_ID', null);
+
+  // Initialize Notification Service
+  await GetIt.I<NotificationService>().initialize();
 
   runApp(const GsportsApp());
 }
