@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/core/constants/app_constants.dart';
+import 'package:gsports/core/presentation/widgets/filters/sport_filter_row.dart';
+import 'package:gsports/core/presentation/widgets/filters/time_filter_dropdown.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
 import 'package:gsports/features/scoreboard/presentation/bloc/match_history/match_history_bloc.dart';
 import 'package:intl/intl.dart';
@@ -72,7 +73,6 @@ class MatchHistoryWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Time Filter Dropdown
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
@@ -82,78 +82,23 @@ class MatchHistoryWidget extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(width: 8),
-              _TimeFilterDropdown(state: state),
+              TimeFilterDropdown(
+                selectedPreset: state.selectedTimePreset,
+                customDate: state.customDate,
+                onFilterChanged: (preset, date) {
+                  context.read<MatchHistoryBloc>().add(
+                    UpdateTimeFilter(preset: preset, customDate: date),
+                  );
+                },
+              ),
             ],
           ),
         ),
-
-        // 2. Sport Type Chips
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: const Text('Semua'),
-                  selected: state.selectedSportId == null,
-                  onSelected: (selected) {
-                    if (selected) {
-                      context.read<MatchHistoryBloc>().add(
-                        const UpdateSportFilter(null),
-                      );
-                    }
-                  },
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: state.selectedSportId == null
-                        ? Colors.white
-                        : AppColors.primary,
-                    fontWeight: state.selectedSportId == null
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                  ),
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  showCheckmark: false,
-                ),
-              ),
-              ...AppConstants.sports.map((sport) {
-                final isSelected = state.selectedSportId == sport.id;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(sport.displayName),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        context.read<MatchHistoryBloc>().add(
-                          UpdateSportFilter(sport.id),
-                        );
-                      }
-                    },
-                    selectedColor: AppColors.primary,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.primary,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: AppColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    showCheckmark: false,
-                  ),
-                );
-              }),
-            ],
-          ),
+        SportFilterRow(
+          selectedSportId: state.selectedSportId,
+          onSportSelected: (sportId) {
+            context.read<MatchHistoryBloc>().add(UpdateSportFilter(sportId));
+          },
         ),
       ],
     );
@@ -182,7 +127,6 @@ class MatchHistoryWidget extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              // 1. Section Kiri: Icon sesuai cabang olahraga
               Container(
                 width: 48,
                 height: 48,
@@ -197,17 +141,13 @@ class MatchHistoryWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-
-              // 2. Section Tengah: 3 Baris
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Baris Atas: Stacked Avatars
                     if (winnerIds.isNotEmpty)
                       _StackedAvatars(uids: winnerIds.take(2).toList()),
                     const SizedBox(height: 4),
-                    // Baris Tengah: Winner Name
                     Text(
                       'Winner: $winnerName',
                       style: const TextStyle(
@@ -218,7 +158,6 @@ class MatchHistoryWidget extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    // Baris Bawah: Tanggal & Poin
                     Text(
                       '${dateFormat.format(match.playedAt)} • ${_getScoreSummary(match)}',
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
@@ -226,8 +165,6 @@ class MatchHistoryWidget extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // 3. Section Kanan: Durasi
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -254,11 +191,9 @@ class MatchHistoryWidget extends StatelessWidget {
 
   String _getScoreSummary(MatchResult match) {
     if (match.sets.isEmpty) return 'No score';
-    // If it's a timed game like futsal, just show the last "set" score
     if (match.sets.length == 1) {
       return '${match.sets.first.scoreA} - ${match.sets.first.scoreB}';
     }
-    // For badminton, show summary of sets
     return match.sets.map((s) => '${s.scoreA}-${s.scoreB}').join(', ');
   }
 
@@ -267,133 +202,6 @@ class MatchHistoryWidget extends StatelessWidget {
     final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
     final secs = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$minutes:$secs';
-  }
-}
-
-class _TimeFilterDropdown extends StatelessWidget {
-  final MatchHistoryState state;
-
-  const _TimeFilterDropdown({required this.state});
-
-  String _getLabel() {
-    switch (state.selectedTimePreset) {
-      case TimeFilterPreset.all:
-        return 'Semua Waktu';
-      case TimeFilterPreset.thisWeek:
-        return 'Minggu Ini';
-      case TimeFilterPreset.thisMonth:
-        return 'Bulan Ini';
-      case TimeFilterPreset.customDate:
-        return state.customDate != null
-            ? DateFormat('dd MMM yyyy').format(state.customDate!)
-            : 'Pilih Tanggal';
-    }
-  }
-
-  void _showDatePicker(BuildContext context) {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (_) => Container(
-        height: 300,
-        color: Colors.white,
-        child: Column(
-          children: [
-            Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              color: Colors.grey[100],
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Batal'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Selesai'),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.date,
-                initialDateTime: state.customDate ?? DateTime.now(),
-                maximumDate: DateTime.now(),
-                onDateTimeChanged: (DateTime newDate) {
-                  context.read<MatchHistoryBloc>().add(
-                    UpdateTimeFilter(
-                      preset: TimeFilterPreset.customDate,
-                      customDate: newDate,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<TimeFilterPreset>(
-      onSelected: (preset) {
-        if (preset == TimeFilterPreset.customDate) {
-          _showDatePicker(context);
-        } else {
-          context.read<MatchHistoryBloc>().add(
-            UpdateTimeFilter(preset: preset),
-          );
-        }
-      },
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: TimeFilterPreset.all,
-          child: Text('Semua Waktu'),
-        ),
-        const PopupMenuItem(
-          value: TimeFilterPreset.thisWeek,
-          child: Text('Minggu Ini'),
-        ),
-        const PopupMenuItem(
-          value: TimeFilterPreset.thisMonth,
-          child: Text('Bulan Ini'),
-        ),
-        const PopupMenuItem(
-          value: TimeFilterPreset.customDate,
-          child: Text('Pilih Tanggal...'),
-        ),
-      ],
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _getLabel(),
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-            const Icon(
-              Icons.keyboard_arrow_down,
-              color: AppColors.primary,
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -408,9 +216,7 @@ class _StackedAvatars extends StatelessWidget {
       child: Stack(
         children: List.generate(uids.length, (index) {
           return Positioned(
-            left:
-                index *
-                16.0, // Distance overlap (approx -5 from original circle size)
+            left: index * 16.0,
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,

@@ -1,7 +1,5 @@
 part of 'match_history_bloc.dart';
 
-enum TimeFilterPreset { all, thisWeek, thisMonth, customDate }
-
 abstract class MatchHistoryEvent extends Equatable {
   const MatchHistoryEvent();
 

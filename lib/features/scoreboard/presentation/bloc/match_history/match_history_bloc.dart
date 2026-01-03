@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
 import 'package:gsports/features/scoreboard/domain/repositories/scoreboard_repository.dart';
+import 'package:gsports/core/constants/filter_constants.dart';
 import 'package:injectable/injectable.dart';
 
 part 'match_history_event.dart';

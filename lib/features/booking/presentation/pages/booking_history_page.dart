@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gsports/core/presentation/widgets/filters/sport_filter_row.dart';
+import 'package:gsports/core/presentation/widgets/filters/time_filter_dropdown.dart';
 import 'package:gsports/features/booking/presentation/bloc/history/history_bloc.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:go_router/go_router.dart';
@@ -88,11 +90,11 @@ class _BookingHistoryContentState extends State<_BookingHistoryContent> {
       length: 2,
       child: BlocConsumer<HistoryBloc, HistoryState>(
         listener: (context, state) async {
-          if (state is HistoryError) {
+          if (state.status == HistoryStatus.error) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is HistoryJoinSuccess) {
+            ).showSnackBar(SnackBar(content: Text(state.message ?? 'Error')));
+          } else if (state.status == HistoryStatus.joinSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Berhasil bergabung ke booking!')),
             );
@@ -134,20 +136,23 @@ class _BookingHistoryContentState extends State<_BookingHistoryContent> {
             ),
             body: Builder(
               builder: (context) {
-                if (state is HistoryLoading) {
+                if (state.status == HistoryStatus.loading) {
                   return const Center(child: CircularProgressIndicator());
-                } else if (state is HistoryError) {
-                  return _buildErrorState(state.message);
-                } else if (state is HistoryLoaded) {
+                } else if (state.status == HistoryStatus.error) {
+                  return _buildErrorState(state.message ?? 'Unknown error');
+                } else if (state.status == HistoryStatus.loaded ||
+                    state.status == HistoryStatus.joinSuccess) {
                   return TabBarView(
                     children: [
                       _buildBookingList(
                         _filterActiveBookings(state.bookings),
                         isHistoryTab: false,
+                        state: state,
                       ),
                       _buildBookingList(
-                        _filterHistoryBookings(state.bookings),
+                        state.filteredHistoryBookings,
                         isHistoryTab: true,
+                        state: state,
                       ),
                     ],
                   );
@@ -171,55 +176,91 @@ class _BookingHistoryContentState extends State<_BookingHistoryContent> {
       return isWaiting || isPaidActive;
     }).toList();
 
-    // Sort Ascending (Terdekat paling atas)
     active.sort((a, b) => a.date.compareTo(b.date));
     return active;
-  }
-
-  List<Booking> _filterHistoryBookings(List<Booking> bookings) {
-    final now = DateTime.now();
-    final history = bookings.where((b) {
-      final isCancelled = b.status == 'cancelled' || b.status == 'expired';
-      final isPaidFinished =
-          (b.status == 'confirmed' || b.status == 'paid') &&
-          (b.endTime.isBefore(now) || b.endTime.isAtSameMomentAs(now));
-      return isCancelled || isPaidFinished;
-    }).toList();
-
-    // Sort Descending (Terbaru paling atas)
-    history.sort((a, b) => b.date.compareTo(a.date));
-    return history;
   }
 
   Widget _buildBookingList(
     List<Booking> bookings, {
     required bool isHistoryTab,
+    required HistoryState state,
   }) {
-    if (bookings.isEmpty) {
-      return _buildEmptyState(
-        isHistoryTab
-            ? 'Belum ada riwayat booking.'
-            : 'Tidak ada booking yang sedang berlangsung.',
-      );
-    }
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<HistoryBloc>().add(FetchBookingHistory(widget.userId));
-      },
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: bookings.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          return BookingHistoryCard(
-            booking: bookings[index],
-            onReturn: () {
+    return Column(
+      children: [
+        if (isHistoryTab) _buildFilterSection(context, state),
+        Expanded(
+          child: bookings.isEmpty
+              ? _buildEmptyState(
+                  isHistoryTab
+                      ? 'Belum ada riwayat booking.'
+                      : 'Tidak ada booking yang sedang berlangsung.',
+                )
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<HistoryBloc>().add(
+                      FetchBookingHistory(widget.userId),
+                    );
+                  },
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: bookings.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      return BookingHistoryCard(
+                        booking: bookings[index],
+                        onReturn: () {
+                          context.read<HistoryBloc>().add(
+                            FetchBookingHistory(widget.userId),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterSection(BuildContext context, HistoryState state) {
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                const Text(
+                  'Filter:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(width: 8),
+                TimeFilterDropdown(
+                  selectedPreset: state.selectedTimePreset,
+                  customDate: state.customDate,
+                  onFilterChanged: (preset, date) {
+                    context.read<HistoryBloc>().add(
+                      UpdateBookingTimeFilter(preset: preset, customDate: date),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          SportFilterRow(
+            selectedSportId: state.selectedSportId,
+            onSportSelected: (sportId) {
               context.read<HistoryBloc>().add(
-                FetchBookingHistory(widget.userId),
+                UpdateBookingSportFilter(sportId),
               );
             },
-          );
-        },
+          ),
+          const Divider(),
+        ],
       ),
     );
   }
