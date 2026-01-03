@@ -2,6 +2,7 @@ import 'dart:math' show cos, sqrt, asin;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/core/usecases/usecase.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
@@ -58,21 +59,48 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
       final query = event.query.toLowerCase();
 
       final filtered = currentState.allVenues.where((venue) {
-        final matchesQuery =
-            venue.name.toLowerCase().contains(query) ||
-            (venue.address.toLowerCase().contains(query));
+        // --- 1. Query Matching (The "Search Engine") ---
+        final matchesName = venue.name.toLowerCase().contains(query);
+        final matchesCity = venue.city.toLowerCase().contains(query);
+        final matchesAddress = venue.address.toLowerCase().contains(query);
 
-        final matchesSport =
+        // Check if query matches any sport category (ID or Display Name)
+        final matchesSportQuery = venue.sportCategories.any((id) {
+          final idMatch = id.toLowerCase().contains(query);
+          final nameMatch = AppConstants.getSportName(
+            id,
+          ).toLowerCase().contains(query);
+          return idMatch || nameMatch;
+        });
+
+        // Check if query matches any facility
+        final matchesFacilityQuery = venue.facilities.any(
+          (f) => f.toLowerCase().contains(query),
+        );
+
+        final matchesQuery =
+            matchesName ||
+            matchesCity ||
+            matchesAddress ||
+            matchesSportQuery ||
+            matchesFacilityQuery;
+
+        // --- 2. Filter Matching (The Explicit Filters) ---
+        final matchesSportFilter =
             event.sportType == null ||
             venue.sportCategories.contains(event.sportType);
 
-        final matchesCity = event.city == null || venue.city == event.city;
+        final matchesCityFilter =
+            event.city == null || venue.city == event.city;
 
-        final matchesFacilities =
+        final matchesFacilitiesFilter =
             event.facilities == null ||
             event.facilities!.every((f) => venue.facilities.contains(f));
 
-        return matchesQuery && matchesSport && matchesCity && matchesFacilities;
+        return matchesQuery &&
+            matchesSportFilter &&
+            matchesCityFilter &&
+            matchesFacilitiesFilter;
       }).toList();
 
       // If user has location, sort by distance after filtering

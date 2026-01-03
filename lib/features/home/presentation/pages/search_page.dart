@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/core/presentation/widgets/venue_card.dart';
 import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
 import 'package:intl/intl.dart';
@@ -125,24 +126,22 @@ class _SearchPageState extends State<SearchPage> {
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
-                    children: ['Futsal', 'Badminton', 'Basket', 'Tenis', 'Voli']
-                        .map((sport) {
-                          final isSelected = _selectedSport == sport;
-                          return ChoiceChip(
-                            label: Text(sport),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              setModalState(() {
-                                _selectedSport = selected ? sport : null;
-                              });
-                            },
-                            selectedColor: AppColors.primary,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                            ),
-                          );
-                        })
-                        .toList(),
+                    children: AppConstants.sports.map((sport) {
+                      final isSelected = _selectedSport == sport.id;
+                      return ChoiceChip(
+                        label: Text(sport.displayName),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setModalState(() {
+                            _selectedSport = selected ? sport.id : null;
+                          });
+                        },
+                        selectedColor: AppColors.primary,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black,
+                        ),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 16),
                   const Text(
