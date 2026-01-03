@@ -141,7 +141,11 @@ class _HomePageState extends State<HomePage>
                           const SizedBox(width: 4),
                           if (venueState is VenueListLoaded)
                             DropdownButton<String>(
-                              value: selectedCity,
+                              value:
+                                  (selectedCity != null &&
+                                      cities.contains(selectedCity))
+                                  ? selectedCity
+                                  : null,
                               hint: Text(
                                 'Pilih Kota',
                                 style: Theme.of(context)

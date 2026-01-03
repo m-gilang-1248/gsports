@@ -151,7 +151,10 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    initialValue: _selectedCity,
+                    initialValue:
+                        (state.availableCities.contains(_selectedCity))
+                        ? _selectedCity
+                        : null,
                     hint: const Text('Pilih Kota'),
                     decoration: InputDecoration(
                       filled: true,
