@@ -46,3 +46,5 @@ class AuthGoogleSignInRequested extends AuthEvent {
 }
 
 class LogoutRequested extends AuthEvent {}
+
+class AuthFcmTokenUpdateRequested extends AuthEvent {}

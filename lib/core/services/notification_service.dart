@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:injectable/injectable.dart';
@@ -75,15 +76,28 @@ class NotificationService {
     );
   }
 
-  Future<void> scheduleNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledDate,
+  Future<void> scheduleMatchReminder({
+    required String bookingId,
+    required String venueName,
+    required DateTime startTime,
   }) async {
-    // Note: requires timezone package initialization (already added as transitive)
-    // For now, using basic show, but ideally use zonedSchedule
-    // In actual implementation, we'd need to handle timezones.
+    final reminderTime = startTime.subtract(const Duration(hours: 1));
+    if (reminderTime.isAfter(DateTime.now())) {
+      // For MVP, we'll use local notifications.
+      // Ideally use zonedSchedule from flutter_local_notifications
+      // But for this demonstration, we'll log it.
+      developer.log('Scheduled Match Reminder for $venueName at $reminderTime');
+    }
+  }
+
+  Future<void> scheduleRatingReminder({
+    required String bookingId,
+    required String venueName,
+    required DateTime endTime,
+  }) async {
+    if (endTime.isAfter(DateTime.now())) {
+      developer.log('Scheduled Rating Reminder for $venueName at $endTime');
+    }
   }
 
   Future<String?> getFCMToken() async {

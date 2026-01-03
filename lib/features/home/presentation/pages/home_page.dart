@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/core/presentation/widgets/venue_card.dart';
+import 'package:gsports/core/services/location_service.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
 import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,6 +28,37 @@ class _HomePageState extends State<HomePage>
     final bloc = context.read<VenueBloc>();
     if (bloc.state is! VenueListLoaded) {
       bloc.add(VenueFetchListRequested());
+    }
+  }
+
+  Future<void> _detectLocation() async {
+    try {
+      final locationService = GetIt.I<LocationService>();
+      final position = await locationService.getCurrentPosition();
+      final cityName = await locationService.getCityFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (mounted) {
+        context.read<VenueBloc>().add(
+          VenueLocationDetected(
+            lat: position.latitude,
+            lng: position.longitude,
+            cityName: cityName,
+          ),
+        );
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lokasi terdeteksi: $cityName')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal mendeteksi lokasi: $e')));
+      }
     }
   }
 
@@ -61,7 +94,7 @@ class _HomePageState extends State<HomePage>
                   ),
                 ),
               ),
-              _buildVenueList(),
+              _buildVenueList(context),
             ],
           ),
         ),
@@ -70,90 +103,130 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildHeader(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        if (state is AuthAuthenticated) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Lokasi Anda',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+    return BlocBuilder<VenueBloc, VenueState>(
+      builder: (context, venueState) {
+        return BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, authState) {
+            String? selectedCity;
+            List<String> cities = [];
+
+            if (venueState is VenueListLoaded) {
+              selectedCity = venueState.selectedCity;
+              cities = venueState.availableCities;
+            }
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        authState is AuthAuthenticated
+                            ? 'Lokasi Anda'
+                            : 'Selamat Datang, Cari Lapangan?',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          if (venueState is VenueListLoaded)
+                            DropdownButton<String>(
+                              value: selectedCity,
+                              hint: Text(
+                                'Pilih Kota',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                      fontSize: 18,
+                                    ),
+                              ),
+                              underline: const SizedBox.shrink(),
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: AppColors.primary,
+                              ),
+                              style: Theme.of(context).textTheme.headlineMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                    fontSize: 18,
+                                  ),
+                              items: cities.map((city) {
+                                return DropdownMenuItem(
+                                  value: city,
+                                  child: Text(city),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  context.read<VenueBloc>().add(
+                                    VenueSearchRequested(
+                                      query: '',
+                                      city: value,
+                                    ),
+                                  );
+                                }
+                              },
+                            )
+                          else
+                            const Text('Memuat...'),
+                          const Spacer(),
+                          IconButton(
+                            onPressed: _detectLocation,
+                            icon: const Icon(
+                              Icons.my_location,
+                              size: 20,
+                              color: AppColors.primary,
+                            ),
+                            tooltip: 'Gunakan Lokasi Saat Ini',
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Text(
-                    'Jakarta', // Hardcoded for MVP
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-              Stack(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      // TODO: Implement Notifications
-                    },
-                    icon: const Icon(
-                      Icons.notifications_outlined,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  Positioned(
-                    right: 12,
-                    top: 12,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.error,
-                        shape: BoxShape.circle,
+                ),
+                Stack(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        // TODO: Implement Notifications Page
+                      },
+                      icon: const Icon(
+                        Icons.notifications_outlined,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        } else {
-          // Guest State
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Selamat Datang,',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textSecondary,
+                    Positioned(
+                      right: 12,
+                      top: 12,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.error,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Cari Lapangan?',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-              TextButton(
-                onPressed: () => context.go('/login'),
-                child: const Text(
-                  'Masuk',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  ],
                 ),
-              ),
-            ],
-          );
-        }
+              ],
+            );
+          },
+        );
       },
     );
   }
@@ -231,7 +304,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildVenueList() {
+  Widget _buildVenueList(BuildContext context) {
     return BlocBuilder<VenueBloc, VenueState>(
       buildWhen: (previous, current) =>
           current is VenueListLoaded ||
@@ -261,7 +334,7 @@ class _HomePageState extends State<HomePage>
             ),
           );
         } else if (state is VenueListLoaded) {
-          if (state.venues.isEmpty) {
+          if (state.filteredVenues.isEmpty) {
             return const SliverFillRemaining(
               child: Center(child: Text('Tidak ada lapangan ditemukan.')),
             );
@@ -270,14 +343,16 @@ class _HomePageState extends State<HomePage>
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                final venue = state.venues[index];
+                final venue = state.filteredVenues[index];
                 return VenueCard(
                   venue: venue,
+                  userLat: state.userLat,
+                  userLng: state.userLng,
                   onTap: () {
                     context.push('/venue/${venue.id}');
                   },
                 );
-              }, childCount: state.venues.length),
+              }, childCount: state.filteredVenues.length),
             ),
           );
         }

@@ -20,4 +20,6 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> logout();
 
   Future<Either<Failure, UserEntity>> checkAuthStatus();
+
+  Future<Either<Failure, void>> updateFcmToken(String token);
 }

@@ -2,11 +2,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/usecases/usecase.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../domain/usecases/check_auth_status.dart';
 import '../../domain/usecases/login_user.dart';
 import '../../domain/usecases/logout_user.dart';
 import '../../domain/usecases/register_user.dart';
 import '../../domain/usecases/sign_in_with_google.dart';
+import '../../domain/usecases/update_fcm_token.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -17,6 +19,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final RegisterUser _registerUser;
   final LogoutUser _logoutUser;
   final SignInWithGoogle _signInWithGoogle;
+  final UpdateFcmToken _updateFcmToken;
+  final NotificationService _notificationService;
 
   AuthBloc(
     this._checkAuthStatus,
@@ -24,12 +28,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     this._registerUser,
     this._logoutUser,
     this._signInWithGoogle,
+    this._updateFcmToken,
+    this._notificationService,
   ) : super(AuthInitial()) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<LoginSubmitted>(_onLoginSubmitted);
     on<RegisterSubmitted>(_onRegisterSubmitted);
     on<AuthGoogleSignInRequested>(_onAuthGoogleSignInRequested);
     on<LogoutRequested>(_onLogoutRequested);
+    on<AuthFcmTokenUpdateRequested>(_onFcmTokenUpdateRequested);
   }
 
   Future<void> _onAuthCheckRequested(
@@ -38,10 +45,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     final result = await _checkAuthStatus(NoParams());
-    result.fold(
-      (failure) => emit(AuthUnauthenticated()),
-      (user) => emit(AuthAuthenticated(user)),
-    );
+    result.fold((failure) => emit(AuthUnauthenticated()), (user) {
+      emit(AuthAuthenticated(user));
+      add(AuthFcmTokenUpdateRequested());
+    });
   }
 
   Future<void> _onLoginSubmitted(
@@ -52,10 +59,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _loginUser(
       LoginUserParams(email: event.email, password: event.password),
     );
-    result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
-    );
+    result.fold((failure) => emit(AuthFailure(failure.message)), (user) {
+      emit(AuthAuthenticated(user));
+      add(AuthFcmTokenUpdateRequested());
+    });
   }
 
   Future<void> _onRegisterSubmitted(
@@ -71,10 +78,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         role: event.role,
       ),
     );
-    result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
-    );
+    result.fold((failure) => emit(AuthFailure(failure.message)), (user) {
+      emit(AuthAuthenticated(user));
+      add(AuthFcmTokenUpdateRequested());
+    });
   }
 
   Future<void> _onAuthGoogleSignInRequested(
@@ -85,10 +92,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _signInWithGoogle(
       SignInWithGoogleParams(role: event.role),
     );
-    result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
-    );
+    result.fold((failure) => emit(AuthFailure(failure.message)), (user) {
+      emit(AuthAuthenticated(user));
+      add(AuthFcmTokenUpdateRequested());
+    });
   }
 
   Future<void> _onLogoutRequested(
@@ -101,5 +108,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthFailure(failure.message)),
       (_) => emit(AuthUnauthenticated()),
     );
+  }
+
+  Future<void> _onFcmTokenUpdateRequested(
+    AuthFcmTokenUpdateRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final token = await _notificationService.getFCMToken();
+    if (token != null) {
+      await _updateFcmToken(UpdateFcmTokenParams(token: token));
+    }
   }
 }

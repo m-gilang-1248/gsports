@@ -29,6 +29,7 @@ import 'features/auth/domain/usecases/login_user.dart' as _i1073;
 import 'features/auth/domain/usecases/logout_user.dart' as _i657;
 import 'features/auth/domain/usecases/register_user.dart' as _i14;
 import 'features/auth/domain/usecases/sign_in_with_google.dart' as _i648;
+import 'features/auth/domain/usecases/update_fcm_token.dart' as _i964;
 import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
 import 'features/booking/data/datasources/booking_remote_data_source.dart'
     as _i97;
@@ -302,6 +303,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i648.SignInWithGoogle>(
       () => _i648.SignInWithGoogle(gh<_i1015.AuthRepository>()),
     );
+    gh.factory<_i964.UpdateFcmToken>(
+      () => _i964.UpdateFcmToken(gh<_i1015.AuthRepository>()),
+    );
     gh.lazySingleton<_i818.CheckAuthStatus>(
       () => _i818.CheckAuthStatus(gh<_i1015.AuthRepository>()),
     );
@@ -333,15 +337,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i506.GetPartnerStats>(
       () => _i506.GetPartnerStats(gh<_i848.PartnerRepository>()),
     );
-    gh.factory<_i363.AuthBloc>(
-      () => _i363.AuthBloc(
-        gh<_i818.CheckAuthStatus>(),
-        gh<_i1073.LoginUser>(),
-        gh<_i14.RegisterUser>(),
-        gh<_i657.LogoutUser>(),
-        gh<_i648.SignInWithGoogle>(),
-      ),
-    );
     gh.lazySingleton<_i376.PaymentRepository>(
       () => _i210.PaymentRepositoryImpl(gh<_i692.PaymentRemoteDataSource>()),
     );
@@ -357,6 +352,17 @@ extension GetItInjectableX on _i174.GetIt {
         joinBooking: gh<_i1015.JoinBooking>(),
         cancelBooking: gh<_i488.CancelBooking>(),
         firebaseAuth: gh<_i59.FirebaseAuth>(),
+      ),
+    );
+    gh.factory<_i363.AuthBloc>(
+      () => _i363.AuthBloc(
+        gh<_i818.CheckAuthStatus>(),
+        gh<_i1073.LoginUser>(),
+        gh<_i14.RegisterUser>(),
+        gh<_i657.LogoutUser>(),
+        gh<_i648.SignInWithGoogle>(),
+        gh<_i964.UpdateFcmToken>(),
+        gh<_i1011.NotificationService>(),
       ),
     );
     gh.factory<_i152.CourtManagementBloc>(

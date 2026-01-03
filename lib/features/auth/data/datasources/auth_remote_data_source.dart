@@ -27,6 +27,8 @@ abstract class AuthRemoteDataSource {
   Future<void> logout();
 
   Future<UserModel> getCurrentUser();
+
+  Future<void> updateFcmToken(String token);
 }
 
 @Injectable(as: AuthRemoteDataSource)
@@ -222,6 +224,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(e.message ?? 'Firebase Error', stackTrace: st);
     } catch (e, st) {
       debugPrint('Unknown error getting current user: $e');
+      throw ServerException(e.toString(), stackTrace: st);
+    }
+  }
+
+  @override
+  Future<void> updateFcmToken(String token) async {
+    try {
+      final user = firebaseAuth.currentUser;
+      if (user == null) return;
+
+      await firebaseFirestore
+          .collection(FirebaseConstants.usersCollection)
+          .doc(user.uid)
+          .update({'fcm_token': token});
+    } on FirebaseException catch (e, st) {
+      debugPrint('FirebaseException updating FCM token: $e');
+      throw ServerException(e.message ?? 'Firebase Error', stackTrace: st);
+    } catch (e, st) {
+      debugPrint('Unknown error updating FCM token: $e');
       throw ServerException(e.toString(), stackTrace: st);
     }
   }

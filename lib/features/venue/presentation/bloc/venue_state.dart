@@ -17,12 +17,49 @@ class VenueDetailLoading extends VenueState {}
 // class VenueLoading extends VenueState {}
 
 class VenueListLoaded extends VenueState {
-  final List<Venue> venues;
+  final List<Venue> allVenues;
+  final List<Venue> filteredVenues;
+  final List<String> availableCities;
+  final String? selectedCity;
+  final double? userLat;
+  final double? userLng;
 
-  const VenueListLoaded(this.venues);
+  const VenueListLoaded({
+    required this.allVenues,
+    required this.filteredVenues,
+    required this.availableCities,
+    this.selectedCity,
+    this.userLat,
+    this.userLng,
+  });
 
   @override
-  List<Object> get props => [venues];
+  List<Object> get props => [
+    allVenues,
+    filteredVenues,
+    availableCities,
+    selectedCity ?? '',
+    userLat ?? 0.0,
+    userLng ?? 0.0,
+  ];
+
+  VenueListLoaded copyWith({
+    List<Venue>? allVenues,
+    List<Venue>? filteredVenues,
+    List<String>? availableCities,
+    String? selectedCity,
+    double? userLat,
+    double? userLng,
+  }) {
+    return VenueListLoaded(
+      allVenues: allVenues ?? this.allVenues,
+      filteredVenues: filteredVenues ?? this.filteredVenues,
+      availableCities: availableCities ?? this.availableCities,
+      selectedCity: selectedCity ?? this.selectedCity,
+      userLat: userLat ?? this.userLat,
+      userLng: userLng ?? this.userLng,
+    );
+  }
 }
 
 class VenueDetailLoaded extends VenueState {

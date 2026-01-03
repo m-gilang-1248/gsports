@@ -1,3 +1,4 @@
+import 'dart:math' show cos, sqrt, asin;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,8 +9,31 @@ import '../../../features/venue/domain/entities/venue.dart';
 class VenueCard extends StatelessWidget {
   final Venue venue;
   final VoidCallback onTap;
+  final double? userLat;
+  final double? userLng;
 
-  const VenueCard({super.key, required this.venue, required this.onTap});
+  const VenueCard({
+    super.key,
+    required this.venue,
+    required this.onTap,
+    this.userLat,
+    this.userLng,
+  });
+
+  double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a =
+        0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +42,16 @@ class VenueCard extends StatelessWidget {
       symbol: 'Rp ',
       decimalDigits: 0,
     );
+
+    double? distance;
+    if (userLat != null && userLng != null) {
+      distance = _calculateDistance(
+        userLat!,
+        userLng!,
+        venue.location.lat,
+        venue.location.lng,
+      );
+    }
 
     // Detect sports based on name and facilities using the registry (Fallback)
     final detectedSports = AppConstants.sports.where((sport) {
@@ -172,7 +206,9 @@ class VenueCard extends StatelessWidget {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  venue.city,
+                                  distance != null
+                                      ? '${venue.city} • ${distance.toStringAsFixed(1)} km'
+                                      : venue.city,
                                   style: Theme.of(context).textTheme.bodyMedium,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,

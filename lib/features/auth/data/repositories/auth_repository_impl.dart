@@ -115,4 +115,16 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure(e.toString(), stackTrace: st));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> updateFcmToken(String token) async {
+    try {
+      await remoteDataSource.updateFcmToken(token);
+      return const Right(null);
+    } on ServerException catch (e, st) {
+      return Left(ServerFailure(e.message, stackTrace: st));
+    } catch (e, st) {
+      return Left(ServerFailure(e.toString(), stackTrace: st));
+    }
+  }
 }
