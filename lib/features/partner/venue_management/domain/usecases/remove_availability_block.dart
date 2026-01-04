@@ -6,23 +6,35 @@ import 'package:gsports/features/partner/venue_management/domain/repositories/ve
 import 'package:gsports/features/venue/domain/entities/venue_holiday.dart';
 
 @injectable
-class RemoveAvailabilityBlock extends UseCase<void, RemoveAvailabilityBlockParams> {
+class RemoveAvailabilityBlock
+    extends UseCase<void, RemoveAvailabilityBlockParams> {
   final VenueManagementRepository repository;
 
   RemoveAvailabilityBlock(this.repository);
 
   @override
-  Future<Either<Failure, void>> call(RemoveAvailabilityBlockParams params) async {
+  Future<Either<Failure, void>> call(
+    RemoveAvailabilityBlockParams params,
+  ) async {
     if (params.type == AvailabilityBlockType.maintenance) {
       if (params.bookingId == null) {
-        return const Left(ServerFailure('Booking ID is required for maintenance deletion'));
+        return const Left(
+          ServerFailure('Booking ID is required for maintenance deletion'),
+        );
       }
       return await repository.removeMaintenanceBooking(params.bookingId!);
     } else {
       if (params.venueId == null || params.holiday == null) {
-        return const Left(ServerFailure('Venue ID and Holiday are required for holiday deletion'));
+        return const Left(
+          ServerFailure(
+            'Venue ID and Holiday are required for holiday deletion',
+          ),
+        );
       }
-      return await repository.removeVenueHoliday(params.venueId!, params.holiday!);
+      return await repository.removeVenueHoliday(
+        params.venueId!,
+        params.holiday!,
+      );
     }
   }
 }

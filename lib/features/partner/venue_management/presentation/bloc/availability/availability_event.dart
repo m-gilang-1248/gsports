@@ -48,3 +48,13 @@ class AvailabilityAddBlock extends AvailabilityEvent {
   @override
   List<Object?> get props => [date];
 }
+
+class AvailabilityDeleteBlock extends AvailabilityEvent {
+  final String? bookingId;
+  final VenueHoliday? holiday;
+
+  const AvailabilityDeleteBlock({this.bookingId, this.holiday});
+
+  @override
+  List<Object?> get props => [bookingId, holiday];
+}

@@ -378,6 +378,7 @@ extension GetItInjectableX on _i174.GetIt {
         getVenueCourts: gh<_i340.GetManagedVenueCourts>(),
         getMaintenanceBookings: gh<_i287.GetMaintenanceBookings>(),
         addAvailabilityBlock: gh<_i6.AddAvailabilityBlock>(),
+        removeAvailabilityBlock: gh<_i809.RemoveAvailabilityBlock>(),
         firebaseAuth: gh<_i59.FirebaseAuth>(),
       ),
     );
