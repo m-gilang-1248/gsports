@@ -467,8 +467,13 @@ class VenueManagementRemoteDataSourceImpl
     VenueHolidayModel holiday,
   ) async {
     try {
+      final data = holiday.toJson();
+      // Manually convert DateTime to Timestamp for Firestore compatibility
+      data['startDate'] = Timestamp.fromDate(holiday.startDate);
+      data['endDate'] = Timestamp.fromDate(holiday.endDate);
+
       await firestore.collection('venues').doc(venueId).update({
-        'holidays': FieldValue.arrayUnion([holiday.toJson()]),
+        'holidays': FieldValue.arrayUnion([data]),
       });
     } catch (e) {
       throw ServerException(e.toString());
@@ -492,8 +497,13 @@ class VenueManagementRemoteDataSourceImpl
     VenueHolidayModel holiday,
   ) async {
     try {
+      final data = holiday.toJson();
+      // Ensure the object to remove matches the Firestore format (Timestamp)
+      data['startDate'] = Timestamp.fromDate(holiday.startDate);
+      data['endDate'] = Timestamp.fromDate(holiday.endDate);
+
       await firestore.collection('venues').doc(venueId).update({
-        'holidays': FieldValue.arrayRemove([holiday.toJson()]),
+        'holidays': FieldValue.arrayRemove([data]),
       });
     } catch (e) {
       throw ServerException(e.toString());

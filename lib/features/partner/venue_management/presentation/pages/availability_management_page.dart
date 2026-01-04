@@ -384,7 +384,7 @@ class _AvailabilityManagementViewState
             ...maintenance.map(
               (m) => ListTile(
                 leading: const Icon(Icons.handyman, color: Colors.orange),
-                title: Text(m.courtName ?? 'Court'),
+                title: Text('${m.courtName ?? 'Court'} (${m.sportType})'),
                 subtitle: Text('Status: ${m.status.toUpperCase()}'),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.grey),
