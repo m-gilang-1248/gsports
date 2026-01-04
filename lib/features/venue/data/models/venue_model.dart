@@ -65,7 +65,8 @@ class VenueModel extends Venue {
   static List<VenueHolidayModel> _holidaysFromList(List? list) {
     if (list == null) return [];
     return list.map((item) {
-      final map = item as Map<String, dynamic>;
+      // Safely convert to Map<String, dynamic> handling LinkedMap or other Map types
+      final map = Map<String, dynamic>.from(item as Map);
       return VenueHolidayModel(
         id: map['id'] as String? ?? '',
         name: map['name'] as String? ?? '',
