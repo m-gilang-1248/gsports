@@ -55,4 +55,10 @@ abstract class VenueManagementRepository {
     VenueHoliday holiday,
   );
   Future<Either<Failure, void>> addMaintenanceBooking(Booking booking);
+
+  Future<Either<Failure, void>> removeVenueHoliday(
+    String venueId,
+    VenueHoliday holiday,
+  );
+  Future<Either<Failure, void>> removeMaintenanceBooking(String bookingId);
 }

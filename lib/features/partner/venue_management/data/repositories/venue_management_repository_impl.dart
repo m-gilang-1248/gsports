@@ -291,4 +291,36 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> removeVenueHoliday(
+    String venueId,
+    VenueHoliday holiday,
+  ) async {
+    try {
+      await remoteDataSource.removeVenueHoliday(
+        venueId,
+        VenueHolidayModel.fromEntity(holiday),
+      );
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> removeMaintenanceBooking(
+    String bookingId,
+  ) async {
+    try {
+      await remoteDataSource.removeMaintenanceBooking(bookingId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

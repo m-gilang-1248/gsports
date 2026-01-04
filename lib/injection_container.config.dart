@@ -90,6 +90,8 @@ import 'features/partner/venue_management/domain/usecases/get_my_venues.dart'
     as _i829;
 import 'features/partner/venue_management/domain/usecases/manage_courts_usecases.dart'
     as _i340;
+import 'features/partner/venue_management/domain/usecases/remove_availability_block.dart'
+    as _i809;
 import 'features/partner/venue_management/domain/usecases/update_venue.dart'
     as _i600;
 import 'features/partner/venue_management/presentation/bloc/availability/availability_bloc.dart'
@@ -287,6 +289,10 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i287.GetMaintenanceBookings>(
       () => _i287.GetMaintenanceBookings(gh<_i164.VenueManagementRepository>()),
+    );
+    gh.factory<_i809.RemoveAvailabilityBlock>(
+      () =>
+          _i809.RemoveAvailabilityBlock(gh<_i164.VenueManagementRepository>()),
     );
     gh.lazySingleton<_i963.CreateVenue>(
       () => _i963.CreateVenue(gh<_i164.VenueManagementRepository>()),

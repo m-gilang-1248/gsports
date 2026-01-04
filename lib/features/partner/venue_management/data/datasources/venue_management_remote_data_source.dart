@@ -47,6 +47,9 @@ abstract class VenueManagementRemoteDataSource {
 
   Future<void> addVenueHoliday(String venueId, VenueHolidayModel holiday);
   Future<void> addMaintenanceBooking(BookingModel booking);
+
+  Future<void> removeVenueHoliday(String venueId, VenueHolidayModel holiday);
+  Future<void> removeMaintenanceBooking(String bookingId);
 }
 
 @LazySingleton(as: VenueManagementRemoteDataSource)
@@ -478,6 +481,29 @@ class VenueManagementRemoteDataSourceImpl
       final data = booking.toJson();
       data['createdAt'] = FieldValue.serverTimestamp();
       await firestore.collection('bookings').add(data);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> removeVenueHoliday(
+    String venueId,
+    VenueHolidayModel holiday,
+  ) async {
+    try {
+      await firestore.collection('venues').doc(venueId).update({
+        'holidays': FieldValue.arrayRemove([holiday.toJson()]),
+      });
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> removeMaintenanceBooking(String bookingId) async {
+    try {
+      await firestore.collection('bookings').doc(bookingId).delete();
     } catch (e) {
       throw ServerException(e.toString());
     }
