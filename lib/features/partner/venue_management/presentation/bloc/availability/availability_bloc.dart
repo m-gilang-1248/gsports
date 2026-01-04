@@ -27,6 +27,7 @@ class AvailabilityBloc extends Bloc<AvailabilityEvent, AvailabilityState> {
   }) : super(AvailabilityInitial()) {
     on<AvailabilityInit>(_onInit);
     on<AvailabilityVenueSelected>(_onVenueSelected);
+    on<AvailabilitySportTypeSelected>(_onSportTypeSelected);
     on<AvailabilityCourtSelected>(_onCourtSelected);
     on<AvailabilityMonthChanged>(_onMonthChanged);
   }
@@ -90,11 +91,28 @@ class AvailabilityBloc extends Bloc<AvailabilityEvent, AvailabilityState> {
             selectedVenue: event.venue,
             courts: courts,
             clearSelectedCourt: true,
+            clearSelectedSportType: true,
             maintenanceBookings: [], // Clear old maintenance
           ),
         );
         add(AvailabilityMonthChanged(currentState.focusedDay));
       });
+    }
+  }
+
+  Future<void> _onSportTypeSelected(
+    AvailabilitySportTypeSelected event,
+    Emitter<AvailabilityState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is AvailabilityLoaded) {
+      emit(
+        currentState.copyWith(
+          selectedSportType: event.sportType,
+          clearSelectedSportType: event.sportType == null,
+          clearSelectedCourt: true, // Reset court when sport type changes
+        ),
+      );
     }
   }
 

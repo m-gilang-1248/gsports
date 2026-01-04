@@ -25,6 +25,14 @@ class AvailabilityCourtSelected extends AvailabilityEvent {
   List<Object?> get props => [court];
 }
 
+class AvailabilitySportTypeSelected extends AvailabilityEvent {
+  final String? sportType;
+  const AvailabilitySportTypeSelected(this.sportType);
+
+  @override
+  List<Object?> get props => [sportType];
+}
+
 class AvailabilityMonthChanged extends AvailabilityEvent {
   final DateTime focusedDay;
   const AvailabilityMonthChanged(this.focusedDay);

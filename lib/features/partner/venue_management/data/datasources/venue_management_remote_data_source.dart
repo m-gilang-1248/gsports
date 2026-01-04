@@ -435,6 +435,20 @@ class VenueManagementRemoteDataSourceImpl
       return snapshot.docs
           .map((doc) => BookingModel.fromFirestore(doc))
           .toList();
+    } on FirebaseException catch (e) {
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      // ignore: avoid_print
+      print('FIREBASE ERROR in getMaintenanceBookings: ${e.message}');
+      // ignore: avoid_print
+      print('Code: ${e.code}');
+      if (e.message?.contains('index') == true) {
+        // ignore: avoid_print
+        print('MISSING INDEX LINK: ${e.message}');
+      }
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      throw ServerException(e.message ?? 'Firebase Error');
     } catch (e) {
       throw ServerException(e.toString());
     }

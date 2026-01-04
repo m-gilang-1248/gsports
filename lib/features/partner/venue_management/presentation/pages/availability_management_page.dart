@@ -66,16 +66,15 @@ class _AvailabilityManagementViewState
             return FloatingActionButton.extended(
               onPressed: () {
                 context
-                    .push(
-                  '/venue-holidays',
-                  extra: state.selectedVenue,
-                )
+                    .push('/venue-holidays', extra: state.selectedVenue)
                     .then((_) {
-                  // Refresh on return
-                  if (context.mounted) {
-                    context.read<AvailabilityBloc>().add(AvailabilityInit());
-                  }
-                });
+                      // Refresh on return
+                      if (context.mounted) {
+                        context.read<AvailabilityBloc>().add(
+                          AvailabilityInit(),
+                        );
+                      }
+                    });
               },
               label: const Text('Kelola Libur Toko'),
               icon: const Icon(Icons.edit_calendar),
@@ -89,6 +88,8 @@ class _AvailabilityManagementViewState
   }
 
   Widget _buildFilters(BuildContext context, AvailabilityLoaded state) {
+    final sportTypes = state.courts.map((c) => c.sportType).toSet().toList();
+
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
@@ -120,6 +121,36 @@ class _AvailabilityManagementViewState
             },
           ),
           const SizedBox(height: 16),
+          // Sport Type Dropdown
+          DropdownButtonFormField<String?>(
+            initialValue: state.selectedSportType,
+            decoration: const InputDecoration(
+              labelText: 'Filter Jenis Olahraga',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+            ),
+            items: [
+              const DropdownMenuItem<String?>(
+                value: null,
+                child: Text('Semua Jenis Olahraga'),
+              ),
+              ...sportTypes.map((type) {
+                return DropdownMenuItem<String?>(
+                  value: type,
+                  child: Text(type),
+                );
+              }),
+            ],
+            onChanged: (String? newValue) {
+              context.read<AvailabilityBloc>().add(
+                AvailabilitySportTypeSelected(newValue),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
           // Court Dropdown
           DropdownButtonFormField<Court?>(
             initialValue: state.selectedCourt,
@@ -136,12 +167,18 @@ class _AvailabilityManagementViewState
                 value: null,
                 child: Text('Semua Court'),
               ),
-              ...state.courts.map((court) {
-                return DropdownMenuItem<Court?>(
-                  value: court,
-                  child: Text(court.name),
-                );
-              }),
+              ...state.courts
+                  .where(
+                    (c) =>
+                        state.selectedSportType == null ||
+                        c.sportType == state.selectedSportType,
+                  )
+                  .map((court) {
+                    return DropdownMenuItem<Court?>(
+                      value: court,
+                      child: Text('${court.name} (${court.sportType})'),
+                    );
+                  }),
             ],
             onChanged: (Court? newValue) {
               context.read<AvailabilityBloc>().add(

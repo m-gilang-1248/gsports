@@ -16,6 +16,7 @@ class AvailabilityLoaded extends AvailabilityState {
   final Venue? selectedVenue;
   final List<Court> courts;
   final Court? selectedCourt;
+  final String? selectedSportType;
   final List<Booking> maintenanceBookings;
   final DateTime focusedDay;
 
@@ -24,6 +25,7 @@ class AvailabilityLoaded extends AvailabilityState {
     this.selectedVenue,
     this.courts = const [],
     this.selectedCourt,
+    this.selectedSportType,
     this.maintenanceBookings = const [],
     required this.focusedDay,
   });
@@ -32,9 +34,10 @@ class AvailabilityLoaded extends AvailabilityState {
     List<Venue>? venues,
     Venue? selectedVenue,
     List<Court>? courts,
-    Court?
-    selectedCourt, // Nullable override needs care, usually Wrapper or separated
+    Court? selectedCourt,
     bool clearSelectedCourt = false,
+    String? selectedSportType,
+    bool clearSelectedSportType = false,
     List<Booking>? maintenanceBookings,
     DateTime? focusedDay,
   }) {
@@ -45,6 +48,9 @@ class AvailabilityLoaded extends AvailabilityState {
       selectedCourt: clearSelectedCourt
           ? null
           : (selectedCourt ?? this.selectedCourt),
+      selectedSportType: clearSelectedSportType
+          ? null
+          : (selectedSportType ?? this.selectedSportType),
       maintenanceBookings: maintenanceBookings ?? this.maintenanceBookings,
       focusedDay: focusedDay ?? this.focusedDay,
     );
@@ -56,6 +62,7 @@ class AvailabilityLoaded extends AvailabilityState {
     selectedVenue,
     courts,
     selectedCourt,
+    selectedSportType,
     maintenanceBookings,
     focusedDay,
   ];
