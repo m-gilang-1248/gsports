@@ -40,3 +40,11 @@ class AvailabilityMonthChanged extends AvailabilityEvent {
   @override
   List<Object?> get props => [focusedDay];
 }
+
+class AvailabilityAddBlock extends AvailabilityEvent {
+  final DateTime date;
+  const AvailabilityAddBlock(this.date);
+
+  @override
+  List<Object?> get props => [date];
+}

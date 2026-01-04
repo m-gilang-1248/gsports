@@ -78,6 +78,8 @@ import 'features/partner/venue_management/data/repositories/venue_management_rep
     as _i327;
 import 'features/partner/venue_management/domain/repositories/venue_management_repository.dart'
     as _i164;
+import 'features/partner/venue_management/domain/usecases/add_availability_block.dart'
+    as _i6;
 import 'features/partner/venue_management/domain/usecases/create_venue.dart'
     as _i963;
 import 'features/partner/venue_management/domain/usecases/delete_venue.dart'
@@ -280,6 +282,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i759.UpdateProfile>(
       () => _i759.UpdateProfile(gh<_i626.ProfileRepository>()),
     );
+    gh.factory<_i6.AddAvailabilityBlock>(
+      () => _i6.AddAvailabilityBlock(gh<_i164.VenueManagementRepository>()),
+    );
     gh.factory<_i287.GetMaintenanceBookings>(
       () => _i287.GetMaintenanceBookings(gh<_i164.VenueManagementRepository>()),
     );
@@ -361,6 +366,15 @@ extension GetItInjectableX on _i174.GetIt {
         firebaseAuth: gh<_i59.FirebaseAuth>(),
       ),
     );
+    gh.factory<_i619.AvailabilityBloc>(
+      () => _i619.AvailabilityBloc(
+        getMyVenues: gh<_i829.GetMyVenues>(),
+        getVenueCourts: gh<_i340.GetManagedVenueCourts>(),
+        getMaintenanceBookings: gh<_i287.GetMaintenanceBookings>(),
+        addAvailabilityBlock: gh<_i6.AddAvailabilityBlock>(),
+        firebaseAuth: gh<_i59.FirebaseAuth>(),
+      ),
+    );
     gh.factory<_i363.AuthBloc>(
       () => _i363.AuthBloc(
         gh<_i818.CheckAuthStatus>(),
@@ -385,14 +399,6 @@ extension GetItInjectableX on _i174.GetIt {
         authRepository: gh<_i1015.AuthRepository>(),
         getUserStats: gh<_i810.GetUserStats>(),
         updateProfile: gh<_i759.UpdateProfile>(),
-      ),
-    );
-    gh.factory<_i619.AvailabilityBloc>(
-      () => _i619.AvailabilityBloc(
-        getMyVenues: gh<_i829.GetMyVenues>(),
-        getVenueCourts: gh<_i340.GetManagedVenueCourts>(),
-        getMaintenanceBookings: gh<_i287.GetMaintenanceBookings>(),
-        firebaseAuth: gh<_i59.FirebaseAuth>(),
       ),
     );
     gh.lazySingleton<_i206.CreateInvoice>(

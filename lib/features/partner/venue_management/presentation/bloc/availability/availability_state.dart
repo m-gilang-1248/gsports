@@ -75,3 +75,11 @@ class AvailabilityError extends AvailabilityState {
   @override
   List<Object?> get props => [message];
 }
+
+class AvailabilityActionSuccess extends AvailabilityState {
+  final String message;
+  const AvailabilityActionSuccess(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

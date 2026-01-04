@@ -8,6 +8,7 @@ import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/partner/venue_management/domain/usecases/get_my_venues.dart';
 import 'package:gsports/features/partner/venue_management/domain/usecases/manage_courts_usecases.dart';
 import 'package:gsports/features/partner/venue_management/domain/usecases/get_maintenance_bookings.dart';
+import 'package:gsports/features/partner/venue_management/domain/usecases/add_availability_block.dart';
 
 part 'availability_event.dart';
 part 'availability_state.dart';
@@ -17,12 +18,14 @@ class AvailabilityBloc extends Bloc<AvailabilityEvent, AvailabilityState> {
   final GetMyVenues getMyVenues;
   final GetManagedVenueCourts getVenueCourts;
   final GetMaintenanceBookings getMaintenanceBookings;
+  final AddAvailabilityBlock addAvailabilityBlock;
   final FirebaseAuth firebaseAuth;
 
   AvailabilityBloc({
     required this.getMyVenues,
     required this.getVenueCourts,
     required this.getMaintenanceBookings,
+    required this.addAvailabilityBlock,
     required this.firebaseAuth,
   }) : super(AvailabilityInitial()) {
     on<AvailabilityInit>(_onInit);
@@ -30,6 +33,7 @@ class AvailabilityBloc extends Bloc<AvailabilityEvent, AvailabilityState> {
     on<AvailabilitySportTypeSelected>(_onSportTypeSelected);
     on<AvailabilityCourtSelected>(_onCourtSelected);
     on<AvailabilityMonthChanged>(_onMonthChanged);
+    on<AvailabilityAddBlock>(_onAddBlock);
   }
 
   Future<void> _onInit(
@@ -166,6 +170,36 @@ class AvailabilityBloc extends Bloc<AvailabilityEvent, AvailabilityState> {
             focusedDay: event.focusedDay,
           ),
         ),
+      );
+    }
+  }
+
+  Future<void> _onAddBlock(
+    AvailabilityAddBlock event,
+    Emitter<AvailabilityState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is AvailabilityLoaded &&
+        currentState.selectedVenue != null) {
+      final prevLoaded = currentState;
+      emit(AvailabilityLoading());
+
+      final result = await addAvailabilityBlock(
+        AddAvailabilityBlockParams(
+          venueId: prevLoaded.selectedVenue!.id,
+          venueName: prevLoaded.selectedVenue!.name,
+          court: prevLoaded.selectedCourt,
+          date: event.date,
+        ),
+      );
+
+      await result.fold(
+        (failure) async => emit(AvailabilityError(failure.message)),
+        (_) async {
+          emit(const AvailabilityActionSuccess("Libur berhasil ditambahkan"));
+          // Refresh everything by re-initializing the venue
+          add(AvailabilityInit());
+        },
       );
     }
   }
