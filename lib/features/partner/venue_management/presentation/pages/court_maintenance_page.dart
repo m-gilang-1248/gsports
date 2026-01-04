@@ -97,21 +97,25 @@ class _CourtMaintenancePageState extends State<CourtMaintenancePage> {
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) {
         if (state is BookingPaidSuccess || state is BookingSuccess) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Maintenance block created successfully'), backgroundColor: AppColors.success),
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Maintenance block created successfully'),
+              backgroundColor: AppColors.success,
+            ),
           );
           Navigator.pop(context);
         } else if (state is BookingFailure) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.error,
+            ),
           );
         }
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('Court Maintenance'),
-        ),
+        appBar: AppBar(title: const Text('Court Maintenance')),
         body: Column(
           children: [
             _buildHeader(),
@@ -148,7 +152,10 @@ class _CourtMaintenancePageState extends State<CourtMaintenancePage> {
             children: [
               Text(
                 widget.court.name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
               Text(
                 widget.court.sportType,
@@ -188,7 +195,10 @@ class _CourtMaintenancePageState extends State<CourtMaintenancePage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Selected Date', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text(
+                  'Selected Date',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   dateFormat.format(_selectedDate),
@@ -231,7 +241,7 @@ class _CourtMaintenancePageState extends State<CourtMaintenancePage> {
               final hour = sortedHours[index];
               final isAvailable = map[hour] ?? false;
               final isSelected = _selectedSlots.any((s) => s.hour == hour);
-              
+
               final slotTime = DateTime(
                 _selectedDate.year,
                 _selectedDate.month,
@@ -258,14 +268,18 @@ class _CourtMaintenancePageState extends State<CourtMaintenancePage> {
                         : (isAvailable ? Colors.white : Colors.grey.shade100),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                      color: isSelected
+                          ? AppColors.primary
+                          : Colors.grey.shade300,
                     ),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     '${hour.toString().padLeft(2, '0')}:00',
                     style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       color: isSelected
                           ? Colors.white
                           : (isAvailable ? Colors.black : Colors.grey.shade400),
@@ -303,7 +317,9 @@ class _CourtMaintenancePageState extends State<CourtMaintenancePage> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: Text(
             _selectedSlots.isEmpty

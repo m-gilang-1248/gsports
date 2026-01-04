@@ -204,8 +204,7 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
 
   Future<void> _selectTime(String day, bool isOpenTime) async {
     final dayConfig = _operatingHours[day]!;
-    final currentTimeStr =
-        isOpenTime ? dayConfig['open'] : dayConfig['close'];
+    final currentTimeStr = isOpenTime ? dayConfig['open'] : dayConfig['close'];
     final currentTime = _parseTime(currentTimeStr);
 
     final picked = await showTimePicker(
@@ -580,16 +579,20 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
   void _toggleDay(String day, bool isOpen) async {
     // If closing a day, check for conflicts if editing an existing venue
     if (!isOpen && widget.venue != null) {
-      final dayIndex = _daysOfWeek.indexOf(day) + 1; // 1 = Monday, ..., 7 = Sunday
-      
+      final dayIndex =
+          _daysOfWeek.indexOf(day) + 1; // 1 = Monday, ..., 7 = Sunday
+
       // We need to call the repository to check for conflicts
       final repo = GetIt.I<VenueManagementRepository>();
       final result = await repo.checkWeeklyConflict(widget.venue!.id, dayIndex);
-      
+
       result.fold(
         (failure) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(failure.message), backgroundColor: AppColors.error),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(failure.message),
+              backgroundColor: AppColors.error,
+            ),
           );
         },
         (hasConflict) {
@@ -598,7 +601,9 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('Cannot Close Day'),
-                content: Text('There are active bookings on one or more upcoming ${day}s. Please cancel or complete them first.'),
+                content: Text(
+                  'There are active bookings on one or more upcoming ${day}s. Please cancel or complete them first.',
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),

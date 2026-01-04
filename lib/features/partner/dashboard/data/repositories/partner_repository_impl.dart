@@ -32,6 +32,7 @@ class PartnerRepositoryImpl implements PartnerRepository {
           totalBookings: bookings.length,
           totalRevenue: totalRevenue,
           recentTransactions: recentTransactions,
+          allBookings: bookings,
         ),
       );
     } on ServerException catch (e) {

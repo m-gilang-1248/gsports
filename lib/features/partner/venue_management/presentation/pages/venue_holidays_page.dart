@@ -102,7 +102,9 @@ class _VenueHolidaysPageState extends State<VenueHolidaysPage> {
           (hasConflict) {
             setState(() => _isSaving = false);
             if (hasConflict) {
-              if (mounted) _showConflictDialog(newHoliday.startDate, newHoliday.endDate);
+              if (mounted) {
+                _showConflictDialog(newHoliday.startDate, newHoliday.endDate);
+              }
             } else {
               setState(() {
                 _holidays.add(newHoliday);
@@ -144,7 +146,7 @@ class _VenueHolidaysPageState extends State<VenueHolidaysPage> {
 
   Future<void> _saveHolidays() async {
     setState(() => _isSaving = true);
-    
+
     // Create updated venue object
     final updatedVenue = Venue(
       id: widget.venue.id,
@@ -166,7 +168,7 @@ class _VenueHolidaysPageState extends State<VenueHolidaysPage> {
     // Using GetIt to call repository directly or we could trigger Bloc event
     // To keep it simple and consistent with AddEditVenuePage, we use Bloc if available in context
     // But this page might not have it. Let's use repo directly or use Bloc.
-    
+
     final repo = GetIt.I<VenueManagementRepository>();
     final result = await repo.updateVenue(updatedVenue);
 
@@ -201,9 +203,7 @@ class _VenueHolidaysPageState extends State<VenueHolidaysPage> {
     final dateFormat = DateFormat('dd MMM yyyy');
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.venue.name} Holidays'),
-      ),
+      appBar: AppBar(title: Text('${widget.venue.name} Holidays')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isSaving ? null : _addHoliday,
         label: const Text('Add Holiday'),
@@ -213,55 +213,60 @@ class _VenueHolidaysPageState extends State<VenueHolidaysPage> {
       body: _isSaving && _holidays.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : _holidays.isEmpty
-              ? _buildEmptyState()
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _holidays.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final holiday = _holidays[index];
-                    final bool isPast = holiday.endDate.isBefore(DateTime.now());
+          ? _buildEmptyState()
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: _holidays.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final holiday = _holidays[index];
+                final bool isPast = holiday.endDate.isBefore(DateTime.now());
 
-                    return Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.grey.shade200),
+                return Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isPast
+                            ? Colors.grey.shade100
+                            : AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
                       ),
-                      child: ListTile(
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isPast ? Colors.grey.shade100 : AppColors.primary.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.calendar_today,
-                            color: isPast ? Colors.grey : AppColors.primary,
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          holiday.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isPast ? Colors.grey : Colors.black,
-                          ),
-                        ),
-                        subtitle: Text(
-                          '${dateFormat.format(holiday.startDate)} - ${dateFormat.format(holiday.endDate)}',
-                          style: TextStyle(
-                            color: isPast ? Colors.grey : Colors.black87,
-                          ),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                          onPressed: () => _removeHoliday(index),
-                        ),
+                      child: Icon(
+                        Icons.calendar_today,
+                        color: isPast ? Colors.grey : AppColors.primary,
+                        size: 20,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                    title: Text(
+                      holiday.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isPast ? Colors.grey : Colors.black,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${dateFormat.format(holiday.startDate)} - ${dateFormat.format(holiday.endDate)}',
+                      style: TextStyle(
+                        color: isPast ? Colors.grey : Colors.black87,
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: AppColors.error,
+                      ),
+                      onPressed: () => _removeHoliday(index),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -270,7 +275,11 @@ class _VenueHolidaysPageState extends State<VenueHolidaysPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.beach_access_outlined, size: 64, color: Colors.grey.shade300),
+          Icon(
+            Icons.beach_access_outlined,
+            size: 64,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 16),
           const Text(
             'No holidays scheduled',

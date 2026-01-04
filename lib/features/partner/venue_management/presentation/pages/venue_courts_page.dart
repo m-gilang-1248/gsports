@@ -29,7 +29,8 @@ class VenueCourtsPage extends StatelessWidget {
         ),
         // Ensure VenueManagementBloc is available to find the venue object
         BlocProvider(
-          create: (context) => GetIt.I<VenueManagementBloc>()..add(FetchMyVenues()),
+          create: (context) =>
+              GetIt.I<VenueManagementBloc>()..add(FetchMyVenues()),
         ),
       ],
       child: _VenueCourtsView(venueId: venueId, venueName: venueName),
@@ -130,16 +131,18 @@ class _VenueCourtsView extends StatelessWidget {
               icon: const Icon(Icons.build_outlined, color: Colors.orange),
               onPressed: () {
                 // We need the venue object. Since it's not in the state of CourtManagementBloc,
-                // and we don't want to refetch, we can try to find it in the VenueManagementBloc 
+                // and we don't want to refetch, we can try to find it in the VenueManagementBloc
                 // if it's available in the parent or just use venueId and rely on the page to handle it.
                 // Best way: pass it via router or extras.
                 final venueState = context.read<VenueManagementBloc>().state;
                 if (venueState is VenueManagementSuccess) {
-                  final venue = venueState.venues.firstWhere((v) => v.id == venueId);
-                  context.push('/court-maintenance', extra: {
-                    'venue': venue,
-                    'court': court,
-                  });
+                  final venue = venueState.venues.firstWhere(
+                    (v) => v.id == venueId,
+                  );
+                  context.push(
+                    '/court-maintenance',
+                    extra: {'venue': venue, 'court': court},
+                  );
                 }
               },
               tooltip: 'Maintenance',
