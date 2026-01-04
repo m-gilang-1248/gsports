@@ -4,7 +4,7 @@ import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:intl/intl.dart';
 
-enum TimeFilter { day, week, month }
+enum TimeFilter { day, week, month, custom }
 
 enum ChartType { bookings, revenue }
 
@@ -26,6 +26,7 @@ class StatsChartCard extends StatefulWidget {
 
 class _StatsChartCardState extends State<StatsChartCard> {
   TimeFilter _selectedFilter = TimeFilter.day;
+  DateTimeRange? _selectedDateRange;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +62,7 @@ class _StatsChartCardState extends State<StatsChartCard> {
                   color: AppColors.textPrimary,
                 ),
               ),
-              _buildFilterDropdown(),
+              _buildFilterSection(),
             ],
           ),
           const SizedBox(height: 8),
@@ -73,6 +74,14 @@ class _StatsChartCardState extends State<StatsChartCard> {
               color: AppColors.primary,
             ),
           ),
+          if (_selectedDateRange != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                '${DateFormat('d MMM').format(_selectedDateRange!.start)} - ${DateFormat('d MMM yyyy').format(_selectedDateRange!.end)}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ),
           const SizedBox(height: 24),
           SizedBox(
             height: 200,
@@ -83,6 +92,48 @@ class _StatsChartCardState extends State<StatsChartCard> {
         ],
       ),
     );
+  }
+
+  Widget _buildFilterSection() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: _pickDateRange,
+          icon: Icon(
+            Icons.calendar_month,
+            size: 20,
+            color: _selectedDateRange != null ? AppColors.primary : Colors.grey,
+          ),
+          visualDensity: VisualDensity.compact,
+        ),
+        _buildFilterDropdown(),
+      ],
+    );
+  }
+
+  Future<void> _pickDateRange() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2023),
+      lastDate: DateTime.now(),
+      initialDateRange: _selectedDateRange,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedDateRange = picked;
+        _selectedFilter = TimeFilter.custom;
+      });
+    }
   }
 
   Widget _buildFilterDropdown() {
@@ -102,16 +153,19 @@ class _StatsChartCardState extends State<StatsChartCard> {
             fontWeight: FontWeight.w600,
           ),
           onChanged: (TimeFilter? newValue) {
-            if (newValue != null) {
+            if (newValue != null && newValue != TimeFilter.custom) {
               setState(() {
                 _selectedFilter = newValue;
+                _selectedDateRange = null;
               });
             }
           },
-          items: const [
-            DropdownMenuItem(value: TimeFilter.day, child: Text('Hari')),
-            DropdownMenuItem(value: TimeFilter.week, child: Text('Minggu')),
-            DropdownMenuItem(value: TimeFilter.month, child: Text('Bulan')),
+          items: [
+            const DropdownMenuItem(value: TimeFilter.day, child: Text('Hari')),
+            const DropdownMenuItem(value: TimeFilter.week, child: Text('Minggu')),
+            const DropdownMenuItem(value: TimeFilter.month, child: Text('Bulan')),
+            if (_selectedFilter == TimeFilter.custom)
+              const DropdownMenuItem(value: TimeFilter.custom, child: Text('Kustom')),
           ],
         ),
       ),
@@ -122,6 +176,26 @@ class _StatsChartCardState extends State<StatsChartCard> {
     final now = DateTime.now();
     return widget.data.where((booking) {
       final date = booking.date;
+
+      if (_selectedDateRange != null) {
+        // Range check (inclusive)
+        final start = DateTime(
+          _selectedDateRange!.start.year,
+          _selectedDateRange!.start.month,
+          _selectedDateRange!.start.day,
+        );
+        final end = DateTime(
+          _selectedDateRange!.end.year,
+          _selectedDateRange!.end.month,
+          _selectedDateRange!.end.day,
+          23,
+          59,
+          59,
+        );
+        return date.isAfter(start.subtract(const Duration(seconds: 1))) &&
+            date.isBefore(end.add(const Duration(seconds: 1)));
+      }
+
       switch (_selectedFilter) {
         case TimeFilter.day:
           return date.year == now.year &&
@@ -132,6 +206,8 @@ class _StatsChartCardState extends State<StatsChartCard> {
           return date.isAfter(weekAgo);
         case TimeFilter.month:
           return date.year == now.year && date.month == now.month;
+        case TimeFilter.custom:
+          return false; // Should be handled by _selectedDateRange
       }
     }).toList();
   }
@@ -161,23 +237,45 @@ class _StatsChartCardState extends State<StatsChartCard> {
     }
   }
 
+  String _formatYAxisLabel(double value) {
+    if (widget.type == ChartType.bookings) {
+      return value.toInt().toString();
+    } else {
+      if (value >= 1000000) {
+        return '${(value / 1000000).toStringAsFixed(1)}jt';
+      } else if (value >= 1000) {
+        return '${(value / 1000).toInt()}rb';
+      }
+      return value.toInt().toString();
+    }
+  }
+
   List<FlSpot> _generateSpots(List<Booking> filteredData) {
     if (filteredData.isEmpty) return [];
 
     final Map<int, double> aggregated = {};
+    bool groupByHour = _selectedFilter == TimeFilter.day;
+
+    if (_selectedFilter == TimeFilter.custom && _selectedDateRange != null) {
+      final diff = _selectedDateRange!.duration.inDays;
+      groupByHour = diff <= 1;
+    }
 
     for (final booking in filteredData) {
       int key;
-      switch (_selectedFilter) {
-        case TimeFilter.day:
-          key = booking.startTime.hour;
-          break;
-        case TimeFilter.week:
-          key = booking.date.weekday;
-          break;
-        case TimeFilter.month:
-          key = booking.date.day;
-          break;
+      if (groupByHour) {
+        key = booking.startTime.hour;
+      } else if (_selectedFilter == TimeFilter.week) {
+        key = booking.date.weekday;
+      } else if (_selectedFilter == TimeFilter.month) {
+        key = booking.date.day;
+      } else if (_selectedFilter == TimeFilter.custom &&
+          _selectedDateRange != null) {
+        // Use day of year or similar to handle cross-month
+        // For simplicity in X-axis (0 to duration), we can use diff from start
+        key = booking.date.difference(_selectedDateRange!.start).inDays;
+      } else {
+        key = booking.date.day;
       }
 
       double value = 1.0;
@@ -195,10 +293,7 @@ class _StatsChartCardState extends State<StatsChartCard> {
     if (aggregated.isEmpty) return [];
 
     final List<FlSpot> spots = [];
-    final sortedKeys = aggregated.keys.toList()..sort();
-
-    // Fill gaps with 0 for better chart look
-    if (_selectedFilter == TimeFilter.day) {
+    if (groupByHour) {
       for (int i = 0; i < 24; i++) {
         spots.add(FlSpot(i.toDouble(), aggregated[i] ?? 0));
       }
@@ -206,7 +301,14 @@ class _StatsChartCardState extends State<StatsChartCard> {
       for (int i = 1; i <= 7; i++) {
         spots.add(FlSpot(i.toDouble(), aggregated[i] ?? 0));
       }
+    } else if (_selectedFilter == TimeFilter.custom &&
+        _selectedDateRange != null) {
+      final days = _selectedDateRange!.duration.inDays;
+      for (int i = 0; i <= days; i++) {
+        spots.add(FlSpot(i.toDouble(), aggregated[i] ?? 0));
+      }
     } else {
+      final sortedKeys = aggregated.keys.toList()..sort();
       for (final key in sortedKeys) {
         spots.add(FlSpot(key.toDouble(), aggregated[key]!));
       }
@@ -216,6 +318,13 @@ class _StatsChartCardState extends State<StatsChartCard> {
   }
 
   LineChartData _buildChartData(List<FlSpot> spots) {
+    double maxY = 0;
+    for (final spot in spots) {
+      if (spot.y > maxY) maxY = spot.y;
+    }
+    // Add 20% buffer to maxY
+    maxY = maxY == 0 ? 10 : maxY * 1.2;
+
     return LineChartData(
       gridData: const FlGridData(show: false),
       titlesData: FlTitlesData(
@@ -228,10 +337,16 @@ class _StatsChartCardState extends State<StatsChartCard> {
           sideTitles: SideTitles(
             showTitles: true,
             reservedSize: 30,
-            interval: _selectedFilter == TimeFilter.month ? 5 : 1,
+            interval: _getBottomInterval(spots.length),
             getTitlesWidget: (value, meta) {
               String text = '';
-              if (_selectedFilter == TimeFilter.day) {
+              bool groupByHour = _selectedFilter == TimeFilter.day;
+              if (_selectedFilter == TimeFilter.custom &&
+                  _selectedDateRange != null) {
+                groupByHour = _selectedDateRange!.duration.inDays <= 1;
+              }
+
+              if (groupByHour) {
                 if (value % 4 == 0) text = '${value.toInt()}:00';
               } else if (_selectedFilter == TimeFilter.week) {
                 const days = [
@@ -245,6 +360,12 @@ class _StatsChartCardState extends State<StatsChartCard> {
                   'Min',
                 ];
                 if (value >= 1 && value <= 7) text = days[value.toInt()];
+              } else if (_selectedFilter == TimeFilter.custom &&
+                  _selectedDateRange != null) {
+                final date = _selectedDateRange!.start.add(
+                  Duration(days: value.toInt()),
+                );
+                text = DateFormat('d/M').format(date);
               } else {
                 text = value.toInt().toString();
               }
@@ -258,9 +379,25 @@ class _StatsChartCardState extends State<StatsChartCard> {
             },
           ),
         ),
-        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: widget.type == ChartType.revenue ? 45 : 30,
+            getTitlesWidget: (value, meta) {
+              return SideTitleWidget(
+                meta: meta,
+                child: Text(
+                  _formatYAxisLabel(value),
+                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                ),
+              );
+            },
+          ),
+        ),
       ),
       borderData: FlBorderData(show: false),
+      minY: 0,
+      maxY: maxY,
       lineBarsData: [
         LineChartBarData(
           spots: spots,
@@ -282,5 +419,11 @@ class _StatsChartCardState extends State<StatsChartCard> {
         ),
       ],
     );
+  }
+
+  double _getBottomInterval(int length) {
+    if (length > 20) return 5;
+    if (length > 10) return 2;
+    return 1;
   }
 }
