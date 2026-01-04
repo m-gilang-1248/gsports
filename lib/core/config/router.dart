@@ -22,9 +22,11 @@ import 'package:gsports/features/partner/venue_management/presentation/pages/add
 import 'package:gsports/features/partner/venue_management/presentation/pages/venue_courts_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_court_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/venue_holidays_page.dart';
+import 'package:gsports/features/partner/venue_management/presentation/pages/court_maintenance_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/order_management_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/manual_booking_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/partner_booking_detail_page.dart';
+import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
 import 'package:gsports/features/profile/presentation/pages/edit_profile_page.dart';
@@ -67,6 +69,7 @@ class AppRouter {
           path.startsWith('/owner') ||
           path.startsWith('/manage-venues') ||
           path.startsWith('/venue-holidays') ||
+          path.startsWith('/court-maintenance') ||
           path.startsWith('/add-venue') ||
           path.startsWith('/edit-venue') ||
           path.startsWith('/venue-courts') ||
@@ -131,6 +134,18 @@ class AppRouter {
         builder: (context, state) {
           final venue = state.extra as Venue;
           return VenueHolidaysPage(venue: venue);
+        },
+      ),
+      GoRoute(
+        path: '/court-maintenance',
+        builder: (context, state) {
+          final extras = state.extra as Map<String, dynamic>;
+          final venue = extras['venue'] as Venue;
+          final court = extras['court'] as Court;
+          return BlocProvider(
+            create: (context) => GetIt.I<BookingBloc>(),
+            child: CourtMaintenancePage(venue: venue, court: court),
+          );
         },
       ),
       GoRoute(

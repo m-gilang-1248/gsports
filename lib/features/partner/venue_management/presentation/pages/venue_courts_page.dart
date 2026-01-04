@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/core/constants/app_constants.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
+import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:intl/intl.dart';
 
@@ -20,9 +21,17 @@ class VenueCourtsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          GetIt.I<CourtManagementBloc>()..add(FetchCourts(venueId)),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              GetIt.I<CourtManagementBloc>()..add(FetchCourts(venueId)),
+        ),
+        // Ensure VenueManagementBloc is available to find the venue object
+        BlocProvider(
+          create: (context) => GetIt.I<VenueManagementBloc>()..add(FetchMyVenues()),
+        ),
+      ],
       child: _VenueCourtsView(venueId: venueId, venueName: venueName),
     );
   }
@@ -117,6 +126,24 @@ class _VenueCourtsView extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            IconButton(
+              icon: const Icon(Icons.build_outlined, color: Colors.orange),
+              onPressed: () {
+                // We need the venue object. Since it's not in the state of CourtManagementBloc,
+                // and we don't want to refetch, we can try to find it in the VenueManagementBloc 
+                // if it's available in the parent or just use venueId and rely on the page to handle it.
+                // Best way: pass it via router or extras.
+                final venueState = context.read<VenueManagementBloc>().state;
+                if (venueState is VenueManagementSuccess) {
+                  final venue = venueState.venues.firstWhere((v) => v.id == venueId);
+                  context.push('/court-maintenance', extra: {
+                    'venue': venue,
+                    'court': court,
+                  });
+                }
+              },
+              tooltip: 'Maintenance',
+            ),
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.blue),
               onPressed: () async {
