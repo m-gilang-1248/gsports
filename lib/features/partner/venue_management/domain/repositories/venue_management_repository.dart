@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:gsports/core/error/failures.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
+import 'package:gsports/features/venue/domain/entities/venue_holiday.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 
 abstract class VenueManagementRepository {
@@ -48,4 +49,10 @@ abstract class VenueManagementRepository {
     DateTime startDate,
     DateTime endDate,
   );
+
+  Future<Either<Failure, void>> addVenueHoliday(
+    String venueId,
+    VenueHoliday holiday,
+  );
+  Future<Either<Failure, void>> addMaintenanceBooking(Booking booking);
 }

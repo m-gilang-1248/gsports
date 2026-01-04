@@ -6,6 +6,7 @@ import 'package:gsports/core/services/cloudinary_service.dart';
 import 'package:gsports/features/booking/data/models/booking_model.dart';
 import 'package:gsports/features/venue/data/models/venue_model.dart';
 import 'package:gsports/features/venue/data/models/court_model.dart';
+import 'package:gsports/features/venue/data/models/venue_holiday_model.dart';
 
 abstract class VenueManagementRemoteDataSource {
   Future<List<VenueModel>> getMyVenues(String ownerId);
@@ -43,6 +44,9 @@ abstract class VenueManagementRemoteDataSource {
     DateTime startDate,
     DateTime endDate,
   );
+
+  Future<void> addVenueHoliday(String venueId, VenueHolidayModel holiday);
+  Future<void> addMaintenanceBooking(BookingModel booking);
 }
 
 @LazySingleton(as: VenueManagementRemoteDataSource)
@@ -449,6 +453,31 @@ class VenueManagementRemoteDataSourceImpl
       // ignore: avoid_print
       print('---------------------------------------------------');
       throw ServerException(e.message ?? 'Firebase Error');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> addVenueHoliday(
+    String venueId,
+    VenueHolidayModel holiday,
+  ) async {
+    try {
+      await firestore.collection('venues').doc(venueId).update({
+        'holidays': FieldValue.arrayUnion([holiday.toJson()]),
+      });
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> addMaintenanceBooking(BookingModel booking) async {
+    try {
+      final data = booking.toJson();
+      data['createdAt'] = FieldValue.serverTimestamp();
+      await firestore.collection('bookings').add(data);
     } catch (e) {
       throw ServerException(e.toString());
     }

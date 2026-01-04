@@ -5,9 +5,11 @@ import 'package:gsports/core/error/exceptions.dart';
 import 'package:gsports/core/error/failures.dart';
 import 'package:gsports/features/partner/venue_management/data/datasources/venue_management_remote_data_source.dart';
 import 'package:gsports/features/partner/venue_management/domain/repositories/venue_management_repository.dart';
+import 'package:gsports/features/booking/data/models/booking_model.dart';
 import 'package:gsports/features/venue/data/models/venue_model.dart';
 import 'package:gsports/features/venue/data/models/venue_holiday_model.dart';
 import 'package:gsports/features/venue/data/models/court_model.dart';
+import 'package:gsports/features/venue/domain/entities/venue_holiday.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
@@ -251,6 +253,38 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
         endDate,
       );
       return Right(bookings);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> addVenueHoliday(
+    String venueId,
+    VenueHoliday holiday,
+  ) async {
+    try {
+      await remoteDataSource.addVenueHoliday(
+        venueId,
+        VenueHolidayModel.fromEntity(holiday),
+      );
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> addMaintenanceBooking(Booking booking) async {
+    try {
+      await remoteDataSource.addMaintenanceBooking(
+        BookingModel.fromEntity(booking),
+      );
+      return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

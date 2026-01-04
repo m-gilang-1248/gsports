@@ -53,6 +53,36 @@ class BookingModel extends Booking {
   factory BookingModel.fromJson(Map<String, dynamic> json) =>
       _$BookingModelFromJson(json);
 
+  factory BookingModel.fromEntity(Booking entity) {
+    return BookingModel(
+      id: entity.id,
+      userId: entity.userId,
+      venueId: entity.venueId,
+      ownerId: entity.ownerId,
+      courtId: entity.courtId,
+      sportType: entity.sportType,
+      date: entity.date,
+      startTime: entity.startTime,
+      endTime: entity.endTime,
+      durationHours: entity.durationHours,
+      totalPrice: entity.totalPrice,
+      status: entity.status,
+      paymentStatus: entity.paymentStatus,
+      venueName: entity.venueName,
+      courtName: entity.courtName,
+      venueLocation: entity.venueLocation,
+      midtransOrderId: entity.midtransOrderId,
+      midtransPaymentUrl: entity.midtransPaymentUrl,
+      isSplitBill: entity.isSplitBill,
+      splitCode: entity.splitCode,
+      participants: entity.participants
+          .map((e) => PaymentParticipantModel.fromEntity(e))
+          .toList(),
+      participantIds: entity.participantIds,
+      createdAt: entity.createdAt,
+    );
+  }
+
   factory BookingModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return BookingModel(
