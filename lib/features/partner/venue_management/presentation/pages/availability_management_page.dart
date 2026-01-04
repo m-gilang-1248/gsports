@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/availability/availability_bloc.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
@@ -31,58 +30,84 @@ class AvailabilityManagementView extends StatefulWidget {
 class _AvailabilityManagementViewState
     extends State<AvailabilityManagementView> {
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
+  DateTime? _selectedDay = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Atur Libur & Ketersediaan')),
-      body: BlocBuilder<AvailabilityBloc, AvailabilityState>(
-        builder: (context, state) {
-          if (state is AvailabilityLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is AvailabilityError) {
-            return Center(child: Text(state.message));
-          }
-          if (state is AvailabilityLoaded) {
-            if (state.venues.isEmpty) {
-              return const Center(child: Text("Belum ada venue."));
+    return BlocListener<AvailabilityBloc, AvailabilityState>(
+      listener: (context, state) {
+        if (state is AvailabilityActionSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        if (state is AvailabilityError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Atur Libur & Ketersediaan')),
+        body: BlocBuilder<AvailabilityBloc, AvailabilityState>(
+          builder: (context, state) {
+            if (state is AvailabilityLoading) {
+              return const Center(child: CircularProgressIndicator());
             }
-            return Column(
-              children: [
-                _buildFilters(context, state),
-                Expanded(child: _buildCalendar(context, state)),
-                _buildLegend(),
-              ],
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
-      floatingActionButton: BlocBuilder<AvailabilityBloc, AvailabilityState>(
-        builder: (context, state) {
-          if (state is AvailabilityLoaded && state.selectedVenue != null) {
-            return FloatingActionButton.extended(
-              onPressed: () {
-                context
-                    .push('/venue-holidays', extra: state.selectedVenue)
-                    .then((_) {
-                      // Refresh on return
-                      if (context.mounted) {
-                        context.read<AvailabilityBloc>().add(
-                          AvailabilityInit(),
-                        );
-                      }
-                    });
-              },
-              label: const Text('Kelola Libur Toko'),
-              icon: const Icon(Icons.edit_calendar),
-              backgroundColor: AppColors.primary,
-            );
-          }
-          return const SizedBox.shrink();
-        },
+            if (state is AvailabilityError) {
+              return Center(child: Text(state.message));
+            }
+            if (state is AvailabilityLoaded) {
+              if (state.venues.isEmpty) {
+                return const Center(child: Text("Belum ada venue."));
+              }
+              return Column(
+                children: [
+                  _buildFilters(context, state),
+                  Expanded(child: _buildCalendar(context, state)),
+                  _buildLegend(),
+                  _buildBlockedList(context, state),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+        floatingActionButton: BlocBuilder<AvailabilityBloc, AvailabilityState>(
+          builder: (context, state) {
+            if (state is AvailabilityLoaded && state.selectedVenue != null) {
+              return FloatingActionButton.extended(
+                onPressed: () {
+                  if (_selectedDay == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Pilih tanggal terlebih dahulu'),
+                      ),
+                    );
+                    return;
+                  }
+                  context.read<AvailabilityBloc>().add(
+                    AvailabilityAddBlock(_selectedDay!),
+                  );
+                },
+                label: Text(
+                  state.selectedCourt != null
+                      ? 'Blokir Court Ini'
+                      : 'Blokir Venue (Libur)',
+                ),
+                icon: const Icon(Icons.block),
+                backgroundColor: AppColors.primary,
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -283,6 +308,67 @@ class _AvailabilityManagementViewState
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildBlockedList(BuildContext context, AvailabilityLoaded state) {
+    if (_selectedDay == null) return const SizedBox.shrink();
+
+    // 1. Get Venue Holidays for selected day
+    final holidays =
+        state.selectedVenue?.holidays.where((h) {
+          return _isWithinRange(_selectedDay!, h.startDate, h.endDate);
+        }).toList() ??
+        [];
+
+    // 2. Get Maintenance for selected day
+    final maintenance = state.maintenanceBookings.where((m) {
+      return isSameDay(m.date, _selectedDay!);
+    }).toList();
+
+    if (holidays.isEmpty && maintenance.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Text(
+          'Tidak ada pemblokiran pada tanggal ini',
+          style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+        ),
+      );
+    }
+
+    return Expanded(
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          if (holidays.isNotEmpty) ...[
+            const Text(
+              'Libur Toko (Venue)',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            ...holidays.map(
+              (h) => ListTile(
+                leading: const Icon(Icons.store, color: AppColors.error),
+                title: Text(h.name),
+                subtitle: const Text('Seluruh Venue Tutup'),
+              ),
+            ),
+            const Divider(),
+          ],
+          if (maintenance.isNotEmpty) ...[
+            const Text(
+              'Maintenance Lapangan (Blocked)',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            ...maintenance.map(
+              (m) => ListTile(
+                leading: const Icon(Icons.handyman, color: Colors.orange),
+                title: Text(m.courtName ?? 'Court'),
+                subtitle: Text('Status: ${m.status.toUpperCase()}'),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
