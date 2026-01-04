@@ -5,6 +5,7 @@ import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/availability/availability_bloc.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
+import 'package:gsports/features/venue/domain/entities/venue_holiday.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class AvailabilityManagementPage extends StatelessWidget {
@@ -70,9 +71,18 @@ class _AvailabilityManagementViewState
               return Column(
                 children: [
                   _buildFilters(context, state),
-                  Expanded(child: _buildCalendar(context, state)),
-                  _buildLegend(),
-                  _buildBlockedList(context, state),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildCalendar(context, state),
+                          _buildLegend(),
+                          const Divider(),
+                          _buildBlockedList(context, state),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               );
             }
@@ -337,37 +347,89 @@ class _AvailabilityManagementViewState
       );
     }
 
-    return Expanded(
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (holidays.isNotEmpty) ...[
-            const Text(
-              'Libur Toko (Venue)',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Libur Toko (Venue)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ),
             ...holidays.map(
               (h) => ListTile(
                 leading: const Icon(Icons.store, color: AppColors.error),
                 title: Text(h.name),
                 subtitle: const Text('Seluruh Venue Tutup'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.grey),
+                  onPressed: () => _showDeleteConfirmation(context, holiday: h),
+                ),
               ),
             ),
             const Divider(),
           ],
           if (maintenance.isNotEmpty) ...[
-            const Text(
-              'Maintenance Lapangan (Blocked)',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Maintenance Lapangan (Blocked)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ),
             ...maintenance.map(
               (m) => ListTile(
                 leading: const Icon(Icons.handyman, color: Colors.orange),
                 title: Text(m.courtName ?? 'Court'),
                 subtitle: Text('Status: ${m.status.toUpperCase()}'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.grey),
+                  onPressed: () =>
+                      _showDeleteConfirmation(context, bookingId: m.id),
+                ),
               ),
             ),
           ],
+          const SizedBox(height: 80), // Extra space for FAB
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(
+    BuildContext context, {
+    String? bookingId,
+    VenueHoliday? holiday,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Pemblokiran'),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus pemblokiran ini? '
+          'Slot akan kembali tersedia untuk dipesan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<AvailabilityBloc>().add(
+                AvailabilityDeleteBlock(bookingId: bookingId, holiday: holiday),
+              );
+            },
+            child: const Text(
+              'Hapus',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
         ],
       ),
     );
