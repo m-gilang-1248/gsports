@@ -42,3 +42,14 @@ class DeleteVenueRequested extends VenueManagementEvent {
   @override
   List<Object?> get props => [venueId];
 }
+
+class FetchMaintenanceBookings extends VenueManagementEvent {
+  final String venueId;
+  final DateTime startDate;
+  final DateTime endDate;
+
+  const FetchMaintenanceBookings(this.venueId, this.startDate, this.endDate);
+
+  @override
+  List<Object?> get props => [venueId, startDate, endDate];
+}

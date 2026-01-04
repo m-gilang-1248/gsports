@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
 import 'package:gsports/core/error/exceptions.dart';
 import 'package:gsports/core/services/cloudinary_service.dart';
+import 'package:gsports/features/booking/data/models/booking_model.dart';
 import 'package:gsports/features/venue/data/models/venue_model.dart';
 import 'package:gsports/features/venue/data/models/court_model.dart';
 
@@ -36,6 +37,12 @@ abstract class VenueManagementRemoteDataSource {
   });
 
   Future<bool> checkWeeklyConflict(String venueId, int dayOfWeek);
+
+  Future<List<BookingModel>> getMaintenanceBookings(
+    String venueId,
+    DateTime startDate,
+    DateTime endDate,
+  );
 }
 
 @LazySingleton(as: VenueManagementRemoteDataSource)
@@ -393,5 +400,43 @@ class VenueManagementRemoteDataSourceImpl
     await firestore.collection('venues').doc(venueId).update({
       'sportCategories': categories.toList(),
     });
+  }
+
+  @override
+  Future<List<BookingModel>> getMaintenanceBookings(
+    String venueId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    try {
+      // Normalize dates
+      final queryStart = DateTime(
+        startDate.year,
+        startDate.month,
+        startDate.day,
+      );
+      final queryEnd = DateTime(
+        endDate.year,
+        endDate.month,
+        endDate.day,
+        23,
+        59,
+        59,
+      );
+
+      final snapshot = await firestore
+          .collection('bookings')
+          .where('venueId', isEqualTo: venueId)
+          .where('status', isEqualTo: 'maintenance')
+          .where('date', isGreaterThanOrEqualTo: queryStart)
+          .where('date', isLessThanOrEqualTo: queryEnd)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => BookingModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 }

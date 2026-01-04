@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:gsports/core/error/failures.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
+import 'package:gsports/features/booking/domain/entities/booking.dart';
 
 abstract class VenueManagementRepository {
   Future<Either<Failure, List<Venue>>> getMyVenues(String ownerId);
@@ -40,5 +41,11 @@ abstract class VenueManagementRepository {
   Future<Either<Failure, bool>> checkWeeklyConflict(
     String venueId,
     int dayOfWeek,
+  );
+
+  Future<Either<Failure, List<Booking>>> getMaintenanceBookings(
+    String venueId,
+    DateTime startDate,
+    DateTime endDate,
   );
 }

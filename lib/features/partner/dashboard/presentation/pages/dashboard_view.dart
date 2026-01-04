@@ -29,6 +29,8 @@ class DashboardView extends StatelessWidget {
             const SizedBox(height: 24),
             _buildOrderStatusRow(context),
             const SizedBox(height: 24),
+            _buildShopManagement(context),
+            const SizedBox(height: 24),
             _buildChartStats(context),
             const SizedBox(height: 80),
           ],
@@ -210,6 +212,76 @@ class DashboardView extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildShopManagement(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Kelola Toko',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _buildQuickAction(
+              context,
+              label: 'Atur Libur Toko',
+              icon: Icons.beach_access_outlined,
+              onTap: () {
+                context.push('/availability-management');
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAction(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width:
+            (MediaQuery.of(context).size.width - 32 - 16) /
+            2, // 2 items per row
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 32, color: AppColors.primary),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -10,6 +10,7 @@ import 'package:gsports/features/venue/data/models/venue_holiday_model.dart';
 import 'package:gsports/features/venue/data/models/court_model.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
+import 'package:gsports/features/booking/domain/entities/booking.dart';
 
 @Injectable(as: VenueManagementRepository)
 class VenueManagementRepositoryImpl implements VenueManagementRepository {
@@ -230,6 +231,26 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
         dayOfWeek,
       );
       return Right(hasConflict);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Booking>>> getMaintenanceBookings(
+    String venueId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    try {
+      final bookings = await remoteDataSource.getMaintenanceBookings(
+        venueId,
+        startDate,
+        endDate,
+      );
+      return Right(bookings);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

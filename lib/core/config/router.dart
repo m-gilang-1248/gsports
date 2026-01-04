@@ -23,6 +23,7 @@ import 'package:gsports/features/partner/venue_management/presentation/pages/ven
 import 'package:gsports/features/partner/venue_management/presentation/pages/add_edit_court_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/venue_holidays_page.dart';
 import 'package:gsports/features/partner/venue_management/presentation/pages/court_maintenance_page.dart';
+import 'package:gsports/features/partner/venue_management/presentation/pages/availability_management_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/order_management_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/manual_booking_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/partner_booking_detail_page.dart';
@@ -69,6 +70,7 @@ class AppRouter {
           path.startsWith('/owner') ||
           path.startsWith('/manage-venues') ||
           path.startsWith('/venue-holidays') ||
+          path.startsWith('/availability-management') ||
           path.startsWith('/court-maintenance') ||
           path.startsWith('/add-venue') ||
           path.startsWith('/edit-venue') ||
@@ -124,6 +126,10 @@ class AppRouter {
       GoRoute(
         path: '/partner/revenue-analytics',
         builder: (context, state) => const RevenueAnalyticsPage(),
+      ),
+      GoRoute(
+        path: '/availability-management',
+        builder: (context, state) => const AvailabilityManagementPage(),
       ),
       GoRoute(
         path: '/manage-venues',

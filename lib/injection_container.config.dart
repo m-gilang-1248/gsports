@@ -82,12 +82,16 @@ import 'features/partner/venue_management/domain/usecases/create_venue.dart'
     as _i963;
 import 'features/partner/venue_management/domain/usecases/delete_venue.dart'
     as _i231;
+import 'features/partner/venue_management/domain/usecases/get_maintenance_bookings.dart'
+    as _i287;
 import 'features/partner/venue_management/domain/usecases/get_my_venues.dart'
     as _i829;
 import 'features/partner/venue_management/domain/usecases/manage_courts_usecases.dart'
     as _i340;
 import 'features/partner/venue_management/domain/usecases/update_venue.dart'
     as _i600;
+import 'features/partner/venue_management/presentation/bloc/availability/availability_bloc.dart'
+    as _i619;
 import 'features/partner/venue_management/presentation/bloc/court_management_bloc.dart'
     as _i152;
 import 'features/partner/venue_management/presentation/bloc/venue_management_bloc.dart'
@@ -276,6 +280,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i759.UpdateProfile>(
       () => _i759.UpdateProfile(gh<_i626.ProfileRepository>()),
     );
+    gh.factory<_i287.GetMaintenanceBookings>(
+      () => _i287.GetMaintenanceBookings(gh<_i164.VenueManagementRepository>()),
+    );
     gh.lazySingleton<_i963.CreateVenue>(
       () => _i963.CreateVenue(gh<_i164.VenueManagementRepository>()),
     );
@@ -378,6 +385,14 @@ extension GetItInjectableX on _i174.GetIt {
         authRepository: gh<_i1015.AuthRepository>(),
         getUserStats: gh<_i810.GetUserStats>(),
         updateProfile: gh<_i759.UpdateProfile>(),
+      ),
+    );
+    gh.factory<_i619.AvailabilityBloc>(
+      () => _i619.AvailabilityBloc(
+        getMyVenues: gh<_i829.GetMyVenues>(),
+        getVenueCourts: gh<_i340.GetManagedVenueCourts>(),
+        getMaintenanceBookings: gh<_i287.GetMaintenanceBookings>(),
+        firebaseAuth: gh<_i59.FirebaseAuth>(),
       ),
     );
     gh.lazySingleton<_i206.CreateInvoice>(
