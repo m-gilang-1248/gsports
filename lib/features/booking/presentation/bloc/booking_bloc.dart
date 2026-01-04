@@ -59,6 +59,37 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
 
     // 1. Determine Operating Hours
     final dayOfWeek = DateFormat('EEEE').format(date);
+
+    // Check for Venue Holiday first
+    if (event.operatingHours != null && event.operatingHours!.containsKey('holidays')) {
+      final holidaysList = event.operatingHours!['holidays'] as List?;
+      if (holidaysList != null) {
+        final dateOnly = DateTime(date.year, date.month, date.day);
+        for (var h in holidaysList) {
+          final hMap = h as Map<String, dynamic>;
+          final start = (hMap['startDate'] as DateTime);
+          final end = (hMap['endDate'] as DateTime);
+          
+          final startOnly = DateTime(start.year, start.month, start.day);
+          final endOnly = DateTime(end.year, end.month, end.day);
+
+          if ((dateOnly.isAtSameMomentAs(startOnly) || dateOnly.isAfter(startOnly)) && 
+              (dateOnly.isAtSameMomentAs(endOnly) || dateOnly.isBefore(endOnly))) {
+             emit(
+              BookingAvailabilityLoaded(
+                availabilityMap: const {},
+                selectedCourtId: courtId,
+                selectedDate: date,
+                selectedSlots: const [],
+                isRefreshing: false,
+              ),
+            );
+            return;
+          }
+        }
+      }
+    }
+
     final hoursConfig =
         event.operatingHours?[dayOfWeek] as Map<String, dynamic>?;
 

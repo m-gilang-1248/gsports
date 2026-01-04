@@ -185,6 +185,17 @@ class _ManageVenuesView extends StatelessWidget {
                       Row(
                         children: [
                           IconButton(
+                            onPressed: () => context.push(
+                              '/venue-holidays',
+                              extra: venue,
+                            ),
+                            icon: const Icon(
+                              Icons.beach_access_outlined,
+                              color: AppColors.primary,
+                            ),
+                            tooltip: 'Manage Holidays',
+                          ),
+                          IconButton(
                             onPressed: () async {
                               final result = await context.push(
                                 '/edit-venue',

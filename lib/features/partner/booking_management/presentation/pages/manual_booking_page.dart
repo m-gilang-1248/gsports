@@ -214,11 +214,20 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                             _selectedSlots.clear();
                           });
                           if (c != null) {
+                            final Map<String, dynamic>
+                            operatingHoursWithHolidays =
+                                Map<String, dynamic>.from(
+                                  _selectedVenue?.operatingHours ?? {},
+                                );
+
+                            operatingHoursWithHolidays['holidays'] =
+                                _selectedVenue?.holidays ?? [];
+
                             context.read<BookingBloc>().add(
                               BookingAvailabilityChecked(
                                 courtId: c.id,
                                 date: _selectedDate,
-                                operatingHours: _selectedVenue?.operatingHours,
+                                operatingHours: operatingHoursWithHolidays,
                               ),
                             );
                           }
@@ -252,11 +261,19 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
                         _selectedSlots.clear();
                       });
                       if (context.mounted) {
+                        final Map<String, dynamic> operatingHoursWithHolidays =
+                            Map<String, dynamic>.from(
+                              _selectedVenue?.operatingHours ?? {},
+                            );
+
+                        operatingHoursWithHolidays['holidays'] =
+                            _selectedVenue?.holidays ?? [];
+
                         context.read<BookingBloc>().add(
                           BookingAvailabilityChecked(
                             courtId: _selectedCourt!.id,
                             date: date,
-                            operatingHours: _selectedVenue?.operatingHours,
+                            operatingHours: operatingHoursWithHolidays,
                           ),
                         );
                       }

@@ -719,11 +719,17 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
                   if (!isSelected) {
                     final venueState = context.read<VenueBloc>().state;
                     if (venueState is VenueDetailLoaded) {
+                      final venue = venueState.venue;
+                      final Map<String, dynamic> operatingHoursWithHolidays = 
+                          Map<String, dynamic>.from(venue.operatingHours ?? {});
+                      
+                      operatingHoursWithHolidays['holidays'] = venue.holidays;
+
                       context.read<BookingBloc>().add(
                         BookingAvailabilityChecked(
                           courtId: court.id,
                           date: _selectedDate,
-                          operatingHours: venueState.venue.operatingHours,
+                          operatingHours: operatingHoursWithHolidays,
                         ),
                       );
                     }
