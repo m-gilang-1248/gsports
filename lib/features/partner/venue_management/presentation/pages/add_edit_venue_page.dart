@@ -9,6 +9,7 @@ import 'package:gsports/core/constants/facility_data.dart';
 import 'package:gsports/core/presentation/widgets/custom_button.dart';
 import 'package:gsports/core/presentation/widgets/custom_text_field.dart';
 import 'package:gsports/core/services/location_service.dart';
+import 'package:gsports/features/partner/venue_management/domain/repositories/venue_management_repository.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/venue_location.dart';
@@ -46,8 +47,16 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
   bool _isLoadingDistricts = false;
 
   // Time State
-  TimeOfDay _openTime = const TimeOfDay(hour: 8, minute: 0);
-  TimeOfDay _closeTime = const TimeOfDay(hour: 22, minute: 0);
+  final List<String> _daysOfWeek = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+  late Map<String, Map<String, dynamic>> _operatingHours;
 
   final List<File> _newImages = [];
   List<String> _currentPhotos = [];
@@ -71,10 +80,13 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
 
     _loadProvinces();
 
-    if (widget.venue != null) {
-      if (widget.venue!.operatingHours != null) {
-        _initializeOperatingHours(widget.venue!.operatingHours!);
-      }
+    if (widget.venue?.operatingHours != null) {
+      _initializeOperatingHours(widget.venue!.operatingHours!);
+    } else {
+      _operatingHours = {
+        for (var day in _daysOfWeek)
+          day: {'open': '08:00', 'close': '22:00', 'isOpen': true},
+      };
     }
 
     _currentPhotos = widget.venue?.photos != null
@@ -130,10 +142,21 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
   }
 
   void _initializeOperatingHours(Map<String, dynamic> hours) {
-    if (hours.containsKey('Monday')) {
-      final monday = hours['Monday'] as Map<String, dynamic>;
-      _openTime = _parseTime(monday['open'] ?? '08:00');
-      _closeTime = _parseTime(monday['close'] ?? '22:00');
+    _operatingHours = Map<String, Map<String, dynamic>>.from(
+      hours.map(
+        (key, value) => MapEntry(key, Map<String, dynamic>.from(value)),
+      ),
+    );
+
+    // Ensure all days are present
+    for (var day in _daysOfWeek) {
+      if (!_operatingHours.containsKey(day)) {
+        _operatingHours[day] = {
+          'open': '08:00',
+          'close': '22:00',
+          'isOpen': true,
+        };
+      }
     }
   }
 
@@ -179,17 +202,22 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
     });
   }
 
-  Future<void> _selectTime(bool isOpenTime) async {
+  Future<void> _selectTime(String day, bool isOpenTime) async {
+    final dayConfig = _operatingHours[day]!;
+    final currentTimeStr =
+        isOpenTime ? dayConfig['open'] : dayConfig['close'];
+    final currentTime = _parseTime(currentTimeStr);
+
     final picked = await showTimePicker(
       context: context,
-      initialTime: isOpenTime ? _openTime : _closeTime,
+      initialTime: currentTime,
     );
     if (picked != null) {
       setState(() {
         if (isOpenTime) {
-          _openTime = picked;
+          dayConfig['open'] = _formatTime(picked);
         } else {
-          _closeTime = picked;
+          dayConfig['close'] = _formatTime(picked);
         }
       });
     }
@@ -222,21 +250,6 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final openStr = _formatTime(_openTime);
-    final closeStr = _formatTime(_closeTime);
-    final operatingHours = {
-      for (var day in [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ])
-        day: {'open': openStr, 'close': closeStr, 'isOpen': true},
-    };
-
     final venue = Venue(
       id: widget.venue?.id ?? '',
       ownerId: user.uid,
@@ -253,7 +266,8 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
       rating: widget.venue?.rating ?? 0.0,
       minPrice: 0,
       isVerified: widget.venue?.isVerified ?? false,
-      operatingHours: operatingHours,
+      operatingHours: _operatingHours,
+      holidays: widget.venue?.holidays ?? [],
     );
 
     if (widget.venue == null) {
@@ -487,24 +501,140 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
   }
 
   Widget _buildTimePickers() {
-    return Row(
-      children: [
-        Expanded(child: _buildTimeField('Opening Time', _openTime, true)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildTimeField('Closing Time', _closeTime, false)),
-      ],
+    return Column(
+      children: _daysOfWeek.map((day) {
+        final config = _operatingHours[day]!;
+        final bool isOpen = config['isOpen'] as bool? ?? true;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    day,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        isOpen ? 'Open' : 'Closed',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isOpen ? AppColors.success : AppColors.error,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Switch(
+                        value: isOpen,
+                        onChanged: (val) => _toggleDay(day, val),
+                        activeThumbColor: AppColors.primary,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              if (isOpen) ...[
+                const Divider(),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTimeField(
+                        'Opening',
+                        _parseTime(config['open'] as String),
+                        day,
+                        true,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildTimeField(
+                        'Closing',
+                        _parseTime(config['close'] as String),
+                        day,
+                        false,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
-  Widget _buildTimeField(String label, TimeOfDay time, bool isOpenTime) {
+  void _toggleDay(String day, bool isOpen) async {
+    // If closing a day, check for conflicts if editing an existing venue
+    if (!isOpen && widget.venue != null) {
+      final dayIndex = _daysOfWeek.indexOf(day) + 1; // 1 = Monday, ..., 7 = Sunday
+      
+      // We need to call the repository to check for conflicts
+      final repo = GetIt.I<VenueManagementRepository>();
+      final result = await repo.checkWeeklyConflict(widget.venue!.id, dayIndex);
+      
+      result.fold(
+        (failure) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(failure.message), backgroundColor: AppColors.error),
+          );
+        },
+        (hasConflict) {
+          if (hasConflict) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Cannot Close Day'),
+                content: Text('There are active bookings on one or more upcoming ${day}s. Please cancel or complete them first.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            setState(() {
+              _operatingHours[day]!['isOpen'] = isOpen;
+            });
+          }
+        },
+      );
+    } else {
+      setState(() {
+        _operatingHours[day]!['isOpen'] = isOpen;
+      });
+    }
+  }
+
+  Widget _buildTimeField(
+    String label,
+    TimeOfDay time,
+    String day,
+    bool isOpenTime,
+  ) {
     return InkWell(
-      onTap: () => _selectTime(isOpenTime),
-      borderRadius: BorderRadius.circular(16),
+      onTap: () => _selectTime(day, isOpenTime),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
@@ -512,22 +642,22 @@ class _AddEditVenuePageState extends State<AddEditVenuePage> {
           children: [
             Text(
               label,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
             ),
             const SizedBox(height: 4),
             Row(
               children: [
                 const Icon(
                   Icons.access_time,
-                  size: 20,
+                  size: 16,
                   color: AppColors.primary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Text(
                   _formatTime(time),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 14,
                   ),
                 ),
               ],
