@@ -162,6 +162,18 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
       return bookings;
     } on FirebaseException catch (e) {
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      // ignore: avoid_print
+      print('FIREBASE ERROR in getMyBookings: ${e.message}');
+      // ignore: avoid_print
+      print('Code: ${e.code}');
+      if (e.message?.contains('index') == true) {
+        // ignore: avoid_print
+        print('MISSING INDEX LINK: ${e.message}');
+      }
+      // ignore: avoid_print
+      print('---------------------------------------------------');
       throw ServerException(e.message ?? 'Failed to fetch user bookings');
     } catch (e) {
       throw ServerException(e.toString());
@@ -185,6 +197,18 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
       return bookings;
     } on FirebaseException catch (e) {
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      // ignore: avoid_print
+      print('FIREBASE ERROR in getPartnerBookings: ${e.message}');
+      // ignore: avoid_print
+      print('Code: ${e.code}');
+      if (e.message?.contains('index') == true) {
+        // ignore: avoid_print
+        print('MISSING INDEX LINK: ${e.message}');
+      }
+      // ignore: avoid_print
+      print('---------------------------------------------------');
       throw ServerException(e.message ?? 'Failed to fetch partner bookings');
     } catch (e) {
       throw ServerException(e.toString());
@@ -274,6 +298,18 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       return conflictingBookings
           .isEmpty; // True if no conflicts, false otherwise
     } on FirebaseException catch (e) {
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      // ignore: avoid_print
+      print('FIREBASE ERROR in checkAvailability: ${e.message}');
+      // ignore: avoid_print
+      print('Code: ${e.code}');
+      if (e.message?.contains('index') == true) {
+        // ignore: avoid_print
+        print('MISSING INDEX LINK: ${e.message}');
+      }
+      // ignore: avoid_print
+      print('---------------------------------------------------');
       throw ServerException(e.message ?? 'Firebase Error');
     } catch (e) {
       throw ServerException(e.toString());

@@ -281,6 +281,20 @@ class VenueManagementRemoteDataSourceImpl
       });
 
       return activeBookings.isNotEmpty;
+    } on FirebaseException catch (e) {
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      // ignore: avoid_print
+      print('FIREBASE ERROR in checkBookingConflicts: ${e.message}');
+      // ignore: avoid_print
+      print('Code: ${e.code}');
+      if (e.message?.contains('index') == true) {
+        // ignore: avoid_print
+        print('MISSING INDEX LINK: ${e.message}');
+      }
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      throw ServerException(e.message ?? 'Firebase Error');
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -308,6 +322,20 @@ class VenueManagementRemoteDataSourceImpl
       });
 
       return conflicts.isNotEmpty;
+    } on FirebaseException catch (e) {
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      // ignore: avoid_print
+      print('FIREBASE ERROR in checkWeeklyConflict: ${e.message}');
+      // ignore: avoid_print
+      print('Code: ${e.code}');
+      if (e.message?.contains('index') == true) {
+        // ignore: avoid_print
+        print('MISSING INDEX LINK: ${e.message}');
+      }
+      // ignore: avoid_print
+      print('---------------------------------------------------');
+      throw ServerException(e.message ?? 'Firebase Error');
     } catch (e) {
       throw ServerException(e.toString());
     }

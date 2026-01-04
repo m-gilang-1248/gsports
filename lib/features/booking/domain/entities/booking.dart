@@ -56,6 +56,58 @@ class Booking extends Equatable {
     required this.createdAt,
   });
 
+  Booking copyWith({
+    String? id,
+    String? userId,
+    String? venueId,
+    String? ownerId,
+    String? courtId,
+    String? sportType,
+    DateTime? date,
+    DateTime? startTime,
+    DateTime? endTime,
+    int? durationHours,
+    int? totalPrice,
+    String? status,
+    String? paymentStatus,
+    String? venueName,
+    String? courtName,
+    String? venueLocation,
+    String? midtransOrderId,
+    String? midtransPaymentUrl,
+    bool? isSplitBill,
+    String? splitCode,
+    List<PaymentParticipant>? participants,
+    List<String>? participantIds,
+    DateTime? createdAt,
+  }) {
+    return Booking(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      venueId: venueId ?? this.venueId,
+      ownerId: ownerId ?? this.ownerId,
+      courtId: courtId ?? this.courtId,
+      sportType: sportType ?? this.sportType,
+      date: date ?? this.date,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      durationHours: durationHours ?? this.durationHours,
+      totalPrice: totalPrice ?? this.totalPrice,
+      status: status ?? this.status,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      venueName: venueName ?? this.venueName,
+      courtName: courtName ?? this.courtName,
+      venueLocation: venueLocation ?? this.venueLocation,
+      midtransOrderId: midtransOrderId ?? this.midtransOrderId,
+      midtransPaymentUrl: midtransPaymentUrl ?? this.midtransPaymentUrl,
+      isSplitBill: isSplitBill ?? this.isSplitBill,
+      splitCode: splitCode ?? this.splitCode,
+      participants: participants ?? this.participants,
+      participantIds: participantIds ?? this.participantIds,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   @override
   List<Object?> get props => [
     id,

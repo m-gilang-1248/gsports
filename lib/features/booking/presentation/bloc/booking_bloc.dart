@@ -61,7 +61,8 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     final dayOfWeek = DateFormat('EEEE').format(date);
 
     // Check for Venue Holiday first
-    if (event.operatingHours != null && event.operatingHours!.containsKey('holidays')) {
+    if (event.operatingHours != null &&
+        event.operatingHours!.containsKey('holidays')) {
       final holidaysList = event.operatingHours!['holidays'] as List?;
       if (holidaysList != null) {
         final dateOnly = DateTime(date.year, date.month, date.day);
@@ -69,13 +70,15 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
           final hMap = h as Map<String, dynamic>;
           final start = (hMap['startDate'] as DateTime);
           final end = (hMap['endDate'] as DateTime);
-          
+
           final startOnly = DateTime(start.year, start.month, start.day);
           final endOnly = DateTime(end.year, end.month, end.day);
 
-          if ((dateOnly.isAtSameMomentAs(startOnly) || dateOnly.isAfter(startOnly)) && 
-              (dateOnly.isAtSameMomentAs(endOnly) || dateOnly.isBefore(endOnly))) {
-             emit(
+          if ((dateOnly.isAtSameMomentAs(startOnly) ||
+                  dateOnly.isAfter(startOnly)) &&
+              (dateOnly.isAtSameMomentAs(endOnly) ||
+                  dateOnly.isBefore(endOnly))) {
+            emit(
               BookingAvailabilityLoaded(
                 availabilityMap: const {},
                 selectedCourtId: courtId,
@@ -231,13 +234,28 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     await bookingResult.fold(
       (failure) async => emit(BookingFailure(failure.message)),
       (bookingId) async {
-        // If booking is already paid (e.g. Manual Booking), skip Midtrans
-        if (event.booking.status == 'paid') {
-          // Force update status to ensure it persists as 'paid'
+        // Bypass payment if maintenance, already paid, or free
+        final bool isMaintenanceOrPaid =
+            event.booking.status == 'maintenance' ||
+            event.booking.paymentStatus == 'paid' ||
+            event.booking.totalPrice == 0;
+
+        if (isMaintenanceOrPaid) {
+          // Force update status to ensure it persists as 'paid' or 'maintenance'
           // This handles cases where Firestore triggers might default it to 'waiting_payment'
+          // For maintenance, we might want to keep status as 'maintenance'
+          final targetStatus = event.booking.status == 'maintenance'
+              ? 'maintenance'
+              : 'paid';
+
           await updateBookingStatus(
-            UpdateBookingStatusParams(bookingId: bookingId, status: 'paid'),
+            UpdateBookingStatusParams(
+              bookingId: bookingId,
+              status: targetStatus,
+            ),
           );
+
+          // If maintenance, we can emit PaidSuccess or a generic Success
           emit(BookingPaidSuccess(bookingId));
           return;
         }
