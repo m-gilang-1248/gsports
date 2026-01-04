@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:gsports/features/venue/domain/entities/venue_location.dart';
+import 'package:gsports/features/venue/domain/entities/venue_holiday.dart';
 
 class Venue extends Equatable {
   final String id;
@@ -16,6 +17,7 @@ class Venue extends Equatable {
   final int minPrice;
   final bool isVerified;
   final Map<String, dynamic>? operatingHours; // Added operatingHours
+  final List<VenueHoliday> holidays;
 
   const Venue({
     required this.id,
@@ -32,6 +34,7 @@ class Venue extends Equatable {
     required this.minPrice,
     required this.isVerified,
     this.operatingHours,
+    this.holidays = const [],
   });
 
   @override
@@ -50,5 +53,6 @@ class Venue extends Equatable {
     minPrice,
     isVerified,
     operatingHours,
+    holidays,
   ];
 }

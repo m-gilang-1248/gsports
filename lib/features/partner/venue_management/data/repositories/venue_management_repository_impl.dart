@@ -6,6 +6,7 @@ import 'package:gsports/core/error/failures.dart';
 import 'package:gsports/features/partner/venue_management/data/datasources/venue_management_remote_data_source.dart';
 import 'package:gsports/features/partner/venue_management/domain/repositories/venue_management_repository.dart';
 import 'package:gsports/features/venue/data/models/venue_model.dart';
+import 'package:gsports/features/venue/data/models/venue_holiday_model.dart';
 import 'package:gsports/features/venue/data/models/court_model.dart';
 import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/domain/entities/court.dart';
@@ -47,6 +48,9 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
         rating: 0.0,
         minPrice: venue.minPrice,
         operatingHours: venue.operatingHours,
+        holidays: venue.holidays
+            .map((e) => VenueHolidayModel.fromEntity(e))
+            .toList(),
       );
       await remoteDataSource.createVenue(venueModel, images);
       return const Right(null);
@@ -77,6 +81,9 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
         rating: venue.rating,
         minPrice: venue.minPrice,
         operatingHours: venue.operatingHours,
+        holidays: venue.holidays
+            .map((e) => VenueHolidayModel.fromEntity(e))
+            .toList(),
       );
       await remoteDataSource.updateVenue(
         venueModel,
@@ -183,6 +190,46 @@ class VenueManagementRepositoryImpl implements VenueManagementRepository {
     try {
       await remoteDataSource.deleteCourt(venueId, courtId);
       return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> checkBookingConflicts(
+    String venueId,
+    DateTime startDate,
+    DateTime endDate, {
+    String? courtId,
+  }) async {
+    try {
+      final hasConflict = await remoteDataSource.checkBookingConflicts(
+        venueId,
+        startDate,
+        endDate,
+        courtId: courtId,
+      );
+      return Right(hasConflict);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> checkWeeklyConflict(
+    String venueId,
+    int dayOfWeek,
+  ) async {
+    try {
+      final hasConflict = await remoteDataSource.checkWeeklyConflict(
+        venueId,
+        dayOfWeek,
+      );
+      return Right(hasConflict);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

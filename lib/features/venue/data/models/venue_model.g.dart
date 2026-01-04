@@ -29,6 +29,9 @@ VenueModel _$VenueModelFromJson(Map<String, dynamic> json) => VenueModel(
   minPrice: (json['minPrice'] as num).toInt(),
   isVerified: json['isVerified'] as bool? ?? false,
   operatingHours: json['operatingHours'] as Map<String, dynamic>?,
+  holidays: json['holidays'] == null
+      ? const []
+      : VenueModel._holidaysFromJson(json['holidays'] as List),
 );
 
 Map<String, dynamic> _$VenueModelToJson(VenueModel instance) =>
@@ -47,4 +50,5 @@ Map<String, dynamic> _$VenueModelToJson(VenueModel instance) =>
       'isVerified': instance.isVerified,
       'operatingHours': instance.operatingHours,
       'location': VenueModel._locationToJson(instance.location),
+      'holidays': VenueModel._holidaysToJson(instance.holidays),
     };

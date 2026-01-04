@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/venue.dart';
 import '../../domain/entities/venue_location.dart';
+import 'venue_holiday_model.dart';
 
 part 'venue_model.g.dart';
 
@@ -10,6 +11,10 @@ class VenueModel extends Venue {
   @override
   @JsonKey(fromJson: _locationFromJson, toJson: _locationToJson)
   final VenueLocation location;
+
+  @override
+  @JsonKey(fromJson: _holidaysFromJson, toJson: _holidaysToJson)
+  final List<VenueHolidayModel> holidays;
 
   const VenueModel({
     required super.id,
@@ -26,7 +31,8 @@ class VenueModel extends Venue {
     required super.minPrice,
     super.isVerified = false,
     super.operatingHours,
-  }) : super(location: location);
+    this.holidays = const [],
+  }) : super(location: location, holidays: holidays);
 
   factory VenueModel.fromJson(Map<String, dynamic> json) =>
       _$VenueModelFromJson(json);
@@ -52,7 +58,21 @@ class VenueModel extends Venue {
       minPrice: (data['minPrice'] as num? ?? 0).toInt(),
       isVerified: data['isVerified'] as bool? ?? false,
       operatingHours: data['operatingHours'] as Map<String, dynamic>?,
+      holidays: _holidaysFromList(data['holidays'] as List?),
     );
+  }
+
+  static List<VenueHolidayModel> _holidaysFromList(List? list) {
+    if (list == null) return [];
+    return list.map((item) {
+      final map = item as Map<String, dynamic>;
+      return VenueHolidayModel(
+        id: map['id'] as String? ?? '',
+        name: map['name'] as String? ?? '',
+        startDate: (map['startDate'] as Timestamp).toDate(),
+        endDate: (map['endDate'] as Timestamp).toDate(),
+      );
+    }).toList();
   }
 
   static VenueLocation _locationFromGeoPoint(GeoPoint? geoPoint) {
@@ -69,5 +89,17 @@ class VenueModel extends Venue {
 
   static Map<String, dynamic> _locationToJson(VenueLocation location) {
     return {'lat': location.lat, 'lng': location.lng};
+  }
+
+  static List<VenueHolidayModel> _holidaysFromJson(List<dynamic> json) {
+    return json
+        .map((e) => VenueHolidayModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  static List<Map<String, dynamic>> _holidaysToJson(
+    List<VenueHolidayModel> holidays,
+  ) {
+    return holidays.map((e) => e.toJson()).toList();
   }
 }

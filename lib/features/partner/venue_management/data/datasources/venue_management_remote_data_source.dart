@@ -26,6 +26,16 @@ abstract class VenueManagementRemoteDataSource {
     List<String>? removedImageUrls,
   });
   Future<void> deleteCourt(String venueId, String courtId);
+
+  // Availability Checks
+  Future<bool> checkBookingConflicts(
+    String venueId,
+    DateTime startDate,
+    DateTime endDate, {
+    String? courtId,
+  });
+
+  Future<bool> checkWeeklyConflict(String venueId, int dayOfWeek);
 }
 
 @LazySingleton(as: VenueManagementRemoteDataSource)
@@ -226,6 +236,78 @@ class VenueManagementRemoteDataSourceImpl
       // Trigger minPrice and sportCategories update
       await _updateVenueMinPrice(venueId);
       await _updateVenueSportCategories(venueId);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<bool> checkBookingConflicts(
+    String venueId,
+    DateTime startDate,
+    DateTime endDate, {
+    String? courtId,
+  }) async {
+    try {
+      final queryStart = DateTime(
+        startDate.year,
+        startDate.month,
+        startDate.day,
+      );
+      final queryEnd = DateTime(
+        endDate.year,
+        endDate.month,
+        endDate.day,
+        23,
+        59,
+        59,
+      );
+
+      var query = firestore
+          .collection('bookings')
+          .where('venueId', isEqualTo: venueId)
+          .where('date', isGreaterThanOrEqualTo: queryStart)
+          .where('date', isLessThanOrEqualTo: queryEnd);
+
+      if (courtId != null) {
+        query = query.where('courtId', isEqualTo: courtId);
+      }
+
+      final snapshot = await query.get();
+
+      final activeBookings = snapshot.docs.where((doc) {
+        final status = doc.data()['status'] as String?;
+        return status != 'cancelled';
+      });
+
+      return activeBookings.isNotEmpty;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<bool> checkWeeklyConflict(String venueId, int dayOfWeek) async {
+    try {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      final snapshot = await firestore
+          .collection('bookings')
+          .where('venueId', isEqualTo: venueId)
+          .where('date', isGreaterThanOrEqualTo: today)
+          .get();
+
+      final conflicts = snapshot.docs.where((doc) {
+        final data = doc.data();
+        final status = data['status'] as String?;
+        if (status == 'cancelled') return false;
+
+        final bookingDate = (data['date'] as Timestamp).toDate();
+        return bookingDate.weekday == dayOfWeek;
+      });
+
+      return conflicts.isNotEmpty;
     } catch (e) {
       throw ServerException(e.toString());
     }

@@ -28,4 +28,17 @@ abstract class VenueManagementRepository {
     List<String>? removedImageUrls,
   });
   Future<Either<Failure, void>> deleteCourt(String venueId, String courtId);
+
+  // Availability Management
+  Future<Either<Failure, bool>> checkBookingConflicts(
+    String venueId,
+    DateTime startDate,
+    DateTime endDate, {
+    String? courtId,
+  });
+
+  Future<Either<Failure, bool>> checkWeeklyConflict(
+    String venueId,
+    int dayOfWeek,
+  );
 }
