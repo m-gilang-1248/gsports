@@ -3,6 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/venue.dart';
 import '../../domain/entities/venue_location.dart';
 import 'venue_holiday_model.dart';
+import 'court_model.dart';
 
 part 'venue_model.g.dart';
 
@@ -15,6 +16,10 @@ class VenueModel extends Venue {
   @override
   @JsonKey(fromJson: _holidaysFromJson, toJson: _holidaysToJson)
   final List<VenueHolidayModel> holidays;
+
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final List<CourtModel> courts;
 
   const VenueModel({
     required super.id,
@@ -32,14 +37,18 @@ class VenueModel extends Venue {
     super.isVerified = false,
     super.operatingHours,
     this.holidays = const [],
-  }) : super(location: location, holidays: holidays);
+    this.courts = const [],
+  }) : super(location: location, holidays: holidays, courts: courts);
 
   factory VenueModel.fromJson(Map<String, dynamic> json) =>
       _$VenueModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$VenueModelToJson(this);
 
-  factory VenueModel.fromFirestore(DocumentSnapshot doc) {
+  factory VenueModel.fromFirestore(
+    DocumentSnapshot doc, {
+    List<CourtModel> courts = const [],
+  }) {
     final data = doc.data() as Map<String, dynamic>;
     return VenueModel(
       id: doc.id,
@@ -59,6 +68,7 @@ class VenueModel extends Venue {
       isVerified: data['isVerified'] as bool? ?? false,
       operatingHours: data['operatingHours'] as Map<String, dynamic>?,
       holidays: _holidaysFromList(data['holidays'] as List?),
+      courts: courts,
     );
   }
 

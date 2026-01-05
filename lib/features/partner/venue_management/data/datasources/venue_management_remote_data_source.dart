@@ -68,7 +68,17 @@ class VenueManagementRemoteDataSourceImpl
           .where('ownerId', isEqualTo: ownerId)
           .get();
 
-      return snapshot.docs.map((doc) => VenueModel.fromFirestore(doc)).toList();
+      final venues = await Future.wait(
+        snapshot.docs.map((doc) async {
+          final courtsSnapshot = await doc.reference.collection('courts').get();
+          final courts = courtsSnapshot.docs
+              .map((courtDoc) => CourtModel.fromFirestore(courtDoc))
+              .toList();
+          return VenueModel.fromFirestore(doc, courts: courts);
+        }),
+      );
+
+      return venues;
     } catch (e) {
       throw ServerException(e.toString());
     }
