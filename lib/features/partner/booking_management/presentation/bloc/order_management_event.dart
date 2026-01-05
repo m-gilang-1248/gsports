@@ -27,3 +27,22 @@ class UpdateCalendarFocusedDay extends OrderManagementEvent {
   @override
   List<Object?> get props => [focusedDay, selectedDay];
 }
+
+class OrderManagementFilterChanged extends OrderManagementEvent {
+  final String? venueId;
+  final String? courtId;
+  final String? sportType;
+  final DateTimeRange? dateRange;
+  final bool clearAll;
+
+  const OrderManagementFilterChanged({
+    this.venueId,
+    this.courtId,
+    this.sportType,
+    this.dateRange,
+    this.clearAll = false,
+  });
+
+  @override
+  List<Object?> get props => [venueId, courtId, sportType, dateRange, clearAll];
+}

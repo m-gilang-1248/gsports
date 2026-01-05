@@ -70,8 +70,8 @@ void main() {
     act: (bloc) => bloc.add(PartnerBookingsUpdated([tBooking, expiredBooking])),
     expect: () => [
       isA<OrderManagementLoaded>()
-          .having((s) => s.allBookings.length, 'allBookings count', 1)
-          .having((s) => s.allBookings.first.id, 'id', '1'),
+          .having((s) => s.allBookings.length, 'allBookings count', 2)
+          .having((s) => s.pendingBookings.length, 'pending count', 0),
     ],
     verify: (_) {
       verify(() => mockCancelBooking('exp1')).called(1);

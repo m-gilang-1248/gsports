@@ -6,6 +6,7 @@ import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/partner/booking_management/presentation/bloc/order_management_bloc.dart';
 import 'package:gsports/features/partner/booking_management/presentation/widgets/booking_order_card.dart';
+import 'package:gsports/features/partner/booking_management/presentation/widgets/order_filter_bar.dart';
 
 class OrdersView extends StatefulWidget {
   const OrdersView({super.key});
@@ -64,6 +65,7 @@ class _OrdersViewState extends State<OrdersView>
                   },
                 ),
               ),
+              const OrderFilterBar(),
               if (_viewIndex == 0)
                 TabBar(
                   controller: _tabController,

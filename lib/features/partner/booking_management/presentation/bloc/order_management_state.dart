@@ -20,6 +20,12 @@ class OrderManagementLoaded extends OrderManagementState {
   final DateTime focusedDay;
   final DateTime? selectedDay;
 
+  // Filters
+  final String? filterVenueId;
+  final String? filterCourtId;
+  final String? filterSportType;
+  final DateTimeRange? filterDateRange;
+
   const OrderManagementLoaded({
     required this.allBookings,
     required this.pendingBookings,
@@ -28,6 +34,10 @@ class OrderManagementLoaded extends OrderManagementState {
     required this.bookingsByDate,
     required this.focusedDay,
     this.selectedDay,
+    this.filterVenueId,
+    this.filterCourtId,
+    this.filterSportType,
+    this.filterDateRange,
   });
 
   OrderManagementLoaded copyWith({
@@ -38,6 +48,10 @@ class OrderManagementLoaded extends OrderManagementState {
     Map<DateTime, List<Booking>>? bookingsByDate,
     DateTime? focusedDay,
     DateTime? selectedDay,
+    String? filterVenueId,
+    String? filterCourtId,
+    String? filterSportType,
+    DateTimeRange? filterDateRange,
   }) {
     return OrderManagementLoaded(
       allBookings: allBookings ?? this.allBookings,
@@ -47,6 +61,10 @@ class OrderManagementLoaded extends OrderManagementState {
       bookingsByDate: bookingsByDate ?? this.bookingsByDate,
       focusedDay: focusedDay ?? this.focusedDay,
       selectedDay: selectedDay ?? this.selectedDay,
+      filterVenueId: filterVenueId,
+      filterCourtId: filterCourtId,
+      filterSportType: filterSportType,
+      filterDateRange: filterDateRange,
     );
   }
 
@@ -59,6 +77,10 @@ class OrderManagementLoaded extends OrderManagementState {
     bookingsByDate,
     focusedDay,
     selectedDay,
+    filterVenueId,
+    filterCourtId,
+    filterSportType,
+    filterDateRange,
   ];
 }
 
