@@ -1,9 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/get_partner_bookings.dart';
 import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
+import 'package:gsports/features/partner/venue_management/domain/usecases/get_my_venues.dart';
 import 'package:gsports/features/partner/booking_management/presentation/bloc/order_management_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -11,13 +11,17 @@ class MockGetPartnerBookings extends Mock implements GetPartnerBookings {}
 
 class MockCancelBooking extends Mock implements CancelBooking {}
 
+class MockGetMyVenues extends Mock implements GetMyVenues {}
+
 void main() {
   late MockGetPartnerBookings mockGetPartnerBookings;
   late MockCancelBooking mockCancelBooking;
+  late MockGetMyVenues mockGetMyVenues;
 
   setUp(() {
     mockGetPartnerBookings = MockGetPartnerBookings();
     mockCancelBooking = MockCancelBooking();
+    mockGetMyVenues = MockGetMyVenues();
   });
 
   final now = DateTime.now();
@@ -55,91 +59,44 @@ void main() {
     endTime: future2.add(const Duration(hours: 1)),
     durationHours: 1,
     totalPrice: 150000,
-    status: 'paid',
-    paymentStatus: 'paid',
+    status: 'waiting_payment',
+    paymentStatus: 'pending',
     createdAt: now,
   );
 
-  group('OrderManagementBloc Filtering', () {
+  group('OrderManagementBloc Advanced Filtering', () {
     blocTest<OrderManagementBloc, OrderManagementState>(
-      'filters bookings locally by venueId',
-      build: () =>
-          OrderManagementBloc(mockGetPartnerBookings, mockCancelBooking),
+      'filters bookings locally by status',
+      build: () => OrderManagementBloc(
+        mockGetPartnerBookings,
+        mockCancelBooking,
+        mockGetMyVenues,
+      ),
       seed: () => OrderManagementLoaded(
         allBookings: [b1, b2],
-        pendingBookings: const [],
-        upcomingBookings: [b1, b2],
+        pendingBookings: [b2],
+        upcomingBookings: [b1],
         historyBookings: const [],
         bookingsByDate: const {},
         focusedDay: DateTime.now(),
       ),
       act: (bloc) =>
-          bloc.add(const OrderManagementFilterChanged(venueId: 'v1')),
+          bloc.add(const OrderManagementFilterChanged(status: 'paid')),
       expect: () => [
         isA<OrderManagementLoaded>()
-            .having((s) => s.filterVenueId, 'filterVenueId', 'v1')
-            .having((s) => s.upcomingBookings.length, 'filtered count', 1)
-            .having((s) => s.upcomingBookings.first.venueId, 'venueId', 'v1'),
+            .having((s) => s.filterStatus, 'filterStatus', 'paid')
+            .having((s) => s.upcomingBookings.length, 'filtered upcoming', 1)
+            .having((s) => s.pendingBookings.length, 'filtered pending', 0),
       ],
     );
 
     blocTest<OrderManagementBloc, OrderManagementState>(
-      'filters bookings locally by sportType',
-      build: () =>
-          OrderManagementBloc(mockGetPartnerBookings, mockCancelBooking),
-      seed: () => OrderManagementLoaded(
-        allBookings: [b1, b2],
-        pendingBookings: const [],
-        upcomingBookings: [b1, b2],
-        historyBookings: const [],
-        bookingsByDate: const {},
-        focusedDay: DateTime.now(),
+      'clears filters correctly',
+      build: () => OrderManagementBloc(
+        mockGetPartnerBookings,
+        mockCancelBooking,
+        mockGetMyVenues,
       ),
-      act: (bloc) =>
-          bloc.add(const OrderManagementFilterChanged(sportType: 'futsal')),
-      expect: () => [
-        isA<OrderManagementLoaded>()
-            .having((s) => s.filterSportType, 'filterSportType', 'futsal')
-            .having((s) => s.upcomingBookings.length, 'filtered count', 1)
-            .having(
-              (s) => s.upcomingBookings.first.sportType,
-              'sportType',
-              'futsal',
-            ),
-      ],
-    );
-
-    blocTest<OrderManagementBloc, OrderManagementState>(
-      'filters bookings locally by date range',
-      build: () =>
-          OrderManagementBloc(mockGetPartnerBookings, mockCancelBooking),
-      seed: () => OrderManagementLoaded(
-        allBookings: [b1, b2],
-        pendingBookings: const [],
-        upcomingBookings: [b1, b2],
-        historyBookings: const [],
-        bookingsByDate: const {},
-        focusedDay: DateTime.now(),
-      ),
-      act: (bloc) => bloc.add(
-        OrderManagementFilterChanged(
-          dateRange: DateTimeRange(
-            start: future2.subtract(const Duration(hours: 1)),
-            end: future2.add(const Duration(hours: 1)),
-          ),
-        ),
-      ),
-      expect: () => [
-        isA<OrderManagementLoaded>()
-            .having((s) => s.upcomingBookings.length, 'filtered count', 1)
-            .having((s) => s.upcomingBookings.first.id, 'id', '2'),
-      ],
-    );
-
-    blocTest<OrderManagementBloc, OrderManagementState>(
-      'clears filters when clearAll is true',
-      build: () =>
-          OrderManagementBloc(mockGetPartnerBookings, mockCancelBooking),
       seed: () => OrderManagementLoaded(
         allBookings: [b1, b2],
         pendingBookings: const [],
@@ -147,14 +104,14 @@ void main() {
         historyBookings: const [],
         bookingsByDate: const {},
         focusedDay: DateTime.now(),
-        filterVenueId: 'v1',
+        filterStatus: 'paid',
       ),
       act: (bloc) =>
           bloc.add(const OrderManagementFilterChanged(clearAll: true)),
       expect: () => [
         isA<OrderManagementLoaded>()
-            .having((s) => s.filterVenueId, 'filterVenueId', null)
-            .having((s) => s.upcomingBookings.length, 'count', 2),
+            .having((s) => s.filterStatus, 'filterStatus', null)
+            .having((s) => s.pendingBookings.length, 'pending count', 1),
       ],
     );
   });

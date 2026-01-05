@@ -11,11 +11,12 @@ class FetchPartnerBookings extends OrderManagementEvent {}
 
 class PartnerBookingsUpdated extends OrderManagementEvent {
   final List<Booking> bookings;
+  final List<Venue> venues;
 
-  const PartnerBookingsUpdated(this.bookings);
+  const PartnerBookingsUpdated(this.bookings, {this.venues = const []});
 
   @override
-  List<Object?> get props => [bookings];
+  List<Object?> get props => [bookings, venues];
 }
 
 class UpdateCalendarFocusedDay extends OrderManagementEvent {
@@ -32,6 +33,7 @@ class OrderManagementFilterChanged extends OrderManagementEvent {
   final String? venueId;
   final String? courtId;
   final String? sportType;
+  final String? status;
   final DateTimeRange? dateRange;
   final bool clearAll;
   final bool clearDate;
@@ -40,6 +42,7 @@ class OrderManagementFilterChanged extends OrderManagementEvent {
     this.venueId,
     this.courtId,
     this.sportType,
+    this.status,
     this.dateRange,
     this.clearAll = false,
     this.clearDate = false,
@@ -50,6 +53,7 @@ class OrderManagementFilterChanged extends OrderManagementEvent {
     venueId,
     courtId,
     sportType,
+    status,
     dateRange,
     clearAll,
     clearDate,

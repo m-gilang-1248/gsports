@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/get_partner_bookings.dart';
 import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
+import 'package:gsports/features/partner/venue_management/domain/usecases/get_my_venues.dart';
 import 'package:gsports/features/partner/booking_management/presentation/bloc/order_management_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -11,13 +12,17 @@ class MockGetPartnerBookings extends Mock implements GetPartnerBookings {}
 
 class MockCancelBooking extends Mock implements CancelBooking {}
 
+class MockGetMyVenues extends Mock implements GetMyVenues {}
+
 void main() {
   late MockGetPartnerBookings mockGetPartnerBookings;
   late MockCancelBooking mockCancelBooking;
+  late MockGetMyVenues mockGetMyVenues;
 
   setUp(() {
     mockGetPartnerBookings = MockGetPartnerBookings();
     mockCancelBooking = MockCancelBooking();
+    mockGetMyVenues = MockGetMyVenues();
   });
 
   final tBooking = Booking(
@@ -54,7 +59,11 @@ void main() {
 
   blocTest<OrderManagementBloc, OrderManagementState>(
     'initial state should be OrderManagementInitial',
-    build: () => OrderManagementBloc(mockGetPartnerBookings, mockCancelBooking),
+    build: () => OrderManagementBloc(
+      mockGetPartnerBookings,
+      mockCancelBooking,
+      mockGetMyVenues,
+    ),
     verify: (bloc) => expect(bloc.state, OrderManagementInitial()),
   );
 
@@ -65,7 +74,11 @@ void main() {
         () => mockCancelBooking(any()),
       ).thenAnswer((_) async => const Right(null));
 
-      return OrderManagementBloc(mockGetPartnerBookings, mockCancelBooking);
+      return OrderManagementBloc(
+        mockGetPartnerBookings,
+        mockCancelBooking,
+        mockGetMyVenues,
+      );
     },
     act: (bloc) => bloc.add(PartnerBookingsUpdated([tBooking, expiredBooking])),
     expect: () => [

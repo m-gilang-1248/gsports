@@ -6,7 +6,9 @@ import 'package:injectable/injectable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/get_partner_bookings.dart';
-import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart'; // Added
+import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
+import 'package:gsports/features/partner/venue_management/domain/usecases/get_my_venues.dart';
+import 'package:gsports/features/venue/domain/entities/venue.dart';
 
 part 'order_management_event.dart';
 part 'order_management_state.dart';
@@ -15,11 +17,15 @@ part 'order_management_state.dart';
 class OrderManagementBloc
     extends Bloc<OrderManagementEvent, OrderManagementState> {
   final GetPartnerBookings getPartnerBookings;
-  final CancelBooking _cancelBooking; // Added CancelBooking
+  final CancelBooking _cancelBooking;
+  final GetMyVenues getMyVenues;
   StreamSubscription? _bookingsSubscription;
 
-  OrderManagementBloc(this.getPartnerBookings, this._cancelBooking)
-    : super(OrderManagementInitial()) {
+  OrderManagementBloc(
+    this.getPartnerBookings,
+    this._cancelBooking,
+    this.getMyVenues,
+  ) : super(OrderManagementInitial()) {
     on<FetchPartnerBookings>(_onFetchPartnerBookings);
     on<PartnerBookingsUpdated>(_onPartnerBookingsUpdated);
     on<UpdateCalendarFocusedDay>(_onUpdateCalendarFocusedDay);
@@ -44,13 +50,17 @@ class OrderManagementBloc
       return;
     }
 
+    // Fetch Venues (Inventory)
+    final venuesResult = await getMyVenues(user.uid);
+    final venues = venuesResult.fold((_) => const <Venue>[], (v) => v);
+
     await _bookingsSubscription?.cancel();
     _bookingsSubscription = getPartnerBookings.callStream(user.uid).listen((
       result,
     ) {
       result.fold(
-        (failure) => add(PartnerBookingsUpdated(const [])), // Or handle error
-        (bookings) => add(PartnerBookingsUpdated(bookings)),
+        (failure) => add(PartnerBookingsUpdated(const [], venues: venues)),
+        (bookings) => add(PartnerBookingsUpdated(bookings, venues: venues)),
       );
     });
   }
@@ -59,46 +69,40 @@ class OrderManagementBloc
     PartnerBookingsUpdated event,
     Emitter<OrderManagementState> emit,
   ) {
-    _applyFiltersAndEmit(emit, allBookings: event.bookings);
+    _applyFiltersAndEmit(
+      emit,
+      allBookings: event.bookings,
+      availableVenues: event.venues,
+    );
   }
 
   void _onFilterChanged(
     OrderManagementFilterChanged event,
-
     Emitter<OrderManagementState> emit,
   ) {
     if (state is OrderManagementLoaded) {
       if (event.clearAll) {
         _applyFiltersAndEmit(
           emit,
-
           clearVenue: true,
-
           clearCourt: true,
-
           clearSport: true,
-
+          clearStatus: true,
           clearDate: true,
         );
       } else {
         _applyFiltersAndEmit(
           emit,
-
           filterVenueId: event.venueId,
-
           filterCourtId: event.courtId,
-
           filterSportType: event.sportType,
-
+          filterStatus: event.status,
           filterDateRange: event.dateRange,
-
           // Explicitly clear if empty string passed (sent from UI to reset specific field)
           clearVenue: event.venueId == '',
-
           clearCourt: event.courtId == '',
-
           clearSport: event.sportType == '',
-
+          clearStatus: event.status == '',
           clearDate: event.clearDate,
         );
       }
@@ -107,23 +111,17 @@ class OrderManagementBloc
 
   void _applyFiltersAndEmit(
     Emitter<OrderManagementState> emit, {
-
     List<Booking>? allBookings,
-
+    List<Venue>? availableVenues,
     String? filterVenueId,
-
     String? filterCourtId,
-
     String? filterSportType,
-
+    String? filterStatus,
     DateTimeRange? filterDateRange,
-
     bool clearVenue = false,
-
     bool clearCourt = false,
-
     bool clearSport = false,
-
+    bool clearStatus = false,
     bool clearDate = false,
   }) {
     final currentState = state is OrderManagementLoaded
@@ -131,66 +129,55 @@ class OrderManagementBloc
         : null;
 
     final bookings = allBookings ?? currentState?.allBookings ?? [];
+    final venues = availableVenues ?? currentState?.availableVenues ?? [];
 
     // Current effective filters
-
     final venueId = clearVenue
         ? null
         : (filterVenueId ?? currentState?.filterVenueId);
-
     final courtId = clearCourt
         ? null
         : (filterCourtId ?? currentState?.filterCourtId);
-
     final sportType = clearSport
         ? null
         : (filterSportType ?? currentState?.filterSportType);
-
+    final status = clearStatus
+        ? null
+        : (filterStatus ?? currentState?.filterStatus);
     final dateRange = clearDate
         ? null
         : (filterDateRange ?? currentState?.filterDateRange);
 
     final now = DateTime.now();
-
     final today = DateTime(now.year, now.month, now.day);
 
     // 1. Filter raw bookings
-
     final filteredRaw = <Booking>[];
-
     for (final booking in bookings) {
       // Expiry Check for waiting_payment
-
       if (booking.status == 'waiting_payment') {
         final difference = now.difference(booking.createdAt);
-
         if (difference.inMinutes >= 15) {
-          // In test environments, we might want to skip this or ensure dates are fresh
-
-          // For now, keep it but ensure tests use fresh createdAt
-
           _cancelBooking(booking.id);
-
           continue;
         }
       }
 
       // Apply Filters
-
       if (venueId != null && venueId.isNotEmpty && booking.venueId != venueId) {
         continue;
       }
-
       if (courtId != null && courtId.isNotEmpty && booking.courtId != courtId) {
         continue;
       }
-
       if (sportType != null &&
           sportType.isNotEmpty &&
           booking.sportType != sportType) {
         continue;
       }
-
+      if (status != null && status.isNotEmpty && booking.status != status) {
+        continue;
+      }
       if (dateRange != null) {
         final bookingDate = DateTime(
           booking.date.year,
@@ -207,7 +194,9 @@ class OrderManagementBloc
           dateRange.end.month,
           dateRange.end.day,
         );
-        if (bookingDate.isBefore(start) || bookingDate.isAfter(end)) continue;
+        if (bookingDate.isBefore(start) || bookingDate.isAfter(end)) {
+          continue;
+        }
       }
 
       filteredRaw.add(booking);
@@ -251,6 +240,7 @@ class OrderManagementBloc
     emit(
       OrderManagementLoaded(
         allBookings: bookings,
+        availableVenues: venues,
         pendingBookings: pending,
         upcomingBookings: upcoming,
         historyBookings: history,
@@ -260,6 +250,7 @@ class OrderManagementBloc
         filterVenueId: venueId,
         filterCourtId: courtId,
         filterSportType: sportType,
+        filterStatus: status,
         filterDateRange: dateRange,
       ),
     );

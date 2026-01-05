@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:gsports/core/config/app_colors.dart';
 import 'package:gsports/features/partner/booking_management/presentation/bloc/order_management_bloc.dart';
+import 'package:gsports/features/venue/domain/entities/venue.dart';
 
 class OrderFilterBar extends StatelessWidget {
   const OrderFilterBar({super.key});
@@ -13,42 +14,41 @@ class OrderFilterBar extends StatelessWidget {
       builder: (context, state) {
         if (state is! OrderManagementLoaded) return const SizedBox.shrink();
 
-        final allBookings = state.allBookings;
-
-        // 1. Extract Unique Data for Dropdowns (Cascading)
-        final venues = <String, String>{}; // id -> name
+        // 1. Extract Unique Data for Dropdowns (Cascading from availableVenues)
+        final venues = state.availableVenues;
         final sports = <String>{};
         final courts = <String, String>{}; // id -> name
 
-        for (var b in allBookings) {
-          // Venues are always all available venues in data
-          if (b.venueId.isNotEmpty && b.venueName != null) {
-            venues[b.venueId] = b.venueName!;
-          }
+        // Determine available sports and courts based on selected venue
+        Venue? selectedVenue;
+        try {
+          selectedVenue = venues.firstWhere((v) => v.id == state.filterVenueId);
+        } catch (_) {
+          selectedVenue = null;
+        }
 
-          // Sports depend on Venue selection
-          if (state.filterVenueId == null || b.venueId == state.filterVenueId) {
-            if (b.sportType.isNotEmpty) {
-              sports.add(b.sportType);
+        if (selectedVenue != null) {
+          // If venue selected, show its specific sports and courts
+          for (var court in selectedVenue.courts) {
+            sports.add(court.sportType);
+            if (state.filterSportType == null ||
+                court.sportType == state.filterSportType) {
+              courts[court.id] = court.name;
             }
           }
-
-          // Courts depend on Venue AND Sport selection
-          bool matchVenue =
-              state.filterVenueId == null || b.venueId == state.filterVenueId;
-          bool matchSport =
-              state.filterSportType == null ||
-              b.sportType == state.filterSportType;
-
-          if (matchVenue && matchSport) {
-            if (b.courtId.isNotEmpty && b.courtName != null) {
-              courts[b.courtId] = b.courtName!;
+        } else {
+          // If no venue selected, show all available sports and courts from inventory
+          for (var venue in venues) {
+            for (var court in venue.courts) {
+              sports.add(court.sportType);
+              if (state.filterSportType == null ||
+                  court.sportType == state.filterSportType) {
+                courts[court.id] = court.name;
+              }
             }
           }
         }
 
-        final sortedVenues = venues.entries.toList()
-          ..sort((a, b) => a.value.compareTo(b.value));
         final sortedSports = sports.toList()..sort();
         final sortedCourts = courts.entries.toList()
           ..sort((a, b) => a.value.compareTo(b.value));
@@ -57,6 +57,7 @@ class OrderFilterBar extends StatelessWidget {
             state.filterVenueId != null ||
             state.filterCourtId != null ||
             state.filterSportType != null ||
+            state.filterStatus != null ||
             state.filterDateRange != null;
 
         return Container(
@@ -113,6 +114,36 @@ class OrderFilterBar extends StatelessWidget {
 
               const SizedBox(width: 8),
 
+              // Status Filter
+              _DropdownFilter(
+                hint: 'Status',
+                value: state.filterStatus,
+                items: const [
+                  DropdownMenuItem(value: null, child: Text('Semua Status')),
+                  DropdownMenuItem(
+                    value: 'waiting_payment',
+                    child: Text('Menunggu Pembayaran'),
+                  ),
+                  DropdownMenuItem(value: 'paid', child: Text('Lunas')),
+                  DropdownMenuItem(value: 'completed', child: Text('Selesai')),
+                  DropdownMenuItem(
+                    value: 'cancelled',
+                    child: Text('Dibatalkan'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'maintenance',
+                    child: Text('Maintenance'),
+                  ),
+                ],
+                onChanged: (val) {
+                  context.read<OrderManagementBloc>().add(
+                    OrderManagementFilterChanged(status: val ?? ''),
+                  );
+                },
+              ),
+
+              const SizedBox(width: 8),
+
               // Venue Filter
               _DropdownFilter(
                 hint: 'Venue',
@@ -122,14 +153,14 @@ class OrderFilterBar extends StatelessWidget {
                     value: null,
                     child: Text('Semua Venue'),
                   ),
-                  ...sortedVenues.map(
-                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                  ...venues.map(
+                    (v) => DropdownMenuItem(value: v.id, child: Text(v.name)),
                   ),
                 ],
                 onChanged: (val) {
                   context.read<OrderManagementBloc>().add(
                     OrderManagementFilterChanged(
-                      venueId: val,
+                      venueId: val ?? '',
                       courtId: '', // Reset court
                       sportType: '', // Reset sport
                     ),
@@ -149,12 +180,15 @@ class OrderFilterBar extends StatelessWidget {
                     child: Text('Semua Olahraga'),
                   ),
                   ...sortedSports.map(
-                    (e) => DropdownMenuItem(value: e, child: Text(e)),
+                    (s) => DropdownMenuItem(value: s, child: Text(s)),
                   ),
                 ],
                 onChanged: (val) {
                   context.read<OrderManagementBloc>().add(
-                    OrderManagementFilterChanged(sportType: val, courtId: ''),
+                    OrderManagementFilterChanged(
+                      sportType: val ?? '',
+                      courtId: '',
+                    ),
                   );
                 },
               ),
@@ -176,7 +210,7 @@ class OrderFilterBar extends StatelessWidget {
                 ],
                 onChanged: (val) {
                   context.read<OrderManagementBloc>().add(
-                    OrderManagementFilterChanged(courtId: val),
+                    OrderManagementFilterChanged(courtId: val ?? ''),
                   );
                 },
               ),

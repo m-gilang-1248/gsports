@@ -20,10 +20,14 @@ class OrderManagementLoaded extends OrderManagementState {
   final DateTime focusedDay;
   final DateTime? selectedDay;
 
+  // Inventory Data
+  final List<Venue> availableVenues;
+
   // Filters
   final String? filterVenueId;
   final String? filterCourtId;
   final String? filterSportType;
+  final String? filterStatus;
   final DateTimeRange? filterDateRange;
 
   const OrderManagementLoaded({
@@ -34,9 +38,11 @@ class OrderManagementLoaded extends OrderManagementState {
     required this.bookingsByDate,
     required this.focusedDay,
     this.selectedDay,
+    this.availableVenues = const [],
     this.filterVenueId,
     this.filterCourtId,
     this.filterSportType,
+    this.filterStatus,
     this.filterDateRange,
   });
 
@@ -48,9 +54,11 @@ class OrderManagementLoaded extends OrderManagementState {
     Map<DateTime, List<Booking>>? bookingsByDate,
     DateTime? focusedDay,
     DateTime? selectedDay,
+    List<Venue>? availableVenues,
     String? filterVenueId,
     String? filterCourtId,
     String? filterSportType,
+    String? filterStatus,
     DateTimeRange? filterDateRange,
   }) {
     return OrderManagementLoaded(
@@ -61,9 +69,11 @@ class OrderManagementLoaded extends OrderManagementState {
       bookingsByDate: bookingsByDate ?? this.bookingsByDate,
       focusedDay: focusedDay ?? this.focusedDay,
       selectedDay: selectedDay ?? this.selectedDay,
+      availableVenues: availableVenues ?? this.availableVenues,
       filterVenueId: filterVenueId,
       filterCourtId: filterCourtId,
       filterSportType: filterSportType,
+      filterStatus: filterStatus,
       filterDateRange: filterDateRange,
     );
   }
@@ -77,9 +87,11 @@ class OrderManagementLoaded extends OrderManagementState {
     bookingsByDate,
     focusedDay,
     selectedDay,
+    availableVenues,
     filterVenueId,
     filterCourtId,
     filterSportType,
+    filterStatus,
     filterDateRange,
   ];
 }
