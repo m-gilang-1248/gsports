@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
@@ -11,6 +12,7 @@ import 'package:gsports/features/booking/domain/usecases/update_booking_status.d
 import 'package:gsports/features/booking/domain/usecases/update_payment_info.dart';
 import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
 import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
+import 'package:gsports/features/venue/domain/entities/venue_holiday.dart';
 
 part 'booking_event.dart';
 part 'booking_state.dart';
@@ -55,7 +57,6 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     final availabilityMap = <int, bool>{};
     final date = event.date;
     final courtId = event.courtId;
-    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
     // 1. Determine Operating Hours
     final dayOfWeek = DateFormat('EEEE').format(date);
@@ -67,9 +68,34 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       if (holidaysList != null) {
         final dateOnly = DateTime(date.year, date.month, date.day);
         for (var h in holidaysList) {
-          final hMap = h as Map<String, dynamic>;
-          final start = (hMap['startDate'] as DateTime);
-          final end = (hMap['endDate'] as DateTime);
+          late DateTime start;
+          late DateTime end;
+
+          if (h is VenueHoliday) {
+            start = h.startDate;
+            end = h.endDate;
+          } else if (h is Map<String, dynamic>) {
+            final startRaw = h['startDate'];
+            final endRaw = h['endDate'];
+
+            if (startRaw is Timestamp) {
+              start = startRaw.toDate();
+            } else if (startRaw is DateTime) {
+              start = startRaw;
+            } else {
+              continue;
+            }
+
+            if (endRaw is Timestamp) {
+              end = endRaw.toDate();
+            } else if (endRaw is DateTime) {
+              end = endRaw;
+            } else {
+              continue;
+            }
+          } else {
+            continue;
+          }
 
           final startOnly = DateTime(start.year, start.month, start.day);
           final endOnly = DateTime(end.year, end.month, end.day);
@@ -92,6 +118,8 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         }
       }
     }
+
+    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
     final hoursConfig =
         event.operatingHours?[dayOfWeek] as Map<String, dynamic>?;

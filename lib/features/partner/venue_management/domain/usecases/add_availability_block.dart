@@ -24,7 +24,7 @@ class AddAvailabilityBlock extends UseCase<void, AddAvailabilityBlockParams> {
         venueId: params.venueId,
         courtId: params.court!.id,
         sportType: params.court!.sportType,
-        date: params.date,
+        date: DateTime(params.date.year, params.date.month, params.date.day),
         startTime: DateTime(
           params.date.year,
           params.date.month,
