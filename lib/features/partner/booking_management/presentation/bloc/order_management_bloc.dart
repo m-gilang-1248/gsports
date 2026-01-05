@@ -62,177 +62,136 @@ class OrderManagementBloc
     _applyFiltersAndEmit(emit, allBookings: event.bookings);
   }
 
-    void _onFilterChanged(
+  void _onFilterChanged(
+    OrderManagementFilterChanged event,
 
-      OrderManagementFilterChanged event,
+    Emitter<OrderManagementState> emit,
+  ) {
+    if (state is OrderManagementLoaded) {
+      if (event.clearAll) {
+        _applyFiltersAndEmit(
+          emit,
 
-      Emitter<OrderManagementState> emit,
+          clearVenue: true,
 
-    ) {
+          clearCourt: true,
 
-      if (state is OrderManagementLoaded) {
+          clearSport: true,
 
-        if (event.clearAll) {
+          clearDate: true,
+        );
+      } else {
+        _applyFiltersAndEmit(
+          emit,
 
-          _applyFiltersAndEmit(
+          filterVenueId: event.venueId,
 
-            emit,
+          filterCourtId: event.courtId,
 
-            clearVenue: true,
+          filterSportType: event.sportType,
 
-            clearCourt: true,
+          filterDateRange: event.dateRange,
 
-            clearSport: true,
+          // Explicitly clear if empty string passed (sent from UI to reset specific field)
+          clearVenue: event.venueId == '',
 
-            clearDate: true,
+          clearCourt: event.courtId == '',
 
-          );
+          clearSport: event.sportType == '',
 
-        } else {
+          clearDate: event.clearDate,
+        );
+      }
+    }
+  }
 
-          _applyFiltersAndEmit(
+  void _applyFiltersAndEmit(
+    Emitter<OrderManagementState> emit, {
 
-            emit,
+    List<Booking>? allBookings,
 
-            filterVenueId: event.venueId,
+    String? filterVenueId,
 
-            filterCourtId: event.courtId,
+    String? filterCourtId,
 
-            filterSportType: event.sportType,
+    String? filterSportType,
 
-            filterDateRange: event.dateRange,
+    DateTimeRange? filterDateRange,
 
-          );
+    bool clearVenue = false,
 
+    bool clearCourt = false,
+
+    bool clearSport = false,
+
+    bool clearDate = false,
+  }) {
+    final currentState = state is OrderManagementLoaded
+        ? state as OrderManagementLoaded
+        : null;
+
+    final bookings = allBookings ?? currentState?.allBookings ?? [];
+
+    // Current effective filters
+
+    final venueId = clearVenue
+        ? null
+        : (filterVenueId ?? currentState?.filterVenueId);
+
+    final courtId = clearCourt
+        ? null
+        : (filterCourtId ?? currentState?.filterCourtId);
+
+    final sportType = clearSport
+        ? null
+        : (filterSportType ?? currentState?.filterSportType);
+
+    final dateRange = clearDate
+        ? null
+        : (filterDateRange ?? currentState?.filterDateRange);
+
+    final now = DateTime.now();
+
+    final today = DateTime(now.year, now.month, now.day);
+
+    // 1. Filter raw bookings
+
+    final filteredRaw = <Booking>[];
+
+    for (final booking in bookings) {
+      // Expiry Check for waiting_payment
+
+      if (booking.status == 'waiting_payment') {
+        final difference = now.difference(booking.createdAt);
+
+        if (difference.inMinutes >= 15) {
+          // In test environments, we might want to skip this or ensure dates are fresh
+
+          // For now, keep it but ensure tests use fresh createdAt
+
+          _cancelBooking(booking.id);
+
+          continue;
         }
-
       }
 
-    }
+      // Apply Filters
 
-  
+      if (venueId != null && venueId.isNotEmpty && booking.venueId != venueId) {
+        continue;
+      }
 
-    void _applyFiltersAndEmit(
+      if (courtId != null && courtId.isNotEmpty && booking.courtId != courtId) {
+        continue;
+      }
 
-      Emitter<OrderManagementState> emit, {
+      if (sportType != null &&
+          sportType.isNotEmpty &&
+          booking.sportType != sportType) {
+        continue;
+      }
 
-      List<Booking>? allBookings,
-
-      String? filterVenueId,
-
-      String? filterCourtId,
-
-      String? filterSportType,
-
-      DateTimeRange? filterDateRange,
-
-      bool clearVenue = false,
-
-      bool clearCourt = false,
-
-      bool clearSport = false,
-
-      bool clearDate = false,
-
-    }) {
-
-      final currentState =
-
-          state is OrderManagementLoaded ? state as OrderManagementLoaded : null;
-
-  
-
-      final bookings = allBookings ?? currentState?.allBookings ?? [];
-
-  
-
-      // Current effective filters
-
-      final venueId = clearVenue
-
-          ? null
-
-          : (filterVenueId ?? currentState?.filterVenueId);
-
-      final courtId = clearCourt
-
-          ? null
-
-          : (filterCourtId ?? currentState?.filterCourtId);
-
-      final sportType = clearSport
-
-          ? null
-
-          : (filterSportType ?? currentState?.filterSportType);
-
-      final dateRange = clearDate
-
-          ? null
-
-          : (filterDateRange ?? currentState?.filterDateRange);
-
-  
-
-      final now = DateTime.now();
-
-      final today = DateTime(now.year, now.month, now.day);
-
-  
-
-      // 1. Filter raw bookings
-
-      final filteredRaw = <Booking>[];
-
-      for (final booking in bookings) {
-
-        // Expiry Check for waiting_payment
-
-        if (booking.status == 'waiting_payment') {
-
-          final difference = now.difference(booking.createdAt);
-
-          if (difference.inMinutes >= 15) {
-
-            // In test environments, we might want to skip this or ensure dates are fresh
-
-            // For now, keep it but ensure tests use fresh createdAt
-
-            _cancelBooking(booking.id);
-
-            continue;
-
-          }
-
-        }
-
-  
-
-        // Apply Filters
-
-        if (venueId != null && venueId.isNotEmpty && booking.venueId != venueId) {
-
-          continue;
-
-        }
-
-        if (courtId != null && courtId.isNotEmpty && booking.courtId != courtId) {
-
-          continue;
-
-        }
-
-        if (sportType != null &&
-
-            sportType.isNotEmpty &&
-
-            booking.sportType != sportType) {
-
-          continue;
-
-        }
-
-        if (dateRange != null) {
+      if (dateRange != null) {
         final bookingDate = DateTime(
           booking.date.year,
           booking.date.month,

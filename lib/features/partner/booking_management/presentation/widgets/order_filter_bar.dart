@@ -15,22 +15,32 @@ class OrderFilterBar extends StatelessWidget {
 
         final allBookings = state.allBookings;
 
-        // 1. Extract Unique Data for Dropdowns
+        // 1. Extract Unique Data for Dropdowns (Cascading)
         final venues = <String, String>{}; // id -> name
         final sports = <String>{};
-        final courts =
-            <String, String>{}; // id -> name, filtered by venue if selected
+        final courts = <String, String>{}; // id -> name
 
         for (var b in allBookings) {
+          // Venues are always all available venues in data
           if (b.venueId.isNotEmpty && b.venueName != null) {
             venues[b.venueId] = b.venueName!;
           }
-          if (b.sportType.isNotEmpty) {
-            sports.add(b.sportType);
+
+          // Sports depend on Venue selection
+          if (state.filterVenueId == null || b.venueId == state.filterVenueId) {
+            if (b.sportType.isNotEmpty) {
+              sports.add(b.sportType);
+            }
           }
 
-          // Only collect courts that match selected venue (if any)
-          if (state.filterVenueId == null || b.venueId == state.filterVenueId) {
+          // Courts depend on Venue AND Sport selection
+          bool matchVenue =
+              state.filterVenueId == null || b.venueId == state.filterVenueId;
+          bool matchSport =
+              state.filterSportType == null ||
+              b.sportType == state.filterSportType;
+
+          if (matchVenue && matchSport) {
             if (b.courtId.isNotEmpty && b.courtName != null) {
               courts[b.courtId] = b.courtName!;
             }
@@ -73,29 +83,31 @@ class OrderFilterBar extends StatelessWidget {
                     ),
                     lastDate: DateTime.now().add(const Duration(days: 365)),
                     initialDateRange: state.filterDateRange,
-                                        builder: (context, child) {
-                                          return Theme(
-                                            data: Theme.of(context).copyWith(
-                                              colorScheme: const ColorScheme.light(
-                                                primary: AppColors.primary,
-                                                onPrimary: Colors.white,
-                                                onSurface: Colors.black87,
-                                              ),
-                                            ),
-                                            child: child!,
-                                          );
-                                        },
-                                      );
-                                      if (range != null && context.mounted) {
-                                        context.read<OrderManagementBloc>().add(
-                                              OrderManagementFilterChanged(dateRange: range),
-                                            );
-                                      }
-                                    },                onClear: state.filterDateRange != null
-                    ? () =>
-                          context.read<OrderManagementBloc>().add(
-                            const OrderManagementFilterChanged(clearAll: false),
-                          ) // This is tricky, we need a way to clear specific
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.light(
+                            primary: AppColors.primary,
+                            onPrimary: Colors.white,
+                            onSurface: Colors.black87,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (range != null && context.mounted) {
+                    context.read<OrderManagementBloc>().add(
+                      OrderManagementFilterChanged(dateRange: range),
+                    );
+                  }
+                },
+                onClear: state.filterDateRange != null
+                    ? () {
+                        context.read<OrderManagementBloc>().add(
+                          const OrderManagementFilterChanged(clearDate: true),
+                        );
+                      }
                     : null,
               ),
 
@@ -105,37 +117,22 @@ class OrderFilterBar extends StatelessWidget {
               _DropdownFilter(
                 hint: 'Venue',
                 value: state.filterVenueId,
-                items: sortedVenues
-                    .map(
-                      (e) =>
-                          DropdownMenuItem(value: e.key, child: Text(e.value)),
-                    )
-                    .toList(),
+                items: [
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('Semua Venue'),
+                  ),
+                  ...sortedVenues.map(
+                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                  ),
+                ],
                 onChanged: (val) {
                   context.read<OrderManagementBloc>().add(
                     OrderManagementFilterChanged(
                       venueId: val,
-                      courtId: null,
-                    ), // Reset court if venue changes
-                  );
-                },
-              ),
-
-              const SizedBox(width: 8),
-
-              // Court Filter
-              _DropdownFilter(
-                hint: 'Lapangan',
-                value: state.filterCourtId,
-                items: sortedCourts
-                    .map(
-                      (e) =>
-                          DropdownMenuItem(value: e.key, child: Text(e.value)),
-                    )
-                    .toList(),
-                onChanged: (val) {
-                  context.read<OrderManagementBloc>().add(
-                    OrderManagementFilterChanged(courtId: val),
+                      courtId: '', // Reset court
+                      sportType: '', // Reset sport
+                    ),
                   );
                 },
               ),
@@ -146,12 +143,40 @@ class OrderFilterBar extends StatelessWidget {
               _DropdownFilter(
                 hint: 'Olahraga',
                 value: state.filterSportType,
-                items: sortedSports
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
+                items: [
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('Semua Olahraga'),
+                  ),
+                  ...sortedSports.map(
+                    (e) => DropdownMenuItem(value: e, child: Text(e)),
+                  ),
+                ],
                 onChanged: (val) {
                   context.read<OrderManagementBloc>().add(
-                    OrderManagementFilterChanged(sportType: val),
+                    OrderManagementFilterChanged(sportType: val, courtId: ''),
+                  );
+                },
+              ),
+
+              const SizedBox(width: 8),
+
+              // Court Filter
+              _DropdownFilter(
+                hint: 'Lapangan',
+                value: state.filterCourtId,
+                items: [
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('Semua Lapangan'),
+                  ),
+                  ...sortedCourts.map(
+                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                  ),
+                ],
+                onChanged: (val) {
+                  context.read<OrderManagementBloc>().add(
+                    OrderManagementFilterChanged(courtId: val),
                   );
                 },
               ),
@@ -222,7 +247,17 @@ class _FilterChip extends StatelessWidget {
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
-            if (isActive) ...[
+            if (isActive && onClear != null) ...[
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: onClear,
+                child: const Icon(
+                  Icons.cancel,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+              ),
+            ] else if (isActive) ...[
               const SizedBox(width: 4),
               const Icon(
                 Icons.keyboard_arrow_down,

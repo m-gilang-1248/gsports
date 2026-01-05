@@ -34,6 +34,7 @@ class OrderManagementFilterChanged extends OrderManagementEvent {
   final String? sportType;
   final DateTimeRange? dateRange;
   final bool clearAll;
+  final bool clearDate;
 
   const OrderManagementFilterChanged({
     this.venueId,
@@ -41,8 +42,16 @@ class OrderManagementFilterChanged extends OrderManagementEvent {
     this.sportType,
     this.dateRange,
     this.clearAll = false,
+    this.clearDate = false,
   });
 
   @override
-  List<Object?> get props => [venueId, courtId, sportType, dateRange, clearAll];
+  List<Object?> get props => [
+    venueId,
+    courtId,
+    sportType,
+    dateRange,
+    clearAll,
+    clearDate,
+  ];
 }
