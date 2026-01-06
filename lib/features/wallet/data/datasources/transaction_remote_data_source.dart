@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:gsports/core/constants/firebase_constants.dart';
+import 'package:gsports/core/error/exceptions.dart';
 import '../models/transaction_model.dart';
 import '../../domain/entities/transaction_entity.dart';
 
@@ -27,29 +29,45 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
 
   @override
   Future<List<TransactionModel>> getTransactionsByUserId(String userId) async {
-    final querySnapshot = await firestore
-        .collection(FirebaseConstants.transactionsCollection)
-        .where(FirebaseConstants.transactionUserIdField, isEqualTo: userId)
-        .orderBy(FirebaseConstants.transactionCreatedAtField, descending: true)
-        .get();
+    try {
+      final querySnapshot = await firestore
+          .collection(FirebaseConstants.transactionsCollection)
+          .where(FirebaseConstants.transactionUserIdField, isEqualTo: userId)
+          .orderBy(
+            FirebaseConstants.transactionCreatedAtField,
+            descending: true,
+          )
+          .get();
 
-    return querySnapshot.docs
-        .map((doc) => TransactionModel.fromFirestore(doc))
-        .toList();
+      return querySnapshot.docs
+          .map((doc) => TransactionModel.fromFirestore(doc))
+          .toList();
+    } catch (e, stack) {
+      debugPrint('🔥 FIRESTORE ERROR (getTransactionsByUserId): $e');
+      throw ServerException(e.toString(), stackTrace: stack);
+    }
   }
 
   @override
   Future<List<TransactionModel>> getAllPendingPayouts() async {
-    final querySnapshot = await firestore
-        .collection(FirebaseConstants.transactionsCollection)
-        .where(FirebaseConstants.transactionTypeField, isEqualTo: 'payout')
-        .where(FirebaseConstants.transactionStatusField, isEqualTo: 'pending')
-        .orderBy(FirebaseConstants.transactionCreatedAtField, descending: true)
-        .get();
+    try {
+      final querySnapshot = await firestore
+          .collection(FirebaseConstants.transactionsCollection)
+          .where(FirebaseConstants.transactionTypeField, isEqualTo: 'payout')
+          .where(FirebaseConstants.transactionStatusField, isEqualTo: 'pending')
+          .orderBy(
+            FirebaseConstants.transactionCreatedAtField,
+            descending: true,
+          )
+          .get();
 
-    return querySnapshot.docs
-        .map((doc) => TransactionModel.fromFirestore(doc))
-        .toList();
+      return querySnapshot.docs
+          .map((doc) => TransactionModel.fromFirestore(doc))
+          .toList();
+    } catch (e, stack) {
+      debugPrint('🔥 FIRESTORE ERROR (getAllPendingPayouts): $e');
+      throw ServerException(e.toString(), stackTrace: stack);
+    }
   }
 
   @override

@@ -140,7 +140,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       final gs.GoogleSignInAuthentication googleAuth =
           googleUser.authentication;
-      
+
       debugPrint('Google Auth obtained.');
       debugPrint('ID Token: ${googleAuth.idToken?.substring(0, 10)}...');
 
@@ -182,7 +182,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final finalDoc = await userDocRef.get();
       return UserModel.fromFirebaseUser(user, finalDoc);
     } on FirebaseAuthException catch (e, st) {
-      debugPrint('FirebaseAuthException during Google Sign-In: Code: ${e.code}, Message: ${e.message}');
+      debugPrint(
+        'FirebaseAuthException during Google Sign-In: Code: ${e.code}, Message: ${e.message}',
+      );
       throw ServerException('${e.code}: ${e.message}', stackTrace: st);
     } on FirebaseException catch (e, st) {
       debugPrint('FirebaseException during Google Sign-In: $e');
