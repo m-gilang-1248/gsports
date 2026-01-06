@@ -79,22 +79,27 @@ class AppRouter {
           path.startsWith('/venue-courts') ||
           path.startsWith('/partner');
 
-      if (isLoggedIn && isPartnerRoute) {
+      final isAdminRoute = path.startsWith('/admin');
+
+      if (isLoggedIn && (isPartnerRoute || isAdminRoute)) {
         try {
           final doc = await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
               .get();
           final role = doc.data()?['role'] as String?;
-          if (role == 'admin_platform') {
-            // Admin can access anything or we can redirect to admin dashboard if they try to access home
-            if (path == '/' || path == '/home') {
-              return '/admin/payouts';
+
+          if (isAdminRoute) {
+            if (role != 'admin_platform') {
+              return '/home';
             }
             return null;
           }
-          if (role != 'mitra') {
-            return '/home';
+
+          if (isPartnerRoute) {
+            if (role != 'mitra') {
+              return '/home';
+            }
           }
         } catch (e) {
           return '/home';
