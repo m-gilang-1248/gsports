@@ -29,6 +29,16 @@ Gsports is a SaaS (Software as a Service) mobile application for real-time sport
 
 ## Features
 - **Discovery:** Browse sports venues, filter by category/location.
-- **Booking:** Select multiple hours, choose courts, and pay via Midtrans.
+- **Booking:** Select multiple hours, choose courts, and pay via Midtrans (includes 2% service fee).
 - **Social:** Split the bill with friends using a unique 6-digit code.
+- **Wallet & Payouts:** Partners can track net revenue (after 5% platform commission) and request manual payouts.
 - **Management:** View booking history and real-time payment status.
+
+## Platform Administration
+To access the Platform Admin features (e.g., Payout Management):
+1.  Open the **Firebase Console**.
+2.  Navigate to the **Firestore Database**.
+3.  Find the `users` collection.
+4.  Locate your user document by UID or email.
+5.  Change the `role` field from `user` or `mitra` to `admin_platform`.
+6.  Restart the app. You will be redirected to the Admin Payouts dashboard upon splash.

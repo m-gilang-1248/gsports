@@ -456,6 +456,10 @@ class _ManualBookingViewState extends State<_ManualBookingView> {
       endTime: endTime,
       durationHours: duration,
       totalPrice: _selectedCourt!.hourlyPrice * duration,
+      courtPrice: _selectedCourt!.hourlyPrice * duration,
+      serviceFee: 0,
+      appFee: 0,
+      netRevenue: _selectedCourt!.hourlyPrice * duration,
       status: 'paid', // Manual booking is considered paid/confirmed immediately
       paymentStatus: 'paid',
       midtransOrderId: 'MANUAL-${DateTime.now().millisecondsSinceEpoch}',

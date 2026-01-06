@@ -75,6 +75,10 @@ class _CourtMaintenancePageState extends State<CourtMaintenancePage> {
       endTime: endTime,
       durationHours: duration,
       totalPrice: 0, // No cost for maintenance
+      courtPrice: 0,
+      serviceFee: 0,
+      appFee: 0,
+      netRevenue: 0,
       status: 'maintenance',
       paymentStatus: 'paid', // Mark as paid to avoid auto-cancellation
       participants: [

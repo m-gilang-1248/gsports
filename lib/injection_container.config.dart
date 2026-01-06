@@ -144,6 +144,7 @@ import 'features/wallet/domain/usecases/create_transaction.dart' as _i384;
 import 'features/wallet/domain/usecases/get_all_pending_payouts.dart' as _i1007;
 import 'features/wallet/domain/usecases/get_transactions.dart' as _i478;
 import 'features/wallet/domain/usecases/get_wallet_balance.dart' as _i738;
+import 'features/wallet/domain/usecases/sync_wallet_transactions.dart' as _i790;
 import 'features/wallet/domain/usecases/update_transaction_status.dart'
     as _i583;
 import 'features/wallet/presentation/bloc/admin_payout_bloc.dart' as _i1052;
@@ -230,6 +231,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i556.ScoreboardRepository>(
       () => _i107.ScoreboardRepositoryImpl(
         gh<_i104.ScoreboardRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i790.SyncWalletTransactions>(
+      () => _i790.SyncWalletTransactions(
+        gh<_i829.BookingRepository>(),
+        gh<_i728.TransactionRepository>(),
       ),
     );
     gh.lazySingleton<_i692.PaymentRemoteDataSource>(
@@ -403,12 +410,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i376.PaymentRepository>(
       () => _i210.PaymentRepositoryImpl(gh<_i692.PaymentRemoteDataSource>()),
     );
-    gh.factory<_i453.PartnerDashboardBloc>(
-      () => _i453.PartnerDashboardBloc(
-        gh<_i506.GetPartnerStats>(),
-        gh<_i59.FirebaseAuth>(),
-      ),
-    );
     gh.factory<_i1064.HistoryBloc>(
       () => _i1064.HistoryBloc(
         getMyBookings: gh<_i776.GetMyBookings>(),
@@ -458,6 +459,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i541.GetPartnerBookings>(),
         gh<_i488.CancelBooking>(),
         gh<_i829.GetMyVenues>(),
+      ),
+    );
+    gh.factory<_i453.PartnerDashboardBloc>(
+      () => _i453.PartnerDashboardBloc(
+        gh<_i506.GetPartnerStats>(),
+        gh<_i790.SyncWalletTransactions>(),
+        gh<_i59.FirebaseAuth>(),
       ),
     );
     gh.lazySingleton<_i206.CreateInvoice>(

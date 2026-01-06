@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gsports/features/partner/dashboard/domain/entities/partner_stats.dart';
 import 'package:gsports/features/partner/dashboard/domain/usecases/get_partner_stats.dart';
+import 'package:gsports/features/wallet/domain/usecases/sync_wallet_transactions.dart';
 
 part 'partner_dashboard_event.dart';
 part 'partner_dashboard_state.dart';
@@ -12,10 +13,14 @@ part 'partner_dashboard_state.dart';
 class PartnerDashboardBloc
     extends Bloc<PartnerDashboardEvent, PartnerDashboardState> {
   final GetPartnerStats getPartnerStats;
+  final SyncWalletTransactions syncWalletTransactions;
   final FirebaseAuth firebaseAuth;
 
-  PartnerDashboardBloc(this.getPartnerStats, this.firebaseAuth)
-    : super(PartnerDashboardInitial()) {
+  PartnerDashboardBloc(
+    this.getPartnerStats,
+    this.syncWalletTransactions,
+    this.firebaseAuth,
+  ) : super(PartnerDashboardInitial()) {
     on<FetchPartnerDashboardStats>(_onFetchStats);
   }
 
@@ -30,6 +35,9 @@ class PartnerDashboardBloc
       emit(const PartnerDashboardError("User not logged in"));
       return;
     }
+
+    // Lazy Sync Wallet
+    await syncWalletTransactions(user.uid);
 
     final result = await getPartnerStats(user.uid);
 
