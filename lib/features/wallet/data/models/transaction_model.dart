@@ -22,6 +22,19 @@ class TransactionModel extends TransactionEntity {
 
   Map<String, dynamic> toJson() => _$TransactionModelToJson(this);
 
+  factory TransactionModel.fromEntity(TransactionEntity entity) {
+    return TransactionModel(
+      id: entity.id,
+      userId: entity.userId,
+      type: entity.type,
+      amount: entity.amount,
+      status: entity.status,
+      referenceId: entity.referenceId,
+      description: entity.description,
+      createdAt: entity.createdAt,
+    );
+  }
+
   factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return TransactionModel(
@@ -36,15 +49,15 @@ class TransactionModel extends TransactionEntity {
     );
   }
 
-  static Map<String, dynamic> toFirestoreData(TransactionEntity transaction) {
+  static Map<String, dynamic> toFirestoreData(TransactionEntity entity) {
     return {
-      'userId': transaction.userId,
-      'type': transaction.type,
-      'amount': transaction.amount,
-      'status': transaction.status,
-      'referenceId': transaction.referenceId,
-      'description': transaction.description,
-      'createdAt': Timestamp.fromDate(transaction.createdAt),
+      'userId': entity.userId,
+      'type': entity.type,
+      'amount': entity.amount,
+      'status': entity.status,
+      'referenceId': entity.referenceId,
+      'description': entity.description,
+      'createdAt': Timestamp.fromDate(entity.createdAt),
     };
   }
 }

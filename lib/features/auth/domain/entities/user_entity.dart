@@ -12,6 +12,7 @@ class UserEntity extends Equatable {
   final String? bankName;
   final String? bankAccountNumber;
   final String? bankAccountHolder;
+  final int walletBalance;
   final DateTime createdAt;
 
   const UserEntity({
@@ -26,6 +27,7 @@ class UserEntity extends Equatable {
     this.bankName,
     this.bankAccountNumber,
     this.bankAccountHolder,
+    this.walletBalance = 0,
     required this.createdAt,
   });
 
@@ -42,6 +44,7 @@ class UserEntity extends Equatable {
     bankName,
     bankAccountNumber,
     bankAccountHolder,
+    walletBalance,
     createdAt,
   ];
 }

@@ -21,6 +21,7 @@ class UserModel extends UserEntity {
     super.bankName,
     super.bankAccountNumber,
     super.bankAccountHolder,
+    super.walletBalance = 0,
     required super.createdAt,
   });
 
@@ -49,6 +50,7 @@ class UserModel extends UserEntity {
       bankName: data?['bankName'] as String?,
       bankAccountNumber: data?['bankAccountNumber'] as String?,
       bankAccountHolder: data?['bankAccountHolder'] as String?,
+      walletBalance: (data?['walletBalance'] as num?)?.toInt() ?? 0,
       createdAt:
           (data?[FirebaseConstants.userCreatedAtField] as Timestamp?)
               ?.toDate() ??

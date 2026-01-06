@@ -20,6 +20,7 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
   bankName: json['bankName'] as String?,
   bankAccountNumber: json['bankAccountNumber'] as String?,
   bankAccountHolder: json['bankAccountHolder'] as String?,
+  walletBalance: (json['walletBalance'] as num?)?.toInt() ?? 0,
   createdAt: DateTime.parse(json['createdAt'] as String),
 );
 
@@ -35,5 +36,6 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
   'bankName': instance.bankName,
   'bankAccountNumber': instance.bankAccountNumber,
   'bankAccountHolder': instance.bankAccountHolder,
+  'walletBalance': instance.walletBalance,
   'createdAt': instance.createdAt.toIso8601String(),
 };
