@@ -31,9 +31,15 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
-    // Transactions: Auth read/write
+    // Transactions: Auth read/write (Owner or Admin)
     match /transactions/{transactionId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null && (
+        resource == null || 
+        request.auth.uid == resource.data.userId || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin_platform'
+      );
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin_platform';
     }
 
     // Default catch-all (Keep as fallback)
