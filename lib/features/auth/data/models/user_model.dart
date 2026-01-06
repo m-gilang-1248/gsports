@@ -18,6 +18,9 @@ class UserModel extends UserEntity {
     required super.role,
     required super.tier,
     super.tierExpiryDate,
+    super.bankName,
+    super.bankAccountNumber,
+    super.bankAccountHolder,
     required super.createdAt,
   });
 
@@ -43,6 +46,9 @@ class UserModel extends UserEntity {
       tierExpiryDate:
           (data?[FirebaseConstants.userTierExpiryDateField] as Timestamp?)
               ?.toDate(),
+      bankName: data?['bankName'] as String?,
+      bankAccountNumber: data?['bankAccountNumber'] as String?,
+      bankAccountHolder: data?['bankAccountHolder'] as String?,
       createdAt:
           (data?[FirebaseConstants.userCreatedAtField] as Timestamp?)
               ?.toDate() ??

@@ -17,6 +17,9 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
   tierExpiryDate: json['tierExpiryDate'] == null
       ? null
       : DateTime.parse(json['tierExpiryDate'] as String),
+  bankName: json['bankName'] as String?,
+  bankAccountNumber: json['bankAccountNumber'] as String?,
+  bankAccountHolder: json['bankAccountHolder'] as String?,
   createdAt: DateTime.parse(json['createdAt'] as String),
 );
 
@@ -29,5 +32,8 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
   'role': instance.role,
   'tier': instance.tier,
   'tierExpiryDate': instance.tierExpiryDate?.toIso8601String(),
+  'bankName': instance.bankName,
+  'bankAccountNumber': instance.bankAccountNumber,
+  'bankAccountHolder': instance.bankAccountHolder,
   'createdAt': instance.createdAt.toIso8601String(),
 };

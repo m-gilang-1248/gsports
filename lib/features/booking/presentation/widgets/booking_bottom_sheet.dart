@@ -33,7 +33,11 @@ class BookingBottomSheet extends StatelessWidget {
     final startTime = sortedSlots.first;
     final endTime = sortedSlots.last.add(const Duration(hours: 1));
     final durationHours = sortedSlots.length;
-    final totalPrice = court.hourlyPrice * durationHours;
+    
+    // Financial Breakdown
+    final courtPrice = court.hourlyPrice * durationHours;
+    final serviceFee = (courtPrice * 0.02).round(); // 2% Service Fee
+    final totalPrice = courtPrice + serviceFee;
 
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
@@ -104,26 +108,29 @@ class BookingBottomSheet extends StatelessWidget {
           ),
           const Divider(height: 32),
 
+          // Financial Breakdown
+          _buildPriceRow(
+            context,
+            label: 'Harga Lapangan ($durationHours Jam)',
+            value: currencyFormat.format(courtPrice),
+          ),
+          const SizedBox(height: 8),
+          _buildPriceRow(
+            context,
+            label: 'Biaya Layanan (2%)',
+            value: currencyFormat.format(serviceFee),
+          ),
+          const Divider(height: 24),
+
           // Total Price
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Total Harga',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey,
-                    ),
-                  ),
-                  Text(
-                    '$durationHours Jam x ${currencyFormat.format(court.hourlyPrice)}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
+              Text(
+                'Total Bayar',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 currencyFormat.format(totalPrice),
@@ -168,6 +175,10 @@ class BookingBottomSheet extends StatelessWidget {
                   endTime: endTime,
                   durationHours: durationHours,
                   totalPrice: totalPrice,
+                  courtPrice: courtPrice,
+                  serviceFee: serviceFee,
+                  appFee: (courtPrice * 0.05).round(),
+                  netRevenue: courtPrice - (courtPrice * 0.05).round(),
                   status: 'waiting_payment',
                   paymentStatus: 'unpaid',
                   participants: [
@@ -236,6 +247,33 @@ class BookingBottomSheet extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceRow(
+    BuildContext context, {
+    required String label,
+    required String value,
+    bool isBold = false,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.grey[700],
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+            color: AppColors.textPrimary,
           ),
         ),
       ],

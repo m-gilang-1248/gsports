@@ -32,6 +32,10 @@ class BookingModel extends Booking {
     required super.endTime,
     required super.durationHours,
     required super.totalPrice,
+    super.courtPrice,
+    super.serviceFee,
+    super.appFee,
+    super.netRevenue,
     required super.status,
     required super.paymentStatus,
     super.venueName,
@@ -66,6 +70,10 @@ class BookingModel extends Booking {
       endTime: entity.endTime,
       durationHours: entity.durationHours,
       totalPrice: entity.totalPrice,
+      courtPrice: entity.courtPrice,
+      serviceFee: entity.serviceFee,
+      appFee: entity.appFee,
+      netRevenue: entity.netRevenue,
       status: entity.status,
       paymentStatus: entity.paymentStatus,
       venueName: entity.venueName,
@@ -97,6 +105,16 @@ class BookingModel extends Booking {
       endTime: (data['endTime'] as Timestamp).toDate(),
       durationHours: (data['durationHours'] as num).toInt(),
       totalPrice: (data['totalPrice'] as num).toInt(),
+      courtPrice: data['courtPrice'] != null
+          ? (data['courtPrice'] as num).toInt()
+          : null,
+      serviceFee: data['serviceFee'] != null
+          ? (data['serviceFee'] as num).toInt()
+          : null,
+      appFee: data['appFee'] != null ? (data['appFee'] as num).toInt() : null,
+      netRevenue: data['netRevenue'] != null
+          ? (data['netRevenue'] as num).toInt()
+          : null,
       status: data['status'] as String,
       paymentStatus: data['paymentStatus'] as String,
       venueName: data['venueName'] as String?,
@@ -132,6 +150,10 @@ class BookingModel extends Booking {
     json['participantIds'] = participantIds;
     json['createdAt'] = Timestamp.fromDate(createdAt);
     if (ownerId != null) json['ownerId'] = ownerId;
+    if (courtPrice != null) json['courtPrice'] = courtPrice;
+    if (serviceFee != null) json['serviceFee'] = serviceFee;
+    if (appFee != null) json['appFee'] = appFee;
+    if (netRevenue != null) json['netRevenue'] = netRevenue;
     return json;
   }
 }

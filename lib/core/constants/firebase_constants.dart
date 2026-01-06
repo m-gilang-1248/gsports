@@ -9,6 +9,9 @@ class FirebaseConstants {
   static const String userRoleField = 'role';
   static const String userTierField = 'tier';
   static const String userTierExpiryDateField = 'tierExpiryDate';
+  static const String userBankNameField = 'bankName';
+  static const String userBankAccountNumberField = 'bankAccountNumber';
+  static const String userBankAccountHolderField = 'bankAccountHolder';
   static const String userCreatedAtField = 'createdAt';
   static const String userFcmTokenField = 'fcmToken';
 
@@ -58,8 +61,10 @@ class FirebaseConstants {
   static const String bookingStatusField = 'status';
   static const String bookingPaymentStatusField = 'paymentStatus';
   static const String bookingTotalPriceField = 'totalPrice';
-  static const String bookingPlatformFeeField = 'platformFee';
-  static const String bookingGrandTotalField = 'grandTotal';
+  static const String bookingCourtPriceField = 'courtPrice';
+  static const String bookingServiceFeeField = 'serviceFee';
+  static const String bookingAppFeeField = 'appFee';
+  static const String bookingNetRevenueField = 'netRevenue';
   static const String bookingMidtransOrderIdField = 'midtransOrderId';
   static const String bookingMidtransPaymentUrlField = 'midtransPaymentUrl';
   static const String bookingIsSplitBillField = 'isSplitBill';
@@ -70,13 +75,13 @@ class FirebaseConstants {
   // Transactions Collection and Document Fields
   static const String transactionsCollection = 'transactions';
   static const String transactionIdField = 'id';
-  static const String transactionBookingIdField = 'bookingId';
-  static const String transactionMitraIdField = 'mitraId';
+  static const String transactionUserIdField = 'userId';
+  static const String transactionTypeField = 'type';
   static const String transactionAmountField = 'amount';
-  static const String transactionCommissionFeeField = 'commissionFee';
-  static const String transactionNetAmountToMitraField = 'netAmountToMitra';
   static const String transactionStatusField = 'status';
-  static const String transactionTimestampField = 'timestamp';
+  static const String transactionReferenceIdField = 'referenceId';
+  static const String transactionDescriptionField = 'description';
+  static const String transactionCreatedAtField = 'createdAt';
 
   // Matches Collection and Document Fields
   static const String matchesCollection = 'matches';

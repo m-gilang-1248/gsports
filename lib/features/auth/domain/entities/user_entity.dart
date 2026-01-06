@@ -9,6 +9,9 @@ class UserEntity extends Equatable {
   final String role; // e.g., 'user', 'mitra', 'admin'
   final String tier; // e.g., 'free', 'premium'
   final DateTime? tierExpiryDate;
+  final String? bankName;
+  final String? bankAccountNumber;
+  final String? bankAccountHolder;
   final DateTime createdAt;
 
   const UserEntity({
@@ -20,6 +23,9 @@ class UserEntity extends Equatable {
     required this.role,
     required this.tier,
     this.tierExpiryDate,
+    this.bankName,
+    this.bankAccountNumber,
+    this.bankAccountHolder,
     required this.createdAt,
   });
 
@@ -33,6 +39,9 @@ class UserEntity extends Equatable {
     role,
     tier,
     tierExpiryDate,
+    bankName,
+    bankAccountNumber,
+    bankAccountHolder,
     createdAt,
   ];
 }

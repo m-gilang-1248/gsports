@@ -13,6 +13,10 @@ class Booking extends Equatable {
   final DateTime endTime;
   final int durationHours;
   final int totalPrice;
+  final int? courtPrice;
+  final int? serviceFee;
+  final int? appFee;
+  final int? netRevenue;
   final String status; // 'waiting_payment', 'confirmed', etc.
   final String paymentStatus; // 'unpaid', 'paid', 'refunded'
 
@@ -42,6 +46,10 @@ class Booking extends Equatable {
     required this.endTime,
     required this.durationHours,
     required this.totalPrice,
+    this.courtPrice,
+    this.serviceFee,
+    this.appFee,
+    this.netRevenue,
     required this.status,
     required this.paymentStatus,
     this.venueName,
@@ -68,6 +76,10 @@ class Booking extends Equatable {
     DateTime? endTime,
     int? durationHours,
     int? totalPrice,
+    int? courtPrice,
+    int? serviceFee,
+    int? appFee,
+    int? netRevenue,
     String? status,
     String? paymentStatus,
     String? venueName,
@@ -93,6 +105,10 @@ class Booking extends Equatable {
       endTime: endTime ?? this.endTime,
       durationHours: durationHours ?? this.durationHours,
       totalPrice: totalPrice ?? this.totalPrice,
+      courtPrice: courtPrice ?? this.courtPrice,
+      serviceFee: serviceFee ?? this.serviceFee,
+      appFee: appFee ?? this.appFee,
+      netRevenue: netRevenue ?? this.netRevenue,
       status: status ?? this.status,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       venueName: venueName ?? this.venueName,
@@ -121,6 +137,10 @@ class Booking extends Equatable {
     endTime,
     durationHours,
     totalPrice,
+    courtPrice,
+    serviceFee,
+    appFee,
+    netRevenue,
     status,
     paymentStatus,
     venueName,
