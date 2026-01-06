@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -136,27 +137,35 @@ class PartnerWalletView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: balance > 0
-                                ? () => _showWithdrawDialog(context, balance)
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: AppColors.success,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: balance > 0
+                                  ? () {
+                                      debugPrint('🔵 Tombol Tarik Dana ditekan. Balance: $balance');
+                                      _showWithdrawDialog(context, balance);
+                                    }
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: AppColors.success,
+                                disabledBackgroundColor: Colors.white.withValues(alpha: 0.5),
+                                disabledForegroundColor: AppColors.success.withValues(alpha: 0.5),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
                               ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Tarik Dana',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              child: const Text(
+                                'Tarik Dana',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
-                        ),
+
                       ],
                     ),
                   );
@@ -290,8 +299,17 @@ class PartnerWalletView extends StatelessWidget {
   }
 
   void _showWithdrawDialog(BuildContext context, int balance) {
+    debugPrint('🔵 Masuk fungsi _showWithdrawDialog');
     final profileState = context.read<ProfileBloc>().state;
-    if (profileState is! ProfileLoaded) return;
+    debugPrint('🔵 Profile State saat ini: $profileState');
+    
+    if (profileState is! ProfileLoaded) {
+      debugPrint('🔴 Profil belum loaded, menampilkan snackbar');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sedang memuat data profil, coba lagi sesaat lagi...')),
+      );
+      return;
+    }
 
     final user = profileState.user;
     if (user.bankName == null || user.bankAccountNumber == null) {

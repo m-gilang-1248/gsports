@@ -12,6 +12,8 @@ import 'package:gsports/features/partner/dashboard/presentation/pages/orders_vie
 import 'package:gsports/features/partner/dashboard/presentation/pages/profile_view.dart';
 import 'package:gsports/features/partner/dashboard/presentation/pages/venues_view.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
+import 'package:gsports/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:gsports/features/profile/presentation/bloc/profile_event.dart';
 import 'package:gsports/features/wallet/presentation/bloc/wallet_bloc.dart';
 import 'package:gsports/features/wallet/presentation/bloc/wallet_event.dart';
 import 'package:gsports/features/wallet/presentation/pages/partner_wallet_page.dart';
@@ -35,6 +37,9 @@ class PartnerMainPage extends StatelessWidget {
         BlocProvider(
           create: (context) =>
               GetIt.I<OrderManagementBloc>()..add(FetchPartnerBookings()),
+        ),
+        BlocProvider(
+          create: (context) => GetIt.I<ProfileBloc>()..add(FetchProfile()),
         ),
         BlocProvider(
           create: (context) {
