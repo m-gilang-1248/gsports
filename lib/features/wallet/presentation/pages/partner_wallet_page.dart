@@ -33,13 +33,21 @@ class PartnerWalletPage extends StatelessWidget {
           create: (context) => getIt<ProfileBloc>()..add(FetchProfile()),
         ),
       ],
-      child: const _PartnerWalletView(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Dompet Mitra'),
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
+        ),
+        body: const PartnerWalletView(),
+      ),
     );
   }
 }
 
-class _PartnerWalletView extends StatelessWidget {
-  const _PartnerWalletView();
+class PartnerWalletView extends StatelessWidget {
+  const PartnerWalletView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -49,15 +57,8 @@ class _PartnerWalletView extends StatelessWidget {
       decimalDigits: 0,
     );
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Dompet Mitra'),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-      ),
-      body: BlocListener<WalletBloc, WalletState>(
-        listener: (context, state) {
+    return BlocListener<WalletBloc, WalletState>(
+      listener: (context, state) {
           if (state is WalletPayoutSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -274,8 +275,7 @@ class _PartnerWalletView extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildEmptyState(String message) {

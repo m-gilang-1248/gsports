@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
 import 'package:gsports/features/partner/booking_management/presentation/bloc/order_management_bloc.dart';
 import 'package:gsports/features/partner/dashboard/presentation/bloc/partner_dashboard_bloc.dart';
 import 'package:gsports/features/partner/dashboard/presentation/pages/dashboard_view.dart';
@@ -10,6 +12,9 @@ import 'package:gsports/features/partner/dashboard/presentation/pages/orders_vie
 import 'package:gsports/features/partner/dashboard/presentation/pages/profile_view.dart';
 import 'package:gsports/features/partner/dashboard/presentation/pages/venues_view.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
+import 'package:gsports/features/wallet/presentation/bloc/wallet_bloc.dart';
+import 'package:gsports/features/wallet/presentation/bloc/wallet_event.dart';
+import 'package:gsports/features/wallet/presentation/pages/partner_wallet_page.dart';
 
 class PartnerMainPage extends StatelessWidget {
   const PartnerMainPage({super.key});
@@ -31,6 +36,16 @@ class PartnerMainPage extends StatelessWidget {
           create: (context) =>
               GetIt.I<OrderManagementBloc>()..add(FetchPartnerBookings()),
         ),
+        BlocProvider(
+          create: (context) {
+            final authState = context.read<AuthBloc>().state;
+            String userId = '';
+            if (authState is AuthAuthenticated) {
+              userId = authState.user.uid;
+            }
+            return GetIt.I<WalletBloc>()..add(FetchWalletData(userId));
+          },
+        ),
       ],
       child: const _PartnerMainPageView(),
     );
@@ -51,6 +66,7 @@ class _PartnerMainPageViewState extends State<_PartnerMainPageView> {
     DashboardView(),
     VenuesView(),
     OrdersView(),
+    PartnerWalletView(),
     ProfileView(),
   ];
 
@@ -101,6 +117,11 @@ class _PartnerMainPageViewState extends State<_PartnerMainPageView> {
               label: 'Pesanan',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              activeIcon: Icon(Icons.account_balance_wallet),
+              label: 'Dompet',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Profil',
@@ -146,7 +167,11 @@ class _PartnerMainPageViewState extends State<_PartnerMainPageView> {
           ),
         ];
         break;
-      case 3: // Profile
+      case 3: // Wallet
+        title = 'Dompet Mitra';
+        actions = [];
+        break;
+      case 4: // Profile
         title = 'Profil Saya';
         actions = [];
         break;
