@@ -27,6 +27,7 @@ import 'package:gsports/features/partner/venue_management/presentation/pages/ava
 import 'package:gsports/features/partner/booking_management/presentation/pages/order_management_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/manual_booking_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/partner_booking_detail_page.dart';
+import 'package:gsports/features/wallet/presentation/pages/partner_wallet_page.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
@@ -126,6 +127,10 @@ class AppRouter {
       GoRoute(
         path: '/partner/revenue-analytics',
         builder: (context, state) => const RevenueAnalyticsPage(),
+      ),
+      GoRoute(
+        path: '/partner/wallet',
+        builder: (context, state) => const PartnerWalletPage(),
       ),
       GoRoute(
         path: '/availability-management',

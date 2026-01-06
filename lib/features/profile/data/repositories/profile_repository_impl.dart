@@ -55,6 +55,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required String uid,
     String? displayName,
     String? phoneNumber,
+    String? bankName,
+    String? bankAccountNumber,
+    String? bankAccountHolder,
     File? imageFile,
   }) async {
     try {
@@ -62,6 +65,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
         uid: uid,
         displayName: displayName,
         phoneNumber: phoneNumber,
+        bankName: bankName,
+        bankAccountNumber: bankAccountNumber,
+        bankAccountHolder: bankAccountHolder,
         imageFile: imageFile,
       );
       return Right(userModel);

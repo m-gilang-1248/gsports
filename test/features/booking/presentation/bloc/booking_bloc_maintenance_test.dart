@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:gsports/core/error/failures.dart';
 import 'package:gsports/features/booking/domain/entities/booking.dart';
 import 'package:gsports/features/booking/domain/usecases/check_availability.dart';
 import 'package:gsports/features/booking/domain/usecases/create_booking.dart';
@@ -11,6 +12,8 @@ import 'package:gsports/features/booking/domain/usecases/update_payment_info.dar
 import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
 import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
+import 'package:gsports/features/booking/domain/usecases/get_booking_detail.dart';
+import 'package:gsports/features/wallet/domain/usecases/create_transaction.dart';
 
 class MockCheckAvailability extends Mock implements CheckAvailability {}
 
@@ -25,6 +28,10 @@ class MockUpdateBookingStatus extends Mock implements UpdateBookingStatus {}
 class MockGetTransactionStatus extends Mock implements GetTransactionStatus {}
 
 class MockUpdatePaymentInfo extends Mock implements UpdatePaymentInfo {}
+
+class MockGetBookingDetail extends Mock implements GetBookingDetail {}
+
+class MockCreateTransaction extends Mock implements CreateTransaction {}
 
 class FakeCreateBookingParams extends Fake implements CreateBookingParams {}
 
@@ -42,6 +49,8 @@ void main() {
   late MockUpdateBookingStatus mockUpdateBookingStatus;
   late MockGetTransactionStatus mockGetTransactionStatus;
   late MockUpdatePaymentInfo mockUpdatePaymentInfo;
+  late MockGetBookingDetail mockGetBookingDetail;
+  late MockCreateTransaction mockCreateTransaction;
 
   setUpAll(() {
     registerFallbackValue(FakeCreateBookingParams());
@@ -57,6 +66,12 @@ void main() {
     mockUpdateBookingStatus = MockUpdateBookingStatus();
     mockGetTransactionStatus = MockGetTransactionStatus();
     mockUpdatePaymentInfo = MockUpdatePaymentInfo();
+    mockGetBookingDetail = MockGetBookingDetail();
+    mockCreateTransaction = MockCreateTransaction();
+
+    when(() => mockGetBookingDetail(any())).thenAnswer(
+      (_) async => Left(ServerFailure('not found in test')),
+    );
 
     bookingBloc = BookingBloc(
       checkAvailability: mockCheckAvailability,
@@ -66,6 +81,8 @@ void main() {
       updateBookingStatus: mockUpdateBookingStatus,
       getTransactionStatus: mockGetTransactionStatus,
       updatePaymentInfo: mockUpdatePaymentInfo,
+      getBookingDetail: mockGetBookingDetail,
+      createTransaction: mockCreateTransaction,
     );
   });
 

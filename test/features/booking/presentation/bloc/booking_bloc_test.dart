@@ -9,6 +9,8 @@ import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
 import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:gsports/features/booking/domain/usecases/update_payment_info.dart';
+import 'package:gsports/features/booking/domain/usecases/get_booking_detail.dart';
+import 'package:gsports/features/wallet/domain/usecases/create_transaction.dart';
 
 class MockCheckAvailability extends Mock implements CheckAvailability {}
 
@@ -24,6 +26,10 @@ class MockGetTransactionStatus extends Mock implements GetTransactionStatus {}
 
 class MockUpdatePaymentInfo extends Mock implements UpdatePaymentInfo {}
 
+class MockGetBookingDetail extends Mock implements GetBookingDetail {}
+
+class MockCreateTransaction extends Mock implements CreateTransaction {}
+
 void main() {
   late BookingBloc bookingBloc;
   late MockCheckAvailability mockCheckAvailability;
@@ -33,6 +39,8 @@ void main() {
   late MockUpdateBookingStatus mockUpdateBookingStatus;
   late MockGetTransactionStatus mockGetTransactionStatus;
   late MockUpdatePaymentInfo mockUpdatePaymentInfo;
+  late MockGetBookingDetail mockGetBookingDetail;
+  late MockCreateTransaction mockCreateTransaction;
 
   setUp(() {
     mockCheckAvailability = MockCheckAvailability();
@@ -42,6 +50,8 @@ void main() {
     mockUpdateBookingStatus = MockUpdateBookingStatus();
     mockGetTransactionStatus = MockGetTransactionStatus();
     mockUpdatePaymentInfo = MockUpdatePaymentInfo();
+    mockGetBookingDetail = MockGetBookingDetail();
+    mockCreateTransaction = MockCreateTransaction();
 
     bookingBloc = BookingBloc(
       checkAvailability: mockCheckAvailability,
@@ -51,6 +61,8 @@ void main() {
       updateBookingStatus: mockUpdateBookingStatus,
       getTransactionStatus: mockGetTransactionStatus,
       updatePaymentInfo: mockUpdatePaymentInfo,
+      getBookingDetail: mockGetBookingDetail,
+      createTransaction: mockCreateTransaction,
     );
   });
 

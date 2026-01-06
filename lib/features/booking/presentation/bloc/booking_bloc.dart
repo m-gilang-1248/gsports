@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,7 +12,10 @@ import 'package:gsports/features/booking/domain/usecases/cancel_booking.dart';
 import 'package:gsports/features/booking/domain/usecases/update_booking_status.dart';
 import 'package:gsports/features/booking/domain/usecases/update_payment_info.dart';
 import 'package:gsports/features/payment/domain/usecases/create_invoice.dart';
+import 'package:gsports/features/booking/domain/usecases/get_booking_detail.dart';
 import 'package:gsports/features/payment/domain/usecases/get_transaction_status.dart';
+import 'package:gsports/features/wallet/domain/entities/transaction_entity.dart';
+import 'package:gsports/features/wallet/domain/usecases/create_transaction.dart';
 import 'package:gsports/features/venue/domain/entities/venue_holiday.dart';
 
 part 'booking_event.dart';
@@ -26,6 +30,8 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   final UpdateBookingStatus updateBookingStatus;
   final GetTransactionStatus getTransactionStatus;
   final UpdatePaymentInfo updatePaymentInfo;
+  final GetBookingDetail getBookingDetail;
+  final CreateTransaction createTransaction;
 
   BookingBloc({
     required this.checkAvailability,
@@ -35,6 +41,8 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     required this.updateBookingStatus,
     required this.getTransactionStatus,
     required this.updatePaymentInfo,
+    required this.getBookingDetail,
+    required this.createTransaction,
   }) : super(BookingInitial()) {
     on<BookingAvailabilityChecked>(_onAvailabilityChecked);
     on<BookingSlotSelected>(_onSlotSelected);
@@ -283,6 +291,10 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
             ),
           );
 
+          if (targetStatus == 'paid') {
+            await _createRevenueTransaction(bookingId);
+          }
+
           // If maintenance, we can emit PaidSuccess or a generic Success
           emit(BookingPaidSuccess(bookingId));
           return;
@@ -331,9 +343,12 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       final result = await updateBookingStatus(
         UpdateBookingStatusParams(bookingId: event.bookingId, status: 'paid'),
       );
-      result.fold(
-        (failure) => emit(BookingFailure(failure.message)),
-        (_) => emit(BookingPaidSuccess(event.bookingId)),
+      await result.fold(
+        (failure) async => emit(BookingFailure(failure.message)),
+        (_) async {
+          await _createRevenueTransaction(event.bookingId);
+          emit(BookingPaidSuccess(event.bookingId));
+        },
       );
     } else {
       // Payment failed or cancelled from WebView, re-query Midtrans API
@@ -348,9 +363,12 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
                 status: 'paid',
               ),
             );
-            updateResult.fold(
-              (failure) => emit(BookingFailure(failure.message)),
-              (_) => emit(BookingPaidSuccess(event.bookingId)),
+            await updateResult.fold(
+              (failure) async => emit(BookingFailure(failure.message)),
+              (_) async {
+                await _createRevenueTransaction(event.bookingId);
+                emit(BookingPaidSuccess(event.bookingId));
+              },
             );
           } else if (midtransStatus == 'pending' ||
               midtransStatus == 'not_found') {
@@ -385,5 +403,32 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         },
       );
     }
+  }
+
+  Future<void> _createRevenueTransaction(String bookingId) async {
+    final detailResult = await getBookingDetail(bookingId);
+    await detailResult.fold(
+      (failure) async => developer.log(
+        'Failed to fetch booking for transaction: ${failure.message}',
+      ),
+      (booking) async {
+        if (booking.ownerId != null &&
+            booking.netRevenue != null &&
+            booking.netRevenue! > 0) {
+          final transaction = TransactionEntity(
+            id: '', // Firestore will generate
+            userId: booking.ownerId!,
+            type: 'revenue',
+            amount: booking.netRevenue!,
+            status: 'completed',
+            referenceId: booking.id,
+            description:
+                'Revenue from booking ${booking.venueName ?? ''} - ${booking.courtName ?? ''}',
+            createdAt: DateTime.now(),
+          );
+          await createTransaction(transaction);
+        }
+      },
+    );
   }
 }

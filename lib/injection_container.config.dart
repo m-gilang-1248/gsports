@@ -134,6 +134,15 @@ import 'features/venue/domain/usecases/get_venue_courts.dart' as _i606;
 import 'features/venue/domain/usecases/get_venue_detail.dart' as _i15;
 import 'features/venue/domain/usecases/get_venues.dart' as _i578;
 import 'features/venue/presentation/bloc/venue_bloc.dart' as _i730;
+import 'features/wallet/data/datasources/transaction_remote_data_source.dart'
+    as _i829;
+import 'features/wallet/data/repositories/transaction_repository_impl.dart'
+    as _i377;
+import 'features/wallet/domain/repositories/transaction_repository.dart'
+    as _i728;
+import 'features/wallet/domain/usecases/create_transaction.dart' as _i384;
+import 'features/wallet/domain/usecases/get_transactions.dart' as _i478;
+import 'features/wallet/domain/usecases/get_wallet_balance.dart' as _i738;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -177,8 +186,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i367.FavoritesRemoteDataSource>(
       () => _i367.FavoritesRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
     );
+    gh.lazySingleton<_i829.TransactionRemoteDataSource>(
+      () =>
+          _i829.TransactionRemoteDataSourceImpl(gh<_i974.FirebaseFirestore>()),
+    );
     gh.factory<_i997.VenueRepository>(
       () => _i346.VenueRepositoryImpl(gh<_i1039.VenueRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i728.TransactionRepository>(
+      () => _i377.TransactionRepositoryImpl(
+        gh<_i829.TransactionRemoteDataSource>(),
+      ),
     );
     gh.factory<_i829.BookingRepository>(
       () => _i703.BookingRepositoryImpl(gh<_i97.BookingRemoteDataSource>()),
@@ -188,6 +206,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.FirebaseFirestore>(),
         gh<_i586.CloudinaryService>(),
       ),
+    );
+    gh.lazySingleton<_i384.CreateTransaction>(
+      () => _i384.CreateTransaction(gh<_i728.TransactionRepository>()),
+    );
+    gh.lazySingleton<_i478.GetTransactions>(
+      () => _i478.GetTransactions(gh<_i728.TransactionRepository>()),
+    );
+    gh.lazySingleton<_i738.GetWalletBalance>(
+      () => _i738.GetWalletBalance(gh<_i728.TransactionRepository>()),
     );
     gh.factory<_i556.ScoreboardRepository>(
       () => _i107.ScoreboardRepositoryImpl(
@@ -424,6 +451,19 @@ extension GetItInjectableX on _i174.GetIt {
         firebaseAuth: gh<_i59.FirebaseAuth>(),
       ),
     );
+    gh.factory<_i393.BookingBloc>(
+      () => _i393.BookingBloc(
+        checkAvailability: gh<_i549.CheckAvailability>(),
+        createBooking: gh<_i46.CreateBooking>(),
+        createInvoice: gh<_i206.CreateInvoice>(),
+        cancelBooking: gh<_i488.CancelBooking>(),
+        updateBookingStatus: gh<_i781.UpdateBookingStatus>(),
+        getTransactionStatus: gh<_i326.GetTransactionStatus>(),
+        updatePaymentInfo: gh<_i486.UpdatePaymentInfo>(),
+        getBookingDetail: gh<_i548.GetBookingDetail>(),
+        createTransaction: gh<_i384.CreateTransaction>(),
+      ),
+    );
     gh.factory<_i906.FavoritesBloc>(
       () => _i906.FavoritesBloc(
         getFavoriteVenues: gh<_i145.GetFavoriteVenues>(),
@@ -440,17 +480,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i326.GetTransactionStatus>(),
         gh<_i781.UpdateBookingStatus>(),
         gh<_i556.ScoreboardRepository>(),
-      ),
-    );
-    gh.factory<_i393.BookingBloc>(
-      () => _i393.BookingBloc(
-        checkAvailability: gh<_i549.CheckAvailability>(),
-        createBooking: gh<_i46.CreateBooking>(),
-        createInvoice: gh<_i206.CreateInvoice>(),
-        cancelBooking: gh<_i488.CancelBooking>(),
-        updateBookingStatus: gh<_i781.UpdateBookingStatus>(),
-        getTransactionStatus: gh<_i326.GetTransactionStatus>(),
-        updatePaymentInfo: gh<_i486.UpdatePaymentInfo>(),
       ),
     );
     return this;

@@ -41,6 +41,9 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     required String uid,
     String? displayName,
     String? phoneNumber,
+    String? bankName,
+    String? bankAccountNumber,
+    String? bankAccountHolder,
     File? imageFile,
   }) async {
     try {
@@ -58,6 +61,13 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final updates = <String, dynamic>{};
       if (displayName != null) updates['displayName'] = displayName;
       if (phoneNumber != null) updates['phoneNumber'] = phoneNumber;
+      if (bankName != null) updates['bankName'] = bankName;
+      if (bankAccountNumber != null) {
+        updates['bankAccountNumber'] = bankAccountNumber;
+      }
+      if (bankAccountHolder != null) {
+        updates['bankAccountHolder'] = bankAccountHolder;
+      }
       if (imageUrl != null) updates['photoUrl'] = imageUrl;
 
       if (updates.isNotEmpty) {

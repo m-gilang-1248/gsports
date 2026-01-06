@@ -21,6 +21,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _bankNameController = TextEditingController();
+  final _bankAccountController = TextEditingController();
+  final _bankHolderController = TextEditingController();
   File? _selectedImage;
   final _picker = ImagePicker();
 
@@ -34,6 +37,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _bankNameController.dispose();
+    _bankAccountController.dispose();
+    _bankHolderController.dispose();
     super.dispose();
   }
 
@@ -60,6 +66,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
             if (state is ProfileLoaded) {
               _nameController.text = state.user.displayName;
               _phoneController.text = state.user.phoneNumber ?? '';
+              _bankNameController.text = state.user.bankName ?? '';
+              _bankAccountController.text = state.user.bankAccountNumber ?? '';
+              _bankHolderController.text = state.user.bankAccountHolder ?? '';
             }
             if (state is ProfileUpdateSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -104,6 +113,39 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       hint: 'Masukkan nomor telepon',
                       keyboardType: TextInputType.phone,
                     ),
+                    if (state is ProfileLoaded && state.user.role == 'mitra') ...[
+                      const SizedBox(height: 32),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Informasi Rekening (Untuk Penarikan)',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        controller: _bankNameController,
+                        label: 'Nama Bank',
+                        hint: 'Contoh: BCA, Mandiri',
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        controller: _bankAccountController,
+                        label: 'Nomor Rekening',
+                        hint: 'Masukkan nomor rekening',
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        controller: _bankHolderController,
+                        label: 'Nama Pemilik Rekening',
+                        hint: 'Masukkan nama sesuai buku tabungan',
+                      ),
+                    ],
                     const SizedBox(height: 40),
                     CustomButton(
                       text: 'Simpan Perubahan',
@@ -114,6 +156,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             UpdateProfileRequested(
                               displayName: _nameController.text,
                               phoneNumber: _phoneController.text,
+                              bankName: _bankNameController.text,
+                              bankAccountNumber: _bankAccountController.text,
+                              bankAccountHolder: _bankHolderController.text,
                               imageFile: _selectedImage,
                             ),
                           );

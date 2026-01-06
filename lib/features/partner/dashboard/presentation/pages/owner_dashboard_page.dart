@@ -129,6 +129,36 @@ class _OwnerDashboardView extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                 ),
               ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  onTap: () => context.push('/partner/wallet'),
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.success.withValues(alpha: 0.1),
+                    child: const Icon(
+                      Icons.account_balance_wallet,
+                      color: AppColors.success,
+                    ),
+                  ),
+                  title: const Text(
+                    'Dompet Mitra',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text('Lihat saldo dan tarik dana ke rekening'),
+                  trailing: const Icon(Icons.chevron_right),
+                ),
+              ),
               const SizedBox(height: 24),
 
               // 2. MY VENUES SECTION

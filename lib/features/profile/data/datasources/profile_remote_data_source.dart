@@ -8,6 +8,9 @@ abstract class ProfileRemoteDataSource {
     required String uid,
     String? displayName,
     String? phoneNumber,
+    String? bankName,
+    String? bankAccountNumber,
+    String? bankAccountHolder,
     File? imageFile,
   });
 }

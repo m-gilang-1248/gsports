@@ -10,6 +10,9 @@ abstract class ProfileRepository {
     required String uid,
     String? displayName,
     String? phoneNumber,
+    String? bankName,
+    String? bankAccountNumber,
+    String? bankAccountHolder,
     File? imageFile,
   });
 }

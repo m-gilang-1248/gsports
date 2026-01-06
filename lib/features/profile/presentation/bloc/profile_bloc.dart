@@ -58,6 +58,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
             uid: user.uid,
             displayName: event.displayName,
             phoneNumber: event.phoneNumber,
+            bankName: event.bankName,
+            bankAccountNumber: event.bankAccountNumber,
+            bankAccountHolder: event.bankAccountHolder,
             imageFile: event.imageFile,
           ),
         );
