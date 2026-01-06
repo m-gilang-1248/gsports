@@ -134,21 +134,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       debugPrint('Starting Google Sign-In...');
       // In google_sign_in 7.2.0, authenticate() is the interactive entry point.
-      final gs.GoogleSignInAccount googleUser = await googleSignIn
-          .authenticate();
+      final googleUser = await googleSignIn.authenticate();
 
       debugPrint('Google User obtained: ${googleUser.email}');
 
       final gs.GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+          googleUser.authentication;
       
       debugPrint('Google Auth obtained.');
       debugPrint('ID Token: ${googleAuth.idToken?.substring(0, 10)}...');
-      debugPrint('Access Token: ${googleAuth.accessToken?.substring(0, 10)}...');
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
-        accessToken: googleAuth.accessToken, 
       );
 
       debugPrint('Signing in to Firebase with credential...');
