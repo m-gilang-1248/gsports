@@ -48,6 +48,8 @@ class _LoginPageState extends State<LoginPage> {
     if (state is AuthAuthenticated) {
       if (state.user.role == 'mitra') {
         context.go('/owner-dashboard');
+      } else if (state.user.role == 'admin_platform') {
+        context.go('/admin/payouts');
       } else {
         context.go('/home');
       }
