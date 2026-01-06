@@ -132,16 +132,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithGoogle({String? role}) async {
     try {
+      debugPrint('Starting Google Sign-In...');
       // In google_sign_in 7.2.0, authenticate() is the interactive entry point.
       final gs.GoogleSignInAccount googleUser = await googleSignIn
           .authenticate();
 
+      debugPrint('Google User obtained: ${googleUser.email}');
+
       final gs.GoogleSignInAuthentication googleAuth =
-          googleUser.authentication;
+          await googleUser.authentication;
+      
+      debugPrint('Google Auth obtained.');
+      debugPrint('ID Token: ${googleAuth.idToken?.substring(0, 10)}...');
+      debugPrint('Access Token: ${googleAuth.accessToken?.substring(0, 10)}...');
+
       final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
-        // accessToken is missing from GoogleSignInAuthentication in 7.2.0
+        accessToken: googleAuth.accessToken, 
       );
+
+      debugPrint('Signing in to Firebase with credential...');
 
       final UserCredential userCredential = await firebaseAuth
           .signInWithCredential(credential);
@@ -151,12 +161,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('User is null after Google Sign-In.');
       }
 
+      debugPrint('Firebase Sign-In successful. User: ${user.uid}');
+
       final userDocRef = firebaseFirestore
           .collection(FirebaseConstants.usersCollection)
           .doc(user.uid);
       final userDoc = await userDocRef.get();
 
       if (!userDoc.exists) {
+        debugPrint('Creating new user document with role: $role');
         final userData = UserModel.toFirestoreCreateData(
           uid: user.uid,
           email: user.email ?? '',
@@ -165,13 +178,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           role: role ?? 'user', // Use passed role or default to 'user'
         );
         await userDocRef.set(userData, SetOptions(merge: true));
+      } else {
+        debugPrint('User document exists. Role: ${userDoc.data()?['role']}');
       }
 
       final finalDoc = await userDocRef.get();
       return UserModel.fromFirebaseUser(user, finalDoc);
     } on FirebaseAuthException catch (e, st) {
-      debugPrint('FirebaseAuthException during Google Sign-In: $e');
-      throw ServerException(e.message ?? 'Firebase Auth Error', stackTrace: st);
+      debugPrint('FirebaseAuthException during Google Sign-In: Code: ${e.code}, Message: ${e.message}');
+      throw ServerException('${e.code}: ${e.message}', stackTrace: st);
     } on FirebaseException catch (e, st) {
       debugPrint('FirebaseException during Google Sign-In: $e');
       throw ServerException(e.message ?? 'Firebase Error', stackTrace: st);
