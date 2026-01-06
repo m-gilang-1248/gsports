@@ -33,7 +33,7 @@ class BookingBottomSheet extends StatelessWidget {
     final startTime = sortedSlots.first;
     final endTime = sortedSlots.last.add(const Duration(hours: 1));
     final durationHours = sortedSlots.length;
-    
+
     // Financial Breakdown
     final courtPrice = court.hourlyPrice * durationHours;
     final serviceFee = (courtPrice * 0.02).round(); // 2% Service Fee

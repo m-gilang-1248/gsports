@@ -29,11 +29,11 @@ class UpdateProfileRequested extends ProfileEvent {
 
   @override
   List<Object?> get props => [
-        displayName,
-        phoneNumber,
-        bankName,
-        bankAccountNumber,
-        bankAccountHolder,
-        imageFile,
-      ];
+    displayName,
+    phoneNumber,
+    bankName,
+    bankAccountNumber,
+    bankAccountHolder,
+    imageFile,
+  ];
 }

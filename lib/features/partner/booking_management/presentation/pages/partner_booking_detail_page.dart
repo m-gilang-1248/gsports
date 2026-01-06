@@ -380,21 +380,64 @@ class _PartnerBookingDetailView extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          const Text(
-            'Total Pembayaran',
-            style: TextStyle(fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Harga Lapangan', style: TextStyle(fontSize: 14)),
+              Text(
+                currencyFormat.format(booking.courtPrice ?? booking.totalPrice),
+              ),
+            ],
           ),
-          Text(
-            currencyFormat.format(booking.totalPrice),
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: AppColors.primary,
+          if (booking.appFee != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Komisi Platform (5%)',
+                  style: TextStyle(fontSize: 14, color: AppColors.error),
+                ),
+                Text(
+                  '- ${currencyFormat.format(booking.appFee)}',
+                  style: const TextStyle(color: AppColors.error),
+                ),
+              ],
             ),
+          ],
+          const Divider(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Pendapatan Bersih',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                currencyFormat.format(
+                  booking.netRevenue ?? (booking.totalPrice * 0.95).round(),
+                ),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppColors.success,
+                ),
+              ),
+            ],
           ),
+          if (booking.serviceFee != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              '* Total yang dibayar user: ${currencyFormat.format(booking.totalPrice)} (termasuk biaya admin)',
+              style: const TextStyle(
+                fontSize: 10,
+                color: Colors.grey,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ],
       ),
     );

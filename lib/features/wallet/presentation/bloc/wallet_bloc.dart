@@ -31,17 +31,15 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     final balanceResult = await getWalletBalance(event.userId);
     final transactionsResult = await getTransactions(event.userId);
 
-    balanceResult.fold(
-      (failure) => emit(WalletError(failure.message)),
-      (balance) {
-        transactionsResult.fold(
-          (failure) => emit(WalletError(failure.message)),
-          (transactions) => emit(
-            WalletLoaded(balance: balance, transactions: transactions),
-          ),
-        );
-      },
-    );
+    balanceResult.fold((failure) => emit(WalletError(failure.message)), (
+      balance,
+    ) {
+      transactionsResult.fold(
+        (failure) => emit(WalletError(failure.message)),
+        (transactions) =>
+            emit(WalletLoaded(balance: balance, transactions: transactions)),
+      );
+    });
   }
 
   Future<void> _onRequestPayout(

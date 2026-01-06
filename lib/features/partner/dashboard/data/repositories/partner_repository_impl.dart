@@ -20,8 +20,9 @@ class PartnerRepositoryImpl implements PartnerRepository {
       int totalRevenue = 0;
       for (final booking in bookings) {
         if (booking.paymentStatus == 'paid' ||
-            booking.paymentStatus == 'settled') {
-          totalRevenue += booking.totalPrice;
+            booking.paymentStatus == 'settlement' ||
+            booking.paymentStatus == 'capture') {
+          totalRevenue += booking.netRevenue ?? booking.totalPrice;
         }
       }
 

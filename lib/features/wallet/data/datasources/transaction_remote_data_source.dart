@@ -7,6 +7,8 @@ import '../../domain/entities/transaction_entity.dart';
 abstract class TransactionRemoteDataSource {
   Future<String> createTransaction(TransactionEntity transaction);
   Future<List<TransactionModel>> getTransactionsByUserId(String userId);
+  Future<List<TransactionModel>> getAllPendingPayouts();
+  Future<void> updateTransactionStatus(String transactionId, String status);
 }
 
 @LazySingleton(as: TransactionRemoteDataSource)
@@ -34,5 +36,30 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
     return querySnapshot.docs
         .map((doc) => TransactionModel.fromFirestore(doc))
         .toList();
+  }
+
+  @override
+  Future<List<TransactionModel>> getAllPendingPayouts() async {
+    final querySnapshot = await firestore
+        .collection(FirebaseConstants.transactionsCollection)
+        .where(FirebaseConstants.transactionTypeField, isEqualTo: 'payout')
+        .where(FirebaseConstants.transactionStatusField, isEqualTo: 'pending')
+        .orderBy(FirebaseConstants.transactionCreatedAtField, descending: true)
+        .get();
+
+    return querySnapshot.docs
+        .map((doc) => TransactionModel.fromFirestore(doc))
+        .toList();
+  }
+
+  @override
+  Future<void> updateTransactionStatus(
+    String transactionId,
+    String status,
+  ) async {
+    await firestore
+        .collection(FirebaseConstants.transactionsCollection)
+        .doc(transactionId)
+        .update({FirebaseConstants.transactionStatusField: status});
   }
 }

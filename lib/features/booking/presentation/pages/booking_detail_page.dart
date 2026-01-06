@@ -629,6 +629,28 @@ class _BookingDetailViewState extends State<_BookingDetailView> {
               ).textTheme.bodySmall?.copyWith(color: Colors.grey),
             ),
             const SizedBox(height: 16),
+
+            if (booking.courtPrice != null && booking.serviceFee != null) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Harga Lapangan', style: TextStyle(fontSize: 14)),
+                  Text(currencyFormat.format(booking.courtPrice)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Biaya Layanan', style: TextStyle(fontSize: 14)),
+                  Text(currencyFormat.format(booking.serviceFee)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 12),
+            ],
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

@@ -39,4 +39,32 @@ class TransactionRepositoryImpl implements TransactionRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<TransactionEntity>>>
+  getAllPendingPayouts() async {
+    try {
+      final result = await remoteDataSource.getAllPendingPayouts();
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateTransactionStatus(
+    String transactionId,
+    String status,
+  ) async {
+    try {
+      await remoteDataSource.updateTransactionStatus(transactionId, status);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

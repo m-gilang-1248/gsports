@@ -113,7 +113,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       hint: 'Masukkan nomor telepon',
                       keyboardType: TextInputType.phone,
                     ),
-                    if (state is ProfileLoaded && state.user.role == 'mitra') ...[
+                    if (state is ProfileLoaded &&
+                        state.user.role == 'mitra') ...[
                       const SizedBox(height: 32),
                       const Align(
                         alignment: Alignment.centerLeft,

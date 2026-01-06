@@ -141,8 +141,13 @@ import 'features/wallet/data/repositories/transaction_repository_impl.dart'
 import 'features/wallet/domain/repositories/transaction_repository.dart'
     as _i728;
 import 'features/wallet/domain/usecases/create_transaction.dart' as _i384;
+import 'features/wallet/domain/usecases/get_all_pending_payouts.dart' as _i1007;
 import 'features/wallet/domain/usecases/get_transactions.dart' as _i478;
 import 'features/wallet/domain/usecases/get_wallet_balance.dart' as _i738;
+import 'features/wallet/domain/usecases/update_transaction_status.dart'
+    as _i583;
+import 'features/wallet/presentation/bloc/admin_payout_bloc.dart' as _i1052;
+import 'features/wallet/presentation/bloc/wallet_bloc.dart' as _i63;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -210,11 +215,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i384.CreateTransaction>(
       () => _i384.CreateTransaction(gh<_i728.TransactionRepository>()),
     );
+    gh.lazySingleton<_i1007.GetAllPendingPayouts>(
+      () => _i1007.GetAllPendingPayouts(gh<_i728.TransactionRepository>()),
+    );
     gh.lazySingleton<_i478.GetTransactions>(
       () => _i478.GetTransactions(gh<_i728.TransactionRepository>()),
     );
     gh.lazySingleton<_i738.GetWalletBalance>(
       () => _i738.GetWalletBalance(gh<_i728.TransactionRepository>()),
+    );
+    gh.lazySingleton<_i583.UpdateTransactionStatus>(
+      () => _i583.UpdateTransactionStatus(gh<_i728.TransactionRepository>()),
     );
     gh.factory<_i556.ScoreboardRepository>(
       () => _i107.ScoreboardRepositoryImpl(
@@ -305,6 +316,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i759.UpdateProfile>(
       () => _i759.UpdateProfile(gh<_i626.ProfileRepository>()),
     );
+    gh.factory<_i63.WalletBloc>(
+      () => _i63.WalletBloc(
+        getWalletBalance: gh<_i738.GetWalletBalance>(),
+        getTransactions: gh<_i478.GetTransactions>(),
+        createTransaction: gh<_i384.CreateTransaction>(),
+      ),
+    );
     gh.factory<_i6.AddAvailabilityBlock>(
       () => _i6.AddAvailabilityBlock(gh<_i164.VenueManagementRepository>()),
     );
@@ -362,6 +380,12 @@ extension GetItInjectableX on _i174.GetIt {
         getVenues: gh<_i578.GetVenues>(),
         getVenueDetail: gh<_i15.GetVenueDetail>(),
         getVenueCourts: gh<_i606.GetVenueCourts>(),
+      ),
+    );
+    gh.factory<_i1052.AdminPayoutBloc>(
+      () => _i1052.AdminPayoutBloc(
+        getAllPendingPayouts: gh<_i1007.GetAllPendingPayouts>(),
+        updateTransactionStatus: gh<_i583.UpdateTransactionStatus>(),
       ),
     );
     gh.lazySingleton<_i145.ToggleFavorite>(

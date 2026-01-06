@@ -79,7 +79,9 @@ class _PartnerWalletView extends StatelessWidget {
           onRefresh: () async {
             final authState = context.read<AuthBloc>().state;
             if (authState is AuthAuthenticated) {
-              context.read<WalletBloc>().add(FetchWalletData(authState.user.uid));
+              context.read<WalletBloc>().add(
+                FetchWalletData(authState.user.uid),
+              );
             }
           },
           child: SingleChildScrollView(
@@ -144,7 +146,9 @@ class _PartnerWalletView extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: AppColors.success,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -193,7 +197,7 @@ class _PartnerWalletView extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final tx = state.transactions[index];
                           final isRevenue = tx.type == 'revenue';
-                          
+
                           return Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -202,16 +206,23 @@ class _PartnerWalletView extends StatelessWidget {
                             ),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: (isRevenue ? AppColors.success : AppColors.secondary)
-                                    .withValues(alpha: 0.1),
+                                backgroundColor:
+                                    (isRevenue
+                                            ? AppColors.success
+                                            : AppColors.secondary)
+                                        .withValues(alpha: 0.1),
                                 child: Icon(
                                   isRevenue ? Icons.add : Icons.remove,
-                                  color: isRevenue ? AppColors.success : AppColors.secondary,
+                                  color: isRevenue
+                                      ? AppColors.success
+                                      : AppColors.secondary,
                                   size: 20,
                                 ),
                               ),
                               title: Text(
-                                tx.type == 'revenue' ? 'Pendapatan Booking' : 'Penarikan Dana',
+                                tx.type == 'revenue'
+                                    ? 'Pendapatan Booking'
+                                    : 'Penarikan Dana',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -221,7 +232,9 @@ class _PartnerWalletView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    DateFormat('d MMM yyyy, HH:mm').format(tx.createdAt),
+                                    DateFormat(
+                                      'd MMM yyyy, HH:mm',
+                                    ).format(tx.createdAt),
                                     style: const TextStyle(fontSize: 12),
                                   ),
                                   if (tx.status != 'completed')
@@ -230,17 +243,22 @@ class _PartnerWalletView extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
-                                        color: tx.status == 'pending' ? AppColors.warning : AppColors.error,
+                                        color: tx.status == 'pending'
+                                            ? AppColors.warning
+                                            : AppColors.error,
                                       ),
                                     ),
                                 ],
                               ),
                               trailing: Text(
-                                (tx.amount > 0 ? '+' : '') + currencyFormat.format(tx.amount),
+                                (tx.amount > 0 ? '+' : '') +
+                                    currencyFormat.format(tx.amount),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: tx.amount > 0 ? AppColors.success : AppColors.error,
+                                  color: tx.amount > 0
+                                      ? AppColors.success
+                                      : AppColors.error,
                                 ),
                               ),
                             ),
@@ -268,10 +286,7 @@ class _PartnerWalletView extends StatelessWidget {
           children: [
             Icon(Icons.history, size: 48, color: Colors.grey[300]),
             const SizedBox(height: 16),
-            Text(
-              message,
-              style: TextStyle(color: Colors.grey[500]),
-            ),
+            Text(message, style: TextStyle(color: Colors.grey[500])),
           ],
         ),
       ),
@@ -311,7 +326,8 @@ class _PartnerWalletView extends StatelessWidget {
     }
 
     final amountController = TextEditingController(text: balance.toString());
-    final bankDetails = '${user.bankName} - ${user.bankAccountNumber} a/n ${user.bankAccountHolder}';
+    final bankDetails =
+        '${user.bankName} - ${user.bankAccountNumber} a/n ${user.bankAccountHolder}';
 
     showDialog(
       context: context,
@@ -321,9 +337,15 @@ class _PartnerWalletView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Dana akan dikirim ke:', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(
+              'Dana akan dikirim ke:',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
             const SizedBox(height: 4),
-            Text(bankDetails, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              bankDetails,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
@@ -349,11 +371,13 @@ class _PartnerWalletView extends StatelessWidget {
                 );
                 return;
               }
-              context.read<WalletBloc>().add(RequestPayout(
-                userId: user.uid,
-                amount: amount,
-                bankDetails: bankDetails,
-              ));
+              context.read<WalletBloc>().add(
+                RequestPayout(
+                  userId: user.uid,
+                  amount: amount,
+                  bankDetails: bankDetails,
+                ),
+              );
               Navigator.pop(dialogContext);
             },
             child: const Text('Tarik Sekarang'),

@@ -155,7 +155,9 @@ class _OwnerDashboardView extends StatelessWidget {
                     'Dompet Mitra',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text('Lihat saldo dan tarik dana ke rekening'),
+                  subtitle: const Text(
+                    'Lihat saldo dan tarik dana ke rekening',
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                 ),
               ),

@@ -11,15 +11,16 @@ class GetWalletBalance {
 
   Future<Either<Failure, int>> call(String userId) async {
     final result = await repository.getTransactionsByUserId(userId);
-    return result.fold(
-      (failure) => Left(failure),
-      (transactions) {
-        // Balance = Completed (Revenue & Payouts) + Pending Payouts
-        final balance = transactions
-            .where((t) => t.status == 'completed' || (t.status == 'pending' && t.type == 'payout'))
-            .fold<int>(0, (sum, t) => sum + t.amount);
-        return Right(balance);
-      },
-    );
+    return result.fold((failure) => Left(failure), (transactions) {
+      // Balance = Completed (Revenue & Payouts) + Pending Payouts
+      final balance = transactions
+          .where(
+            (t) =>
+                t.status == 'completed' ||
+                (t.status == 'pending' && t.type == 'payout'),
+          )
+          .fold<int>(0, (sum, t) => sum + t.amount);
+      return Right(balance);
+    });
   }
 }

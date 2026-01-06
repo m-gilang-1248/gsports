@@ -69,9 +69,9 @@ void main() {
     mockGetBookingDetail = MockGetBookingDetail();
     mockCreateTransaction = MockCreateTransaction();
 
-    when(() => mockGetBookingDetail(any())).thenAnswer(
-      (_) async => Left(ServerFailure('not found in test')),
-    );
+    when(
+      () => mockGetBookingDetail(any()),
+    ).thenAnswer((_) async => Left(ServerFailure('not found in test')));
 
     bookingBloc = BookingBloc(
       checkAvailability: mockCheckAvailability,

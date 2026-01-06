@@ -28,6 +28,7 @@ import 'package:gsports/features/partner/booking_management/presentation/pages/o
 import 'package:gsports/features/partner/booking_management/presentation/pages/manual_booking_page.dart';
 import 'package:gsports/features/partner/booking_management/presentation/pages/partner_booking_detail_page.dart';
 import 'package:gsports/features/wallet/presentation/pages/partner_wallet_page.dart';
+import 'package:gsports/features/wallet/presentation/pages/admin_payouts_page.dart';
 import 'package:gsports/features/booking/presentation/bloc/booking_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/venue_management_bloc.dart';
 import 'package:gsports/features/partner/venue_management/presentation/bloc/court_management_bloc.dart';
@@ -85,6 +86,13 @@ class AppRouter {
               .doc(user.uid)
               .get();
           final role = doc.data()?['role'] as String?;
+          if (role == 'admin_platform') {
+            // Admin can access anything or we can redirect to admin dashboard if they try to access home
+            if (path == '/' || path == '/home') {
+              return '/admin/payouts';
+            }
+            return null;
+          }
           if (role != 'mitra') {
             return '/home';
           }
@@ -131,6 +139,10 @@ class AppRouter {
       GoRoute(
         path: '/partner/wallet',
         builder: (context, state) => const PartnerWalletPage(),
+      ),
+      GoRoute(
+        path: '/admin/payouts',
+        builder: (context, state) => const AdminPayoutsPage(),
       ),
       GoRoute(
         path: '/availability-management',
