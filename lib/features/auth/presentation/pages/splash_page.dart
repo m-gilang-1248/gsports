@@ -44,15 +44,19 @@ class _SplashPageState extends State<SplashPage> {
           context.go('/login');
         }
       },
-      child: const Scaffold(
+      child: Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Placeholder for the App Logo
-              FlutterLogo(size: 100),
-              SizedBox(height: 20),
-              Text(
+              Image.asset(
+                'assets/logo/gsports_logo.png',
+                width: 150,
+                height: 150,
+              ),
+              const SizedBox(height: 20),
+              const Text(
                 'Gsports',
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
