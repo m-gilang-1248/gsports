@@ -29,6 +29,8 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> getCurrentUser();
 
   Future<void> updateFcmToken(String token);
+
+  Future<void> updateUserTier({required String uid, required String tier});
 }
 
 @Injectable(as: AuthRemoteDataSource)
@@ -257,6 +259,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(e.message ?? 'Firebase Error', stackTrace: st);
     } catch (e, st) {
       debugPrint('Unknown error updating FCM token: $e');
+      throw ServerException(e.toString(), stackTrace: st);
+    }
+  }
+
+  @override
+  Future<void> updateUserTier({
+    required String uid,
+    required String tier,
+  }) async {
+    try {
+      await firebaseFirestore
+          .collection(FirebaseConstants.usersCollection)
+          .doc(uid)
+          .update({FirebaseConstants.userTierField: tier});
+    } on FirebaseException catch (e, st) {
+      debugPrint('FirebaseException updating user tier: $e');
+      throw ServerException(e.message ?? 'Firebase Error', stackTrace: st);
+    } catch (e, st) {
+      debugPrint('Unknown error updating user tier: $e');
       throw ServerException(e.toString(), stackTrace: st);
     }
   }

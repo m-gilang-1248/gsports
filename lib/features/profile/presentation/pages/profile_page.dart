@@ -8,6 +8,7 @@ import 'package:gsports/features/auth/presentation/bloc/auth_event.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
 import 'package:gsports/features/auth/domain/entities/user_entity.dart';
 import 'package:gsports/features/profile/domain/entities/user_stats.dart';
+import 'package:gsports/core/presentation/widgets/premium_upgrade_dialog.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
@@ -143,6 +144,26 @@ class _ProfilePageState extends State<ProfilePage> {
                 : Colors.grey.shade300,
           ),
         ),
+        if (stateUser.tier != 'premium') ...[
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const PremiumUpgradeDialog(),
+              );
+            },
+            icon: const Icon(Icons.star, color: Colors.amber),
+            label: const Text('Upgrade ke Premium'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

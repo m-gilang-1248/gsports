@@ -18,7 +18,9 @@ import 'package:injectable/injectable.dart' as _i526;
 
 import 'core/injection_modules/firebase_module.dart' as _i896;
 import 'core/injection_modules/network_module.dart' as _i559;
+import 'core/services/ad_service.dart' as _i691;
 import 'core/services/cloudinary_service.dart' as _i586;
+import 'core/services/iap_service.dart' as _i756;
 import 'core/services/location_service.dart' as _i65;
 import 'core/services/notification_service.dart' as _i1011;
 import 'features/auth/data/datasources/auth_remote_data_source.dart' as _i767;
@@ -165,7 +167,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i116.GoogleSignIn>(() => firebaseModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => networkModule.httpClient);
+    gh.lazySingleton<_i691.AdService>(() => _i691.AdService());
     gh.lazySingleton<_i586.CloudinaryService>(() => _i586.CloudinaryService());
+    gh.lazySingleton<_i756.IapService>(() => _i756.IapService());
     gh.lazySingleton<_i65.LocationService>(() => _i65.LocationService());
     gh.lazySingleton<_i1011.NotificationService>(
       () => _i1011.NotificationService(),

@@ -22,6 +22,11 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
   bankAccountHolder: json['bankAccountHolder'] as String?,
   walletBalance: (json['walletBalance'] as num?)?.toInt() ?? 0,
   createdAt: DateTime.parse(json['createdAt'] as String),
+  scoreboardUsage: json['scoreboardUsage'] == null
+      ? const ScoreboardUsage(count: 0, lastResetMonth: 1, lastResetYear: 2026)
+      : ScoreboardUsage.fromJson(
+          json['scoreboardUsage'] as Map<String, dynamic>,
+        ),
 );
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
@@ -38,4 +43,5 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
   'bankAccountHolder': instance.bankAccountHolder,
   'walletBalance': instance.walletBalance,
   'createdAt': instance.createdAt.toIso8601String(),
+  'scoreboardUsage': instance.scoreboardUsage,
 };

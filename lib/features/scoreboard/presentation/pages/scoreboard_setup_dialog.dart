@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:gsports/features/booking/domain/entities/payment_participant.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_configuration.dart';
 import 'package:gsports/core/config/app_colors.dart';
+import 'package:gsports/features/scoreboard/domain/repositories/scoreboard_repository.dart';
+import 'package:get_it/get_it.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gsports/core/presentation/widgets/premium_upgrade_dialog.dart';
 
 class ScoreboardSetupDialog extends StatefulWidget {
   final List<PaymentParticipant> participants;
@@ -78,6 +82,102 @@ class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
         }
       }
     });
+  }
+
+  Future<void> _onStartMatch() async {
+    if (_teamA.isEmpty || _teamB.isEmpty) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final repository = GetIt.I<ScoreboardRepository>();
+    final result = await repository.checkScoreboardLimit(user.uid);
+
+    if (mounted) {
+      Navigator.pop(context); // Close loading
+    }
+
+    result.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(failure.message)));
+        }
+      },
+      (canUse) async {
+        if (canUse) {
+          // Increment usage
+          await repository.incrementScoreboardUsage(user.uid);
+
+          if (mounted) {
+            // Reconstruct config from inputs
+            final duration = int.tryParse(_durationController.text) ?? 0;
+            final periods = int.tryParse(_periodsController.text) ?? 1;
+            final points = int.tryParse(_pointsController.text) ?? 21;
+            final sets = int.tryParse(_setsNeededController.text) ?? 2;
+
+            final finalConfig = _config.copyWith(
+              durationPerPeriodSeconds: duration * 60,
+              numberOfPeriods: periods,
+              winningScorePerSet: points,
+              winningSetsNeeded: sets,
+            );
+
+            Navigator.pop(context, {
+              'teamA': _teamA,
+              'teamB': _teamB,
+              'teamAName': _teamAController.text.isEmpty
+                  ? 'Team A'
+                  : _teamAController.text,
+              'teamBName': _teamBController.text.isEmpty
+                  ? 'Team B'
+                  : _teamBController.text,
+              'config': finalConfig,
+            });
+          }
+        } else {
+          if (mounted) {
+            _showUpgradePremiumPopup();
+          }
+        }
+      },
+    );
+  }
+
+  void _showUpgradePremiumPopup() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Limit Tercapai'),
+        content: const Text(
+          'Anda telah mencapai batas penggunaan Scoreboard gratis (5x per bulan). Upgrade ke Premium untuk akses tanpa batas dan bebas iklan!',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Nanti Saja'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              showDialog(
+                context: context,
+                builder: (context) => const PremiumUpgradeDialog(),
+              );
+            },
+            child: const Text('Upgrade Premium'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -181,32 +281,7 @@ class _ScoreboardSetupDialogState extends State<ScoreboardSetupDialog> {
         ),
         FilledButton(
           onPressed: (_teamA.isNotEmpty && _teamB.isNotEmpty)
-              ? () {
-                  // Reconstruct config from inputs
-                  final duration = int.tryParse(_durationController.text) ?? 0;
-                  final periods = int.tryParse(_periodsController.text) ?? 1;
-                  final points = int.tryParse(_pointsController.text) ?? 21;
-                  final sets = int.tryParse(_setsNeededController.text) ?? 2;
-
-                  final finalConfig = _config.copyWith(
-                    durationPerPeriodSeconds: duration * 60,
-                    numberOfPeriods: periods,
-                    winningScorePerSet: points,
-                    winningSetsNeeded: sets,
-                  );
-
-                  Navigator.pop(context, {
-                    'teamA': _teamA,
-                    'teamB': _teamB,
-                    'teamAName': _teamAController.text.isEmpty
-                        ? 'Team A'
-                        : _teamAController.text,
-                    'teamBName': _teamBController.text.isEmpty
-                        ? 'Team B'
-                        : _teamBController.text,
-                    'config': finalConfig,
-                  });
-                }
+              ? _onStartMatch
               : null,
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.primary,

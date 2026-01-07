@@ -11,6 +11,8 @@ import 'features/venue/presentation/bloc/venue_bloc.dart';
 import 'injection_container.dart'; // Import the DI setup
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/ad_service.dart';
+import 'core/services/iap_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,8 +25,10 @@ void main() async {
 
   await initializeDateFormatting('id_ID', null);
 
-  // Initialize Notification Service
+  // Initialize Services
   await GetIt.I<NotificationService>().initialize();
+  await GetIt.I<AdService>().init();
+  GetIt.I<IapService>().init();
 
   runApp(const GsportsApp());
 }

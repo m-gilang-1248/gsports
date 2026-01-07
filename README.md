@@ -31,6 +31,10 @@ Gsports is a SaaS (Software as a Service) mobile application for real-time sport
 - **Discovery:** Browse sports venues, filter by category/location.
 - **Booking:** Select multiple hours, choose courts, and pay via Midtrans (includes 2% service fee).
 - **Social:** Split the bill with friends using a unique 6-digit code.
+- **Scoreboard:** Digital scoreboard with per-sport logic (Limit 5x/month for Free users).
+- **Monetization:** 
+    - **AdMob Integration:** Banner ads in Home/Detail and Interstitial ads after matches for Free users.
+    - **Premium Subscription:** Upgrade for Rp 1000/month via Google IAP to remove ads and unlock unlimited Scoreboard usage.
 - **Wallet & Payouts:** Partners can track net revenue (after 5% platform commission) and request manual payouts.
 - **Management:** View booking history and real-time payment status.
 

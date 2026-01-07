@@ -22,4 +22,9 @@ abstract class AuthRepository {
   Future<Either<Failure, UserEntity>> checkAuthStatus();
 
   Future<Either<Failure, void>> updateFcmToken(String token);
+
+  Future<Either<Failure, void>> updateUserTier({
+    required String uid,
+    required String tier,
+  });
 }

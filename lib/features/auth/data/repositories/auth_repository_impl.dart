@@ -127,4 +127,19 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure(e.toString(), stackTrace: st));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> updateUserTier({
+    required String uid,
+    required String tier,
+  }) async {
+    try {
+      await remoteDataSource.updateUserTier(uid: uid, tier: tier);
+      return const Right(null);
+    } on ServerException catch (e, st) {
+      return Left(ServerFailure(e.message, stackTrace: st));
+    } catch (e, st) {
+      return Left(ServerFailure(e.toString(), stackTrace: st));
+    }
+  }
 }

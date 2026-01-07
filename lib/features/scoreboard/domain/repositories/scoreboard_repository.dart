@@ -8,4 +8,6 @@ abstract class ScoreboardRepository {
     String bookingId,
   );
   Future<Either<Failure, List<MatchResult>>> getMatchesByUser(String userId);
+  Future<Either<Failure, bool>> checkScoreboardLimit(String userId);
+  Future<Either<Failure, void>> incrementScoreboardUsage(String userId);
 }

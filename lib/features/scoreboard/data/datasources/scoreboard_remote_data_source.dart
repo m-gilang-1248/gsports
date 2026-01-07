@@ -7,6 +7,8 @@ abstract class ScoreboardRemoteDataSource {
   Future<void> saveMatch(MatchResultModel match);
   Future<List<MatchResultModel>> getMatchesByBooking(String bookingId);
   Future<List<MatchResultModel>> getMatchesByUser(String userId);
+  Future<bool> checkScoreboardLimit(String userId);
+  Future<void> incrementScoreboardUsage(String userId);
 }
 
 @LazySingleton(as: ScoreboardRemoteDataSource)
@@ -57,6 +59,75 @@ class ScoreboardRemoteDataSourceImpl implements ScoreboardRemoteDataSource {
       return snapshot.docs
           .map((doc) => MatchResultModel.fromJson(doc.data()))
           .toList();
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<bool> checkScoreboardLimit(String userId) async {
+    try {
+      final doc = await firestore.collection('users').doc(userId).get();
+      if (!doc.exists) return true;
+
+      final data = doc.data()!;
+      final tier = data['tier'] ?? 'free';
+      if (tier == 'premium') return true;
+
+      final scoreboardUsage = data['scoreboardUsage'] as Map<String, dynamic>?;
+      if (scoreboardUsage == null) return true;
+
+      final count = scoreboardUsage['count'] as int? ?? 0;
+      final lastMonth = scoreboardUsage['lastResetMonth'] as int? ?? 0;
+      final lastYear = scoreboardUsage['lastResetYear'] as int? ?? 0;
+
+      final now = DateTime.now();
+      if (now.month != lastMonth || now.year != lastYear) {
+        return true;
+      }
+
+      return count < 5;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> incrementScoreboardUsage(String userId) async {
+    try {
+      final docRef = firestore.collection('users').doc(userId);
+      await firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+        if (!snapshot.exists) return;
+
+        final data = snapshot.data()!;
+        final tier = data['tier'] ?? 'free';
+        if (tier == 'premium') return;
+
+        final scoreboardUsage =
+            data['scoreboardUsage'] as Map<String, dynamic>?;
+        final now = DateTime.now();
+
+        int count = 1;
+        int lastMonth = now.month;
+        int lastYear = now.year;
+
+        if (scoreboardUsage != null) {
+          final m = scoreboardUsage['lastResetMonth'] as int? ?? 0;
+          final y = scoreboardUsage['lastResetYear'] as int? ?? 0;
+          if (now.month == m && now.year == y) {
+            count = (scoreboardUsage['count'] as int? ?? 0) + 1;
+          }
+        }
+
+        transaction.update(docRef, {
+          'scoreboardUsage': {
+            'count': count,
+            'lastResetMonth': lastMonth,
+            'lastResetYear': lastYear,
+          },
+        });
+      });
     } catch (e) {
       throw ServerException(e.toString());
     }

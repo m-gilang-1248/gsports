@@ -12,6 +12,7 @@ import 'package:gsports/features/venue/domain/entities/venue.dart';
 import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
 import 'package:gsports/features/favorites/presentation/bloc/favorites_bloc.dart';
 import 'package:gsports/injection_container.dart';
+import 'package:gsports/core/presentation/widgets/banner_ad_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -142,21 +143,28 @@ class _VenueDetailPageState extends State<VenueDetailPage> {
         },
         child: Scaffold(
           backgroundColor: AppColors.background,
-          body: BlocBuilder<VenueBloc, VenueState>(
-            builder: (context, venueState) {
-              if (venueState is VenueDetailLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (venueState is VenueError) {
-                return Center(child: Text(venueState.message));
-              } else if (venueState is VenueDetailLoaded) {
-                return _buildLayout(
-                  context,
-                  venueState.venue,
-                  venueState.courts,
-                );
-              }
-              return const SizedBox.shrink();
-            },
+          body: Column(
+            children: [
+              Expanded(
+                child: BlocBuilder<VenueBloc, VenueState>(
+                  builder: (context, venueState) {
+                    if (venueState is VenueDetailLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (venueState is VenueError) {
+                      return Center(child: Text(venueState.message));
+                    } else if (venueState is VenueDetailLoaded) {
+                      return _buildLayout(
+                        context,
+                        venueState.venue,
+                        venueState.courts,
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+              const BannerAdWidget(),
+            ],
           ),
           bottomNavigationBar: _buildStickyBottomBar(context),
         ),

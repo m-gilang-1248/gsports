@@ -53,4 +53,28 @@ class ScoreboardRepositoryImpl implements ScoreboardRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, bool>> checkScoreboardLimit(String userId) async {
+    try {
+      final canUse = await remoteDataSource.checkScoreboardLimit(userId);
+      return Right(canUse);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> incrementScoreboardUsage(String userId) async {
+    try {
+      await remoteDataSource.incrementScoreboardUsage(userId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

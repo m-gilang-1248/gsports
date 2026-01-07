@@ -9,6 +9,7 @@ import 'package:gsports/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
 import 'package:gsports/features/venue/presentation/bloc/venue_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:gsports/core/presentation/widgets/banner_ad_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -66,38 +67,46 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            context.read<VenueBloc>().add(VenueFetchListRequested());
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(context),
-                      const SizedBox(height: 24),
-                      _buildSearchBar(context),
-                      const SizedBox(height: 24),
-                      _buildCategoryRail(context),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Rekomendasi Lapangan',
-                        style: Theme.of(context).textTheme.headlineMedium,
+      body: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              bottom: false,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  context.read<VenueBloc>().add(VenueFetchListRequested());
+                },
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildHeader(context),
+                            const SizedBox(height: 24),
+                            _buildSearchBar(context),
+                            const SizedBox(height: 24),
+                            _buildCategoryRail(context),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Rekomendasi Lapangan',
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                    ),
+                    _buildVenueList(context),
+                  ],
                 ),
               ),
-              _buildVenueList(context),
-            ],
+            ),
           ),
-        ),
+          const BannerAdWidget(),
+        ],
       ),
     );
   }

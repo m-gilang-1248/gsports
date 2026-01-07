@@ -10,6 +10,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_configuration.dart';
 import 'package:gsports/features/scoreboard/domain/entities/match_result.dart';
 import 'package:gsports/features/scoreboard/presentation/bloc/scoreboard_bloc.dart';
+import 'package:gsports/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:gsports/features/auth/presentation/bloc/auth_state.dart';
+import 'package:gsports/core/services/ad_service.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ScoreboardPage extends StatelessWidget {
@@ -111,6 +115,10 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
   late StreamSubscription<int> _timerSubscription;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
+  // Ad State
+  InterstitialAd? _interstitialAd;
+  bool _isAdLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -121,6 +129,7 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
         context.read<ScoreboardBloc>().add(
           InitializeScoreboard(widget.sportType, config: widget.config),
         );
+        _loadInterstitialAd();
       }
     });
 
@@ -149,6 +158,38 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+  }
+
+  void _loadInterstitialAd() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated && authState.user.isPremium) {
+      return;
+    }
+
+    GetIt.I<AdService>().loadInterstitialAd(
+      onAdLoaded: (ad) {
+        _interstitialAd = ad;
+        _isAdLoaded = true;
+      },
+    );
+  }
+
+  void _showInterstitialAd(VoidCallback onAdDismissed) {
+    if (_isAdLoaded && _interstitialAd != null) {
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          onAdDismissed();
+        },
+        onAdFailedToShowFullScreenContent: (ad, err) {
+          ad.dispose();
+          onAdDismissed();
+        },
+      );
+      _interstitialAd!.show();
+    } else {
+      onAdDismissed();
+    }
   }
 
   String _formatDuration(int seconds) {
@@ -226,7 +267,11 @@ class _ScoreboardViewState extends State<_ScoreboardView> {
                 winner: state.winner!,
               );
 
-              context.pushReplacement('/match-recap', extra: matchResult);
+              _showInterstitialAd(() {
+                if (context.mounted) {
+                  context.pushReplacement('/match-recap', extra: matchResult);
+                }
+              });
             }
             if (state.errorMessage != null) {
               ScaffoldMessenger.of(context).showSnackBar(

@@ -23,11 +23,17 @@ class UserModel extends UserEntity {
     super.bankAccountHolder,
     super.walletBalance = 0,
     required super.createdAt,
+    super.scoreboardUsage = const ScoreboardUsage(
+      count: 0,
+      lastResetMonth: 1,
+      lastResetYear: 2026,
+    ),
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 
   // Factory to create UserModel from Firebase Auth User and Firestore document data
@@ -36,6 +42,8 @@ class UserModel extends UserEntity {
     DocumentSnapshot<Map<String, dynamic>> firestoreDoc,
   ) {
     final data = firestoreDoc.data();
+    final scoreboardData = data?['scoreboardUsage'] as Map<String, dynamic>?;
+
     return UserModel(
       uid: firebaseUser.uid,
       email: firebaseUser.email ?? '',
@@ -55,6 +63,17 @@ class UserModel extends UserEntity {
           (data?[FirebaseConstants.userCreatedAtField] as Timestamp?)
               ?.toDate() ??
           DateTime.now(),
+      scoreboardUsage: scoreboardData != null
+          ? ScoreboardUsage(
+              count: scoreboardData['count'] as int? ?? 0,
+              lastResetMonth: scoreboardData['lastResetMonth'] as int? ?? 1,
+              lastResetYear: scoreboardData['lastResetYear'] as int? ?? 2026,
+            )
+          : const ScoreboardUsage(
+              count: 0,
+              lastResetMonth: 1,
+              lastResetYear: 2026,
+            ),
     );
   }
 
@@ -77,6 +96,11 @@ class UserModel extends UserEntity {
       'role': role,
       'tier': tier,
       'createdAt': FieldValue.serverTimestamp(),
+      'scoreboardUsage': {
+        'count': 0,
+        'lastResetMonth': DateTime.now().month,
+        'lastResetYear': DateTime.now().year,
+      },
     };
   }
 }
