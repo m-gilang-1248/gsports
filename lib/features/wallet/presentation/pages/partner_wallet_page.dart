@@ -136,35 +136,37 @@ class PartnerWalletView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: balance > 0
-                                  ? () {
-                                      debugPrint('🔵 Tombol Tarik Dana ditekan. Balance: $balance');
-                                      _showWithdrawDialog(context, balance);
-                                    }
-                                  : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: AppColors.success,
-                                disabledBackgroundColor: Colors.white.withValues(alpha: 0.5),
-                                disabledForegroundColor: AppColors.success.withValues(alpha: 0.5),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: balance > 0
+                                ? () {
+                                    debugPrint(
+                                      '🔵 Tombol Tarik Dana ditekan. Balance: $balance',
+                                    );
+                                    _showWithdrawDialog(context, balance);
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: AppColors.success,
+                              disabledBackgroundColor: Colors.white.withValues(
+                                alpha: 0.5,
                               ),
-                              child: const Text(
-                                'Tarik Dana',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              disabledForegroundColor: AppColors.success
+                                  .withValues(alpha: 0.5),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Tarik Dana',
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
-
+                        ),
                       ],
                     ),
                   );
@@ -242,6 +244,18 @@ class PartnerWalletView extends StatelessWidget {
                                   ).format(tx.createdAt),
                                   style: const TextStyle(fontSize: 12),
                                 ),
+                                if (isRevenue)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      'ID Booking: ${tx.referenceId}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
                                 if (tx.status != 'completed')
                                   Text(
                                     tx.status.toUpperCase(),
@@ -301,11 +315,13 @@ class PartnerWalletView extends StatelessWidget {
     debugPrint('🔵 Masuk fungsi _showWithdrawDialog');
     final profileState = context.read<ProfileBloc>().state;
     debugPrint('🔵 Profile State saat ini: $profileState');
-    
+
     if (profileState is! ProfileLoaded) {
       debugPrint('🔴 Profil belum loaded, menampilkan snackbar');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sedang memuat data profil, coba lagi sesaat lagi...')),
+        const SnackBar(
+          content: Text('Sedang memuat data profil, coba lagi sesaat lagi...'),
+        ),
       );
       return;
     }

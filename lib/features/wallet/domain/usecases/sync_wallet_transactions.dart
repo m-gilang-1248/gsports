@@ -48,7 +48,7 @@ class SyncWalletTransactions implements UseCase<void, String> {
         for (final booking in paidBookings) {
           if (!existingReferenceIds.contains(booking.id)) {
             // Missing transaction! Create it.
-            
+
             // Calculate revenue for legacy bookings (if netRevenue is null)
             int revenueAmount = 0;
             if (booking.netRevenue != null) {
