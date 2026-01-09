@@ -34,9 +34,12 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     // Basic Auth: base64("Key:")
     final basicAuth = base64Encode(utf8.encode('$serverKey:'));
 
-    final url = Uri.parse(
-      'https://app.sandbox.midtrans.com/snap/v1/transactions',
-    );
+    final isProduction = dotenv.env['MIDTRANS_IS_PRODUCTION'] == 'true';
+    final baseUrl = isProduction
+        ? 'https://app.midtrans.com/snap/v1/transactions'
+        : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+
+    final url = Uri.parse(baseUrl);
 
     final response = await client.post(
       url,
@@ -81,8 +84,13 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
 
     final basicAuth = base64Encode(utf8.encode('$serverKey:'));
 
+    final isProduction = dotenv.env['MIDTRANS_IS_PRODUCTION'] == 'true';
+    final baseUrl = isProduction
+        ? 'https://api.midtrans.com'
+        : 'https://api.sandbox.midtrans.com';
+
     final url = Uri.parse(
-      'https://api.sandbox.midtrans.com/v2/$orderId/status',
+      '$baseUrl/v2/$orderId/status',
     );
 
     try {

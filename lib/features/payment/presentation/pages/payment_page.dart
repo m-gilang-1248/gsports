@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:developer' as developer;
 
 class PaymentPage extends StatefulWidget {
@@ -34,9 +35,21 @@ class _PaymentPageState extends State<PaymentPage> {
             // Handle web resource errors.
             // Example: Navigator.pop(context, 'failed');
           },
-          onNavigationRequest: (NavigationRequest request) {
+          onNavigationRequest: (NavigationRequest request) async {
             developer.log('DEBUG WEBVIEW REQUEST: ${request.url}');
             final uri = Uri.parse(request.url);
+
+            // Handle deep links (e.g. gojek://, shopeeid://)
+            if (uri.scheme != 'http' && uri.scheme != 'https') {
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                return NavigationDecision.prevent;
+              } else {
+                developer.log('Could not launch ${request.url}');
+                // Fallback: stay on page or show error, but usually Midtrans handles fallback
+                return NavigationDecision.prevent;
+              }
+            }
 
             // Midtrans success indicators
             final isSettlement =
