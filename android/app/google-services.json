@@ -41,6 +41,44 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:236446670878:android:de0e9e833d2f0f21418e0f",
+        "android_client_info": {
+          "package_name": "com.gsports.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "236446670878-3tfd616po908q494n51bu7bcgh5gac9v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gsports.app",
+            "certificate_hash": "3f777b4c9e3acdbdfe6fb70049cfde31d960d579"
+          }
+        },
+        {
+          "client_id": "236446670878-1dhvf0n72br9qpkquc1k0aue2tskj6d2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvnGnptsUiz6SnxeZ4nXyuUCxXc7JmohA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "236446670878-1dhvf0n72br9qpkquc1k0aue2tskj6d2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-4842618231103910~3812833403"
     }
   ],
   "configuration_version": "1"

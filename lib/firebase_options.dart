@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBvnGnptsUiz6SnxeZ4nXyuUCxXc7JmohA',
-    appId: '1:236446670878:android:7c536a75e0527e29418e0f',
+    appId: '1:236446670878:android:de0e9e833d2f0f21418e0f',
     messagingSenderId: '236446670878',
     projectId: 'gsports-32f7f',
     storageBucket: 'gsports-32f7f.firebasestorage.app',
