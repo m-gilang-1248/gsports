@@ -1,6 +1,11 @@
 # Gsports
 
 Gsports is a SaaS (Software as a Service) mobile application for real-time sports venue booking, connecting venue owners (Mitra) and users.
+## Test Account
+- **User** email: akun2@gmail.com | pw: Akun2gmail.com
+- **Owner** email: owner2@gmail.com | pw: Owner2gmail.com
+- **Admin** email: admin2@gmail.com | pw: Admin2gmail.com
+
 
 ## Tech Stack
 - **Frontend:** Flutter (Dart)
